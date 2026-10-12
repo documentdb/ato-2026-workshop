@@ -1,0 +1,55 @@
+{
+  "kind": "practice",
+  "title": "Practice schedule - not the All Things Open agenda",
+  "timeZone": "America/New_York",
+  "version": "practice-v1",
+  "source": "Synthetic workshop fixture. Session titles, rooms, and times below are fictional.",
+  "snapshotDate": "2026-10-12",
+  "sessions": [
+    {
+      "id": "practice-hybrid",
+      "title": "Practice: Building a hybrid application",
+      "room": "Example room A",
+      "track": "Databases",
+      "startsAt": "2026-10-19T13:00:00Z",
+      "endsAt": "2026-10-19T14:00:00Z",
+      "url": "https://2026.allthingsopen.org/"
+    },
+    {
+      "id": "practice-containers",
+      "title": "Practice: Containers without the mystery",
+      "room": "Example room B",
+      "track": "Developer tools",
+      "startsAt": "2026-10-19T13:30:00Z",
+      "endsAt": "2026-10-19T14:30:00Z",
+      "url": "https://2026.allthingsopen.org/"
+    },
+    {
+      "id": "practice-community",
+      "title": "Practice: Your first open-source contribution",
+      "room": "Example room A",
+      "track": "Community",
+      "startsAt": "2026-10-19T14:00:00Z",
+      "endsAt": "2026-10-19T15:00:00Z",
+      "url": "https://2026.allthingsopen.org/"
+    },
+    {
+      "id": "practice-data",
+      "title": "Practice: Making data changes repeatable",
+      "room": "Example room C",
+      "track": "Databases",
+      "startsAt": "2026-10-19T15:15:00Z",
+      "endsAt": "2026-10-19T16:00:00Z",
+      "url": "https://2026.allthingsopen.org/"
+    },
+    {
+      "id": "practice-next-day",
+      "title": "Practice: Taking your project further",
+      "room": "Example room B",
+      "track": "Developer tools",
+      "startsAt": "2026-10-20T13:00:00Z",
+      "endsAt": "2026-10-20T14:00:00Z",
+      "url": "https://2026.allthingsopen.org/"
+    }
+  ]
+}

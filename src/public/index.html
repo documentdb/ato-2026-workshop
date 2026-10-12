@@ -1,0 +1,497 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Conference planner | Local to Cloud and Back</title>
+  <script nonce="__CSP_NONCE__">
+    (() => {
+      const param = new URLSearchParams(window.location.search).get("scoutTheme");
+      const theme = param === "light" || param === "dark"
+        ? param
+        : (window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
+      document.documentElement.setAttribute("data-theme", theme);
+    })();
+  </script>
+  <style nonce="__CSP_NONCE__">
+    :root {
+      color-scheme: light;
+      --cp-bg: #f7f4ef;
+      --cp-bg-elevated: #fcfbf8;
+      --cp-surface: #ffffff;
+      --cp-surface-soft: #f5f5f5;
+      --cp-border: #dedede;
+      --cp-border-strong: #919191;
+      --cp-text: #242424;
+      --cp-text-muted: #5c5c5c;
+      --cp-text-soft: #6f6f6f;
+      --cp-accent: #b11f4b;
+      --cp-accent-hover: #9a1a41;
+      --cp-accent-soft: rgba(177, 31, 75, 0.08);
+      --cp-accent-fg: #ffffff;
+      --cp-success: #16a34a;
+      --cp-danger: #dc2626;
+      --cp-warning: #f59e0b;
+      --cp-link: #0078d4;
+      --cp-shadow: 0 18px 48px rgba(0, 0, 0, 0.12);
+      --cp-overlay: rgba(255, 255, 255, 0.8);
+      --cp-panel: rgba(255, 255, 255, 0.86);
+      --cp-panel-strong: rgba(255, 255, 255, 0.96);
+      --cp-sheen: rgba(255, 255, 255, 0.55);
+      --cp-highlight: rgba(177, 31, 75, 0.12);
+    }
+    html[data-theme="dark"] {
+      color-scheme: dark;
+      --cp-bg: #3d3b3a;
+      --cp-bg-elevated: #343231;
+      --cp-surface: #292929;
+      --cp-surface-soft: #2e2e2e;
+      --cp-border: #474747;
+      --cp-border-strong: #5f5f5f;
+      --cp-text: #dedede;
+      --cp-text-muted: #919191;
+      --cp-text-soft: #b0b0b0;
+      --cp-accent: #fd8ea1;
+      --cp-accent-hover: #fb7b91;
+      --cp-accent-soft: rgba(253, 142, 161, 0.14);
+      --cp-accent-fg: #1a1a1a;
+      --cp-success: #4ade80;
+      --cp-danger: #f87171;
+      --cp-warning: #fbbf24;
+      --cp-link: #4da6ff;
+      --cp-shadow: 0 18px 48px rgba(0, 0, 0, 0.32);
+      --cp-overlay: rgba(41, 41, 41, 0.88);
+      --cp-panel: rgba(41, 41, 41, 0.72);
+      --cp-panel-strong: rgba(41, 41, 41, 0.96);
+      --cp-sheen: rgba(255, 255, 255, 0.04);
+      --cp-highlight: rgba(253, 142, 161, 0.12);
+    }
+    * { box-sizing: border-box; }
+    body { margin: 0; background: var(--cp-bg); color: var(--cp-text); font: 16px/1.5 "Segoe UI", Aptos, Calibri, -apple-system, BlinkMacSystemFont, sans-serif; }
+    button, input, select { font: inherit; }
+    button, input, select { border: 1px solid var(--cp-border-strong); border-radius: 0.625rem; color: var(--cp-text); background: var(--cp-surface); padding: 8px 12px; }
+    button { cursor: pointer; font-weight: 600; }
+    button:hover:not(:disabled) { background: var(--cp-surface-soft); }
+    button.primary { background: var(--cp-accent); border-color: var(--cp-accent); color: var(--cp-accent-fg); }
+    button.primary:hover:not(:disabled) { background: var(--cp-accent-hover); }
+    button:disabled { opacity: 0.5; cursor: not-allowed; }
+    :focus-visible { outline: 3px solid var(--cp-link); outline-offset: 3px; }
+    a { color: var(--cp-link); text-underline-offset: 3px; }
+    code { font-family: Consolas, "Courier New", Courier, monospace; font-size: 0.875rem; overflow-wrap: anywhere; }
+    h1, h2, h3, p { margin: 0; }
+    h1 { font-size: clamp(2rem, 5vw, 3rem); line-height: 1.15; letter-spacing: -0.035em; margin: 12px 0; }
+    h2 { font-size: 1.25rem; }
+    h3 { font-size: 1.125rem; line-height: 1.35; }
+    small, .muted { color: var(--cp-text-muted); }
+    .shell { max-width: 1240px; margin: auto; padding: 32px 24px 48px; }
+    .topline { display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+    .eyebrow { color: var(--cp-accent); text-transform: uppercase; font-size: 0.75rem; letter-spacing: 0.12em; font-weight: 700; }
+    .intro { max-width: 720px; }
+    .panel, .session { background: var(--cp-surface); border: 1px solid var(--cp-border); border-radius: 16px; padding: 20px; }
+    .environment { margin: 24px 0 16px; display: flex; justify-content: space-between; gap: 20px; align-items: center; }
+    .row { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
+    .stack { display: grid; gap: 12px; }
+    .status { font-size: 0.875rem; color: var(--cp-text-muted); }
+    .notice { border-left: 4px solid var(--cp-warning); padding: 12px 16px; background: var(--cp-surface); border-radius: 0.625rem; margin: 16px 0; }
+    .notice.error { border-left-color: var(--cp-danger); }
+    .notice.success { border-left-color: var(--cp-success); }
+    .metrics { display: flex; gap: 32px; margin: 24px 0; }
+    .metric strong { font-size: 1.5rem; display: block; line-height: 1.2; }
+    .metric span { font-size: 0.875rem; color: var(--cp-text-muted); }
+    .layout { display: grid; grid-template-columns: minmax(0, 1fr) 340px; gap: 24px; align-items: start; }
+    .filters { margin-bottom: 16px; display: grid; grid-template-columns: 1fr 170px; gap: 12px; }
+    label.field { display: grid; gap: 4px; font-size: 0.875rem; font-weight: 600; }
+    .sessions { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+    .session { display: flex; flex-direction: column; gap: 12px; }
+    .session.saved { border-color: var(--cp-accent); }
+    .session .meta { font-size: 0.875rem; color: var(--cp-text-muted); }
+    .session .actions { margin-top: auto; padding-top: 8px; display: flex; flex-wrap: wrap; gap: 12px; align-items: center; font-size: 0.875rem; }
+    .tag { display: inline-block; color: var(--cp-accent); background: var(--cp-accent-soft); border-radius: 0.625rem; padding: 4px 8px; font-size: 0.75rem; font-weight: 600; align-self: flex-start; }
+    .conflict { color: var(--cp-danger); font-size: 0.875rem; font-weight: 600; }
+    .itinerary { position: sticky; top: 20px; }
+    .favorites { list-style: none; padding: 0; margin: 0; }
+    .favorites li { padding: 12px 0; border-bottom: 1px solid var(--cp-border); }
+    .favorite-choice { display: flex; align-items: flex-start; gap: 8px; cursor: pointer; }
+    .favorite-choice input { margin-top: 6px; accent-color: var(--cp-accent); }
+    .favorite-choice span { font-size: 0.875rem; }
+    .favorite-choice small { display: block; }
+    .itinerary button { width: 100%; }
+    .divider { border-top: 1px solid var(--cp-border); padding-top: 16px; }
+    .empty { padding: 24px 0; color: var(--cp-text-muted); }
+    .footer { margin-top: 32px; border-top: 1px solid var(--cp-border); padding-top: 16px; font-size: 0.875rem; color: var(--cp-text-muted); }
+    .results { padding-left: 20px; font-size: 0.875rem; }
+    dialog { max-width: 560px; width: calc(100% - 32px); border: 1px solid var(--cp-border-strong); border-radius: 16px; padding: 24px; background: var(--cp-surface); color: var(--cp-text); }
+    dialog::backdrop { background: var(--cp-overlay); }
+    [hidden] { display: none !important; }
+    @media (max-width: 980px) {
+      .layout { grid-template-columns: 1fr 300px; gap: 16px; }
+      .sessions { grid-template-columns: 1fr; }
+    }
+    @media (max-width: 720px) {
+      .shell { padding: 20px 16px; }
+      .layout { grid-template-columns: 1fr; }
+      .itinerary { position: static; }
+      .environment { align-items: flex-start; flex-direction: column; }
+      .filters { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <main class="shell">
+    <header>
+      <div class="topline">
+        <p class="eyebrow">All Things Open 2026 / Hands-on workshop</p>
+        <button id="refresh" type="button">Refresh</button>
+      </div>
+      <div class="intro">
+        <h1>Build your conference day.</h1>
+        <p class="muted">Pick the sessions you want to attend. Keep your favorites, spot overlaps, and discover what really moves when your app goes from local to cloud.</p>
+      </div>
+    </header>
+
+    <section class="panel environment" aria-label="Database environment">
+      <div class="stack">
+        <p class="eyebrow">Active database</p>
+        <h2 id="target-name">Connecting...</h2>
+        <p class="status" id="status" role="status">Checking the app configuration.</p>
+        <small id="mode"></small>
+      </div>
+      <div class="stack">
+        <label class="field">Database target
+          <select id="target-select" disabled></select>
+        </label>
+        <button id="switch-target" type="button" disabled>Switch connection</button>
+      </div>
+    </section>
+
+    <div class="notice" id="location-notice" hidden></div>
+    <div class="notice" id="catalog-notice" hidden></div>
+    <div class="notice error" id="error" role="alert" hidden></div>
+    <div class="notice success" id="message" role="status" hidden></div>
+
+    <div class="metrics" aria-label="Planner totals">
+      <div class="metric"><strong id="session-count">0</strong><span>sessions</span></div>
+      <div class="metric"><strong id="favorite-count">0</strong><span>favorites</span></div>
+      <div class="metric"><strong id="conflict-count">0</strong><span>overlapping pairs</span></div>
+    </div>
+
+    <div class="layout">
+      <section aria-label="Session catalog">
+        <div class="filters">
+          <label class="field">Find a session
+            <input id="search" type="search" placeholder="Search titles, tracks, or rooms">
+          </label>
+          <label class="field">Day
+            <select id="day"><option value="">All days</option></select>
+          </label>
+        </div>
+        <div class="sessions" id="sessions"></div>
+        <p class="empty" id="catalog-empty">The catalog will appear after the database is seeded and TODO 1 is complete.</p>
+      </section>
+
+      <aside class="panel itinerary stack" aria-label="Your favorites">
+        <h2>Your favorites</h2>
+        <p class="muted">These belong to the active database, not to the browser.</p>
+        <ul class="favorites" id="favorites"></ul>
+        <p class="empty" id="favorites-empty">Save a session to start your day.</p>
+        <button id="export" class="primary" type="button" disabled>Download calendar (.ics)</button>
+        <small>Your downloaded calendar works without this app. It is a snapshot, not a live subscription.</small>
+        <div class="divider stack">
+          <h3>Copy, don't synchronize</h3>
+          <p class="muted">Select favorites above to copy to the other database. Existing choices are kept; removals are not propagated.</p>
+          <button id="copy" type="button" disabled>Copy selected favorites</button>
+          <small id="copy-help">Cloud access has not been configured.</small>
+          <ul class="results" id="copy-results" aria-live="polite"></ul>
+        </div>
+      </aside>
+    </div>
+
+    <footer class="footer stack">
+      <p id="catalog-source">Loading the catalog's source and snapshot date.</p>
+      <p>Restarting the app restores the target from ACTIVE_TARGET. A connection switch does not copy data.</p>
+      <p><a href="https://2026.allthingsopen.org/schedule" target="_blank" rel="noopener noreferrer">Official conference schedule</a> / <a href="https://documentdb.io/" target="_blank" rel="noopener noreferrer">DocumentDB project</a></p>
+    </footer>
+  </main>
+
+  <dialog id="copy-dialog" aria-labelledby="copy-title">
+    <div class="stack">
+      <h2 id="copy-title">Confirm selected favorites</h2>
+      <p id="copy-route"></p>
+      <ul id="copy-preview"></ul>
+      <p class="muted">This adds missing favorites only. It does not replace either list or remove existing choices.</p>
+      <div class="row">
+        <button id="confirm-copy" class="primary" type="button">Copy these favorites</button>
+        <button id="cancel-copy" type="button">Cancel</button>
+      </div>
+    </div>
+  </dialog>
+
+  <script nonce="__CSP_NONCE__">
+    const $ = (id) => document.getElementById(id);
+    let config;
+    let state;
+    let busy = false;
+    const selected = new Set();
+    const labels = {
+      copied: "Copied",
+      already_present: "Already present",
+      invalid: "Invalid selection",
+      failed: "Could not confirm write",
+      not_attempted: "Not attempted",
+    };
+    const node = (tag, text, className) => {
+      const element = document.createElement(tag);
+      if (text !== undefined) element.textContent = text;
+      if (className) element.className = className;
+      return element;
+    };
+    const label = (target) => config.targets.find((item) => item.id === target)?.label || "Cloud (not configured)";
+    const destination = () => config.target === "local" ? "cloud" : "local";
+    const dayKey = (session) => new Intl.DateTimeFormat("en-CA", {
+      timeZone: state.catalog.timeZone, year: "numeric", month: "2-digit", day: "2-digit",
+    }).format(new Date(session.startsAt));
+    const dateText = (session) => new Intl.DateTimeFormat("en-US", {
+      timeZone: state.catalog.timeZone, weekday: "short", month: "short", day: "numeric",
+    }).format(new Date(session.startsAt));
+    const timeText = (session) => {
+      const format = new Intl.DateTimeFormat("en-US", {
+        timeZone: state.catalog.timeZone, hour: "numeric", minute: "2-digit", timeZoneName: "short",
+      });
+      return `${format.format(new Date(session.startsAt))} - ${format.format(new Date(session.endsAt))}`;
+    };
+
+    async function api(path, options = {}) {
+      const response = await fetch(path, {
+        ...options,
+        headers: {
+          ...(options.body ? { "Content-Type": "application/json", "X-Workshop-Token": config.csrfToken } : {}),
+          ...options.headers,
+        },
+      });
+      const data = await response.json();
+      if (!response.ok) throw new Error(`${data.error.code}: ${data.error.message}`);
+      return data;
+    }
+
+    function notice(id, text, error = false) {
+      $(id).textContent = text;
+      $(id).hidden = !text;
+      if (id === "message") $(id).className = `notice ${error ? "error" : "success"}`;
+    }
+
+    async function perform(action) {
+      if (busy) return;
+      busy = true;
+      notice("error", "");
+      controls();
+      try {
+        await action();
+      } catch (error) {
+        notice("error", error.message);
+      } finally {
+        busy = false;
+        controls();
+      }
+    }
+
+    function controls() {
+      $("refresh").disabled = busy;
+      $("target-select").disabled = busy || !config;
+      $("switch-target").disabled = busy || !config || $("target-select").value === config.target;
+      $("export").disabled = busy || !state || !state.favorites.length || state.orphanedFavorites.length > 0;
+      $("copy").disabled = busy || !state || !selected.size || !config.targets.some((target) => target.id === destination());
+      document.querySelectorAll(".save-favorite, .favorite-choice input").forEach((element) => { element.disabled = busy; });
+      $("confirm-copy").disabled = busy;
+    }
+
+    function renderConfiguration() {
+      $("target-name").textContent = label(config.target);
+      $("mode").textContent = `${config.mode === "starter" ? "TODO starter" : "Complete reference"} / Same application data layer`;
+      $("target-select").replaceChildren();
+      for (const target of ["local", "cloud"]) {
+        const option = node("option", label(target));
+        option.value = target;
+        option.disabled = !config.targets.some((item) => item.id === target);
+        option.selected = target === config.target;
+        $("target-select").append(option);
+      }
+      $("copy-help").textContent = config.targets.some((target) => target.id === destination())
+        ? `Destination: ${label(destination())}. Select up to 100 favorites.`
+        : "Cloud access is not configured. Local planning and calendar export still work.";
+      notice("location-notice", config.location === "codespaces"
+        ? "Codespaces fallback: your development database is hosted in Codespaces, not on your laptop. This path requires connectivity and does not demonstrate offline laptop operation."
+        : "");
+    }
+
+    function render() {
+      if (!state) return;
+      const favorites = new Set(state.favorites);
+      for (const id of selected) if (!favorites.has(id)) selected.delete(id);
+      const conflicts = new Set(state.conflicts.flat());
+      $("session-count").textContent = state.sessions.length;
+      $("favorite-count").textContent = state.favorites.length;
+      $("conflict-count").textContent = state.conflicts.length;
+      notice("catalog-notice", state.catalog.kind === "practice"
+        ? "Practice schedule only. These sessions, rooms, and times are fictional, not the ATO agenda. Calendar exports are labeled PRACTICE."
+        : "Official schedule snapshot, not live updates. Times are published program blocks; some keynote and lightning talks run in sequence within one block. Check overlap warnings against the official schedule. Saving a favorite is not registration: some Monday events require a separate pass or enrollment.");
+      $("catalog-source").textContent = `${state.catalog.title} / Snapshot: ${state.catalog.snapshotDate} / Times: ${state.catalog.timeZone}. ${state.catalog.source}`;
+      const query = $("search").value.trim().toLowerCase();
+      const day = $("day").value;
+      const sessions = state.sessions.filter((session) =>
+        (!day || dayKey(session) === day) &&
+        [session.title, session.track, session.room].some((text) => text.toLowerCase().includes(query)));
+      $("sessions").replaceChildren();
+      $("catalog-empty").hidden = sessions.length > 0;
+      $("catalog-empty").textContent = "No sessions match these filters.";
+      for (const session of sessions) {
+        const card = node("article", undefined, `session${favorites.has(session.id) ? " saved" : ""}`);
+        card.append(node("span", session.track, "tag"), node("h3", session.title));
+        card.append(node("p", `${dateText(session)} / ${timeText(session)}`, "meta"));
+        card.append(node("p", session.room, "meta"));
+        if (conflicts.has(session.id)) card.append(node("p", state.catalog.kind === "official" ? "Overlapping published time block" : "Overlaps another favorite", "conflict"));
+        const actions = node("div", undefined, "actions");
+        const saved = favorites.has(session.id);
+        const button = node("button", saved ? "Remove favorite" : "Save favorite", `save-favorite${saved ? "" : " primary"}`);
+        button.type = "button";
+        button.setAttribute("aria-label", `${saved ? "Remove" : "Save"} favorite: ${session.title}`);
+        button.addEventListener("click", () => {
+          if (saved && !window.confirm(`Remove "${session.title}" from this database's favorites? Copies in the other database will remain.`)) return;
+          perform(async () => {
+            await api("/api/favorites", {
+              method: saved ? "DELETE" : "POST",
+              body: JSON.stringify({ target: config.target, sessionId: session.id }),
+            });
+            await loadState();
+            notice("message", saved ? "Removed from the active database only." : "Favorite saved in the active database.");
+          });
+        });
+        const link = node("a", "Source");
+        link.href = session.url;
+        link.target = "_blank";
+        link.rel = "noopener noreferrer";
+        actions.append(button, link);
+        card.append(actions);
+        $("sessions").append(card);
+      }
+      $("favorites").replaceChildren();
+      const favoriteSessions = state.sessions.filter((session) => favorites.has(session.id));
+      $("favorites-empty").hidden = favoriteSessions.length > 0;
+      for (const session of favoriteSessions) {
+        const li = node("li");
+        const choice = node("label", undefined, "favorite-choice");
+        const checkbox = document.createElement("input");
+        checkbox.type = "checkbox";
+        checkbox.checked = selected.has(session.id);
+        checkbox.setAttribute("aria-label", `Select for copying: ${session.title}`);
+        checkbox.addEventListener("change", () => {
+          checkbox.checked ? selected.add(session.id) : selected.delete(session.id);
+          controls();
+        });
+        const text = node("span", session.title);
+        text.append(node("small", `${dateText(session)} / ${timeText(session)}`));
+        if (conflicts.has(session.id)) text.append(node("small", state.catalog.kind === "official" ? "Check shared time block" : "Schedule conflict", "conflict"));
+        choice.append(checkbox, text);
+        li.append(choice);
+        $("favorites").append(li);
+      }
+      if (state.orphanedFavorites.length) {
+        notice("error", `${state.orphanedFavorites.length} favorite(s) have no matching session. Review catalog drift before exporting or copying.`);
+      }
+      controls();
+    }
+
+    async function loadState() {
+      const next = await api("/api/state");
+      if (next.target !== config.target) throw new Error("The target changed in another tab. Refresh before continuing.");
+      state = next;
+      const previous = $("day").value;
+      const days = new Map(state.sessions.map((session) => [dayKey(session), dateText(session)]));
+      $("day").replaceChildren();
+      const all = node("option", "All days");
+      all.value = "";
+      $("day").append(all);
+      for (const [value, text] of [...days].sort()) {
+        const option = node("option", text);
+        option.value = value;
+        $("day").append(option);
+      }
+      $("day").value = days.has(previous) ? previous : "";
+      render();
+    }
+
+    async function refresh() {
+      state = undefined;
+      selected.clear();
+      $("sessions").replaceChildren();
+      $("favorites").replaceChildren();
+      $("copy-results").replaceChildren();
+      $("catalog-empty").hidden = false;
+      $("catalog-empty").textContent = "Loading the selected database's catalog...";
+      $("session-count").textContent = "0";
+      $("favorite-count").textContent = "0";
+      $("conflict-count").textContent = "0";
+      notice("catalog-notice", "");
+      notice("message", "");
+      $("status").textContent = "Checking the selected database...";
+      config = await api("/api/config");
+      renderConfiguration();
+      await api("/api/health");
+      $("status").textContent = "Database reachable. No other environment was used.";
+      await loadState();
+    }
+
+    $("refresh").addEventListener("click", () => perform(refresh));
+    $("search").addEventListener("input", render);
+    $("day").addEventListener("change", render);
+    $("target-select").addEventListener("change", controls);
+    $("switch-target").addEventListener("click", () => perform(async () => {
+      const nextTarget = $("target-select").value;
+      await api("/api/target", {
+        method: "POST",
+        body: JSON.stringify({ target: config.target, nextTarget }),
+      });
+      await refresh();
+      notice("message", "Connection switched. No favorites were transferred.");
+    }));
+    $("export").addEventListener("click", () => perform(async () => {
+      const response = await fetch(`/api/calendar?target=${encodeURIComponent(config.target)}`);
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.error.message);
+      }
+      const blob = await response.blob();
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = `${state.catalog.kind === "practice" ? "practice-" : ""}conference-favorites.ics`;
+      link.click();
+      setTimeout(() => URL.revokeObjectURL(url), 1000);
+      notice("message", "Calendar export requested. Save the .ics file if your browser prompts, then import it manually; this is not a live subscription.");
+    }));
+    $("copy").addEventListener("click", () => {
+      $("copy-route").textContent = `${label(config.target)} -> ${label(destination())}`;
+      $("copy-preview").replaceChildren(...state.sessions.filter((session) => selected.has(session.id)).map((session) => node("li", session.title)));
+      $("copy-dialog").showModal();
+    });
+    $("cancel-copy").addEventListener("click", () => $("copy-dialog").close());
+    $("confirm-copy").addEventListener("click", () => {
+      $("copy-dialog").close();
+      perform(async () => {
+        const result = await api("/api/transfer", {
+          method: "POST",
+          body: JSON.stringify({ target: config.target, source: config.target, destination: destination(), sessionIds: [...selected] }),
+        });
+        $("copy-results").replaceChildren(...result.results.map((item) => {
+          const title = state.sessions.find((session) => session.id === item.id)?.title || item.id;
+          return node("li", `${labels[item.status]}: ${title}${item.message ? ` - ${item.message}` : ""}`);
+        }));
+        notice("message", result.complete
+          ? "Copy complete. Existing destination favorites were preserved."
+          : "Copy incomplete. Review each result; retrying the same selection is safe.", !result.complete);
+        await loadState();
+      });
+    });
+    perform(refresh);
+  </script>
+</body>
+</html>

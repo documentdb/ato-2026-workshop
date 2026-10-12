@@ -1,0 +1,63 @@
+{
+  "sourceUrl": "https://2026.allthingsopen.org/schedule",
+  "retrievedAt": "2026-10-12T16:57:37.296Z",
+  "sourceRows": 274,
+  "duplicateRows": 57,
+  "importedOccurrences": 216,
+  "uniqueSourceSessions": 190,
+  "roomsNotListed": 23,
+  "sections": [
+    {
+      "date": "2026-10-18",
+      "name": "Sunday Welcome Social & Panel Discussion",
+      "sourceRows": 1
+    },
+    {
+      "date": "2026-10-19",
+      "name": "Extended Workshops",
+      "sourceRows": 19
+    },
+    {
+      "date": "2026-10-19",
+      "name": "Deep Dive Sessions",
+      "sourceRows": 30
+    },
+    {
+      "date": "2026-10-19",
+      "name": "Community Leadership Summit",
+      "sourceRows": 19
+    },
+    {
+      "date": "2026-10-19",
+      "name": "Inclusion and Diversity in Open Source",
+      "sourceRows": 23
+    },
+    {
+      "date": "2026-10-19",
+      "name": "Open Source Accessibility Summit",
+      "sourceRows": 22
+    },
+    {
+      "date": "2026-10-19",
+      "name": "MLH AI Hackathon",
+      "sourceRows": 19
+    },
+    {
+      "date": "2026-10-20",
+      "name": "Traditional Conference Day",
+      "sourceRows": 141
+    }
+  ],
+  "excluded": [
+    {
+      "sourceId": 27784,
+      "title": "Break",
+      "url": "https://2026.allthingsopen.org/sessions/break",
+      "date": "2026-10-19",
+      "section": "Community Leadership Summit",
+      "start": "12:00 pm",
+      "end": "12:15 am",
+      "reason": "The published end is not after the start on this date; no overnight rollover or typo correction was inferred."
+    }
+  ]
+}

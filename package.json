@@ -1,0 +1,26 @@
+{
+  "name": "ato-2026-workshop",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Local to Cloud and Back: a DocumentDB conference planner workshop",
+  "license": "MIT",
+  "type": "module",
+  "engines": {
+    "node": ">=24.13.0"
+  },
+  "scripts": {
+    "start": "node src/server.js",
+    "dev": "node --watch src/server.js",
+    "setup": "node scripts/setup.mjs",
+    "seed": "node scripts/database.mjs seed",
+    "indexes": "node scripts/database.mjs indexes",
+    "migrate": "node scripts/database.mjs migrate",
+    "check": "node scripts/database.mjs check",
+    "import:schedule": "node scripts/import-schedule.mjs",
+    "test": "node --test test/*.test.js",
+    "test:database": "node --test test/database.integration.js"
+  },
+  "dependencies": {
+    "mongodb": "7.1.0"
+  }
+}

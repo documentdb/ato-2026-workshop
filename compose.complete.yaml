@@ -1,0 +1,4 @@
+services:
+  app:
+    environment:
+      WORKSHOP_MODE: complete

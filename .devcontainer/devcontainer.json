@@ -1,0 +1,18 @@
+{
+  "name": "ATO 2026 DocumentDB workshop",
+  "image": "mcr.microsoft.com/devcontainers/javascript-node:5-24-bookworm@sha256:16eb68aa0d17eedaaf2566b180854fe4e506478e35aadf790fb02aa089024f13",
+  "features": {
+    "ghcr.io/devcontainers/features/docker-in-docker:2": {}
+  },
+  "forwardPorts": [3000],
+  "portsAttributes": {
+    "3000": {
+      "label": "Workshop planner (development environment in Codespaces)",
+      "onAutoForward": "notify",
+      "visibility": "private"
+    }
+  },
+  "onCreateCommand": "npm ci --no-audit --no-fund",
+  "postCreateCommand": "npm run setup",
+  "postStartCommand": "docker compose up --build -d --wait --wait-timeout 240 && docker compose exec -T app npm run seed -- --target local"
+}

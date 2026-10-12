@@ -1,0 +1,48 @@
+services:
+  documentdb:
+    image: ghcr.io/documentdb/documentdb/documentdb-local:pg17-0.117.0@sha256:a22772de11861a97d395eecdbe6fbaedd245498b015e748ca409f526430ca781
+    environment:
+      USERNAME: ${DOCUMENTDB_USERNAME:?Run the setup command first}
+      PASSWORD: ${DOCUMENTDB_PASSWORD:?Run the setup command first}
+    volumes:
+      - documentdb-data:/data
+    stop_grace_period: 30s
+
+  app:
+    build:
+      context: .
+      args:
+        NPM_REGISTRY: ${NPM_REGISTRY:-https://registry.npmjs.org/}
+    init: true
+    depends_on:
+      documentdb:
+        condition: service_started
+    environment:
+      DOCUMENTDB_USERNAME: ${DOCUMENTDB_USERNAME:?Run the setup command first}
+      DOCUMENTDB_PASSWORD: ${DOCUMENTDB_PASSWORD:?Run the setup command first}
+      LOCAL_DOCUMENTDB_HOST: documentdb
+      LOCAL_DATABASE_NAME: ${LOCAL_DATABASE_NAME:-ato_workshop}
+      CLOUD_DOCUMENTDB_URI: ${CLOUD_DOCUMENTDB_URI:-}
+      CLOUD_DATABASE_NAME: ${CLOUD_DATABASE_NAME:-}
+      WORKSHOP_MODE: ${WORKSHOP_MODE:-starter}
+      WORKSHOP_LOCATION: ${WORKSHOP_LOCATION:-laptop}
+      WORKSHOP_PUBLIC_HOST: ${WORKSHOP_PUBLIC_HOST:-}
+      ACTIVE_TARGET: ${ACTIVE_TARGET:-local}
+      HOST: 0.0.0.0
+      PORT: "3000"
+    ports:
+      - "127.0.0.1:${WORKSHOP_PORT:-3000}:3000"
+    volumes:
+      - ./src:/app/src:ro
+      - ./examples:/app/examples:ro
+      - ./exercises:/app/exercises:ro
+      - ./data:/app/data:ro
+    healthcheck:
+      test: ["CMD", "node", "scripts/healthcheck.mjs"]
+      interval: 5s
+      timeout: 10s
+      retries: 36
+      start_period: 30s
+
+volumes:
+  documentdb-data:

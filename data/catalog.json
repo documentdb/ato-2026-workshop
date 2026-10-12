@@ -1,0 +1,1954 @@
+{
+  "kind": "official",
+  "title": "All Things Open 2026",
+  "timeZone": "America/New_York",
+  "version": "ato-2026-20261012T165737Z",
+  "source": "https://2026.allthingsopen.org/schedule - 216 published schedule entries. Times are program-block windows, not guaranteed individual talk durations. 23 entries have no published room. 1 invalid time range(s) excluded; see the import report.",
+  "snapshotDate": "2026-10-12",
+  "sessions": [
+    {
+      "id": "ato-2026-26664-20261020-1",
+      "title": "Your Data Has a Supply Chain, And Nobody’s Securing It",
+      "room": "Room 302B",
+      "track": "Big Data",
+      "startsAt": "2026-10-20T14:30:00.000Z",
+      "endsAt": "2026-10-20T15:00:00.000Z",
+      "url": "https://2026.allthingsopen.org/sessions/your-data-has-a-supply-chain-and-nobodys-securing-it"
+    },
+    {
+      "id": "ato-2026-26673-20261020-1",
+      "title": "Identity Crisis: Why Your Security Fails in an Agentic World",
+      "room": "Room 303",
+      "track": "Security",
+      "startsAt": "2026-10-20T20:00:00.000Z",
+      "endsAt": "2026-10-20T20:30:00.000Z",
+      "url": "https://2026.allthingsopen.org/sessions/identity-crisis-why-your-security-fails-in-an-agentic-world"
+    },
+    {
+      "id": "ato-2026-26686-20261020-1",
+      "title": "When AI Writes the Code, Humans Must Write the Rules",
+      "room": "Room 206",
+      "track": "Business",
+      "startsAt": "2026-10-20T14:30:00.000Z",
+      "endsAt": "2026-10-20T15:00:00.000Z",
+      "url": "https://2026.allthingsopen.org/sessions/when-ai-writes-the-code-humans-must-write-the-rules"
+    },
+    {
+      "id": "ato-2026-26705-20261019-1",
+      "title": "Beyond the CPU and GPU: Enabling AI Accelerators in PyTorch",
+      "room": "Ballroom B",
+      "track": "Day 1 Lightning Talks",
+      "startsAt": "2026-10-19T17:15:00.000Z",
+      "endsAt": "2026-10-19T18:15:00.000Z",
+      "url": "https://2026.allthingsopen.org/sessions/beyond-the-cpu-and-gpu-enabling-ai-accelerators-in-pytorch"
+    },
+    {
+      "id": "ato-2026-26711-20261020-1",
+      "title": "Security Things: How OpenSSF’s Technical Initiatives Keep You Safe from the Upside Down!",
+      "room": "Room 303",
+      "track": "Security",
+      "startsAt": "2026-10-20T18:30:00.000Z",
+      "endsAt": "2026-10-20T19:00:00.000Z",
+      "url": "https://2026.allthingsopen.org/sessions/security-things-how-openssfs-technical-initiatives-keep-you-safe-from-the-upside-down"
+    },
+    {
+      "id": "ato-2026-26732-20261020-1",
+      "title": "The Maintainer’s Dilemma: Ban AI or Build for It",
+      "room": "Ballrom B",
+      "track": "Day 2 Keynotes",
+      "startsAt": "2026-10-20T12:45:00.000Z",
+      "endsAt": "2026-10-20T14:10:00.000Z",
+      "url": "https://2026.allthingsopen.org/sessions/the-maintainers-dilemma-ban-ai-or-build-for-it"
+    },
+    {
+      "id": "ato-2026-26738-20261020-1",
+      "title": "The Architecture of AI Agents: Patterns, Protocols, and Pitfalls in 2026",
+      "room": "Ballroom C",
+      "track": "Machine Learning/AI 2",
+      "startsAt": "2026-10-20T18:30:00.000Z",
+      "endsAt": "2026-10-20T19:00:00.000Z",
+      "url": "https://2026.allthingsopen.org/sessions/the-architecture-of-ai-agents-patterns-protocols-and-pitfalls-in-2026"
+    },
+    {
+      "id": "ato-2026-26752-20261020-1",
+      "title": "Sandboxing AI Agents in the Enterprise: A Practitioner’s Guide to Isolation Technologies",
+      "room": "Room 301A",
+      "track": "Machine Learning/AI 3",
+      "startsAt": "2026-10-20T15:15:00.000Z",
+      "endsAt": "2026-10-20T15:45:00.000Z",
+      "url": "https://2026.allthingsopen.org/sessions/sandboxing-ai-agents-in-the-enterprise-a-practitioners-guide-to-isolation-technologies"
+    },
+    {
+      "id": "ato-2026-26755-20261020-1",
+      "title": "Code Reviews: Compassion vs Criticism",
+      "room": "Room 301B",
+      "track": "101",
+      "startsAt": "2026-10-20T16:00:00.000Z",
+      "endsAt": "2026-10-20T16:30:00.000Z",
+      "url": "https://2026.allthingsopen.org/sessions/code-reviews-compassion-vs-criticism"
+    },
+    {
+      "id": "ato-2026-26761-20261020-1",
+      "title": "The Spec is Just the Tip",
+      "room": "Room 306A",
+      "track": "Databases",
+      "startsAt": "2026-10-20T18:30:00.000Z",
+      "endsAt": "2026-10-20T19:00:00.000Z",
+      "url": "https://2026.allthingsopen.org/sessions/the-spec-is-just-the-tip"
+    },
+    {
+      "id": "ato-2026-26764-20261020-1",
+      "title": "Beyond “Good First Issues”: How to Make Your First Open Source Contribution Actually Matter",
+      "room": "Room 301B",
+      "track": "101",
+      "startsAt": "2026-10-20T20:00:00.000Z",
+      "endsAt": "2026-10-20T20:30:00.000Z",
+      "url": "https://2026.allthingsopen.org/sessions/beyond-good-first-issues-how-to-make-your-first-open-source-contribution-actually-matter"
+    },
+    {
+      "id": "ato-2026-26770-20261020-1",
+      "title": "pg_lake: Unifying transactional and analytical data with Postgres",
+      "room": "Room 306A",
+      "track": "Databases",
+      "startsAt": "2026-10-20T16:00:00.000Z",
+      "endsAt": "2026-10-20T16:30:00.000Z",
+      "url": "https://2026.allthingsopen.org/sessions/pg_lake-unifying-transactional-and-analytical-data-with-postgres"
+    },
+    {
+      "id": "ato-2026-26773-20261020-1",
+      "title": "Points, Levels, and Merge Requests: Gamifying the Contributor Experience",
+      "room": "Room 305B",
+      "track": "DevRel",
+      "startsAt": "2026-10-20T18:30:00.000Z",
+      "endsAt": "2026-10-20T19:00:00.000Z",
+      "url": "https://2026.allthingsopen.org/sessions/points-levels-and-merge-requests-gamifying-the-contributor-experience"
+    },
+    {
+      "id": "ato-2026-26776-20261020-1",
+      "title": "Apache Spark Real-Time Mode: How Spark Is Evolving for Low-Latency Streaming",
+      "room": "Room 302B",
+      "track": "Big Data",
+      "startsAt": "2026-10-20T18:30:00.000Z",
+      "endsAt": "2026-10-20T19:00:00.000Z",
+      "url": "https://2026.allthingsopen.org/sessions/apache-spark-real-time-mode-how-spark-is-evolving-for-low-latency-streaming"
+    },
+    {
+      "id": "ato-2026-26782-20261020-1",
+      "title": "Lessons Learned While Moving 2 Million Engineers From AngularJS to Angular",
+      "room": "Room 305B",
+      "track": "DevRel",
+      "startsAt": "2026-10-20T20:00:00.000Z",
+      "endsAt": "2026-10-20T20:30:00.000Z",
+      "url": "https://2026.allthingsopen.org/sessions/lessons-learned-while-moving-2-million-engineers-from-angularjs-to-angular"
+    },
+    {
+      "id": "ato-2026-26785-20261020-1",
+      "title": "Why the GPL is Great for Business",
+      "room": "Room 206",
+      "track": "Business",
+      "startsAt": "2026-10-20T16:00:00.000Z",
+      "endsAt": "2026-10-20T16:30:00.000Z",
+      "url": "https://2026.allthingsopen.org/sessions/why-the-gpl-is-great-for-business"
+    },
+    {
+      "id": "ato-2026-26788-20261020-1",
+      "title": "Are you in my Green Zone?",
+      "room": "Room 303",
+      "track": "Security",
+      "startsAt": "2026-10-20T14:30:00.000Z",
+      "endsAt": "2026-10-20T15:00:00.000Z",
+      "url": "https://2026.allthingsopen.org/sessions/are-you-in-my-green-zone"
+    },
+    {
+      "id": "ato-2026-26791-20261020-1",
+      "title": "Bring Your Kubernetes Game to the Next Level with These Open-source Tools",
+      "room": "Room 304",
+      "track": "DevOps",
+      "startsAt": "2026-10-20T20:00:00.000Z",
+      "endsAt": "2026-10-20T20:30:00.000Z",
+      "url": "https://2026.allthingsopen.org/sessions/bring-your-kubernetes-game-to-the-next-level-with-these-open-source-tools"
+    },
+    {
+      "id": "ato-2026-26794-20261020-1",
+      "title": "The Hardware Hunger Games: Why Your AI Training Depends on Infrastructure SLOs",
+      "room": "Room 306C",
+      "track": "AI/Open Source Infrastructure",
+      "startsAt": "2026-10-20T14:30:00.000Z",
+      "endsAt": "2026-10-20T15:00:00.000Z",
+      "url": "https://2026.allthingsopen.org/sessions/the-hardware-hunger-games-why-your-ai-training-depends-on-infrastructure-slos"
+    },
+    {
+      "id": "ato-2026-26799-20261020-1",
+      "title": "The AI Governance Gap: What Cloud Architects Must Build Before GenAI Goes to Production",
+      "room": "Room 302C",
+      "track": "Cloud",
+      "startsAt": "2026-10-20T15:15:00.000Z",
+      "endsAt": "2026-10-20T15:45:00.000Z",
+      "url": "https://2026.allthingsopen.org/sessions/the-ai-governance-gap-what-cloud-architects-must-build-before-genai-goes-to-production"
+    },
+    {
+      "id": "ato-2026-26802-20261020-1",
+      "title": "No Trust, No AI: What Has to Be True Before Your AI Initiative Goes Live",
+      "room": "Room 206",
+      "track": "Business",
+      "startsAt": "2026-10-20T20:00:00.000Z",
+      "endsAt": "2026-10-20T20:30:00.000Z",
+      "url": "https://2026.allthingsopen.org/sessions/no-trust-no-ai-what-has-to-be-true-before-your-ai-initiative-goes-live"
+    },
+    {
+      "id": "ato-2026-26805-20261020-1",
+      "title": "Fine-Grained Access Control for Hosted MCP Servers You Don’t Own",
+      "room": "Room 303",
+      "track": "Security",
+      "startsAt": "2026-10-20T15:15:00.000Z",
+      "endsAt": "2026-10-20T15:45:00.000Z",
+      "url": "https://2026.allthingsopen.org/sessions/fine-grained-access-control-for-hosted-mcp-servers-you-dont-own"
+    },
+    {
+      "id": "ato-2026-26808-20261020-1",
+      "title": "Orchestrating Autonomous AI Agents with Apache Kafka and Apache Flink",
+      "room": "Room 302B",
+      "track": "Big Data",
+      "startsAt": "2026-10-20T15:15:00.000Z",
+      "endsAt": "2026-10-20T15:45:00.000Z",
+      "url": "https://2026.allthingsopen.org/sessions/orchestrating-autonomous-ai-agents-with-apache-kafka-and-apache-flink"
+    },
+    {
+      "id": "ato-2026-26809-20261020-1",
+      "title": "Repeat or Reweave? The History and Future of Women in Technology",
+      "room": "Room 201",
+      "track": "Community",
+      "startsAt": "2026-10-20T19:15:00.000Z",
+      "endsAt": "2026-10-20T19:45:00.000Z",
+      "url": "https://2026.allthingsopen.org/sessions/repeat-or-reweave-the-history-and-future-of-women-in-technology"
+    },
+    {
+      "id": "ato-2026-26811-20261020-1",
+      "title": "AI Wrote the Code – Is It Secure?",
+      "room": "Room 305A",
+      "track": "Developer 2",
+      "startsAt": "2026-10-20T14:30:00.000Z",
+      "endsAt": "2026-10-20T15:00:00.000Z",
+      "url": "https://2026.allthingsopen.org/sessions/ai-wrote-the-code-is-it-secure"
+    },
+    {
+      "id": "ato-2026-26822-20261019-1",
+      "title": "Git Up, Git Out: AI Answering the Call for Our Communities in Crisis",
+      "room": "Room 305B",
+      "track": "Inclusion & Diversity in Open Source",
+      "startsAt": "2026-10-19T15:45:00.000Z",
+      "endsAt": "2026-10-19T16:15:00.000Z",
+      "url": "https://2026.allthingsopen.org/sessions/git-up-git-out-ai-answering-the-call-for-our-communities-in-crisis"
+    },
+    {
+      "id": "ato-2026-26825-20261019-1",
+      "title": "From Zero to Running Agent: Build and Ship an Open Source AI System in One Day",
+      "room": "Room 302 A & B",
+      "track": "Deep Dive Sessions 4",
+      "startsAt": "2026-10-19T15:00:00.000Z",
+      "endsAt": "2026-10-19T17:00:00.000Z",
+      "url": "https://2026.allthingsopen.org/sessions/from-zero-to-running-agent-build-and-ship-an-open-source-ai-system-in-one-day"
+    },
+    {
+      "id": "ato-2026-26828-20261019-1",
+      "title": "The Future of Science Depends on Open Source Engineers",
+      "room": "Ballroom B",
+      "track": "Day 1 Lightning Talks",
+      "startsAt": "2026-10-19T17:15:00.000Z",
+      "endsAt": "2026-10-19T18:15:00.000Z",
+      "url": "https://2026.allthingsopen.org/sessions/the-future-of-science-depends-on-open-source-engineers"
+    },
+    {
+      "id": "ato-2026-26831-20261019-1",
+      "title": "Voice Agent Bootcamp: Build and Deploy Your First Agent from Scratch",
+      "room": "Room 303",
+      "track": "Deep Dive Sessions 3",
+      "startsAt": "2026-10-19T18:30:00.000Z",
+      "endsAt": "2026-10-19T20:30:00.000Z",
+      "url": "https://2026.allthingsopen.org/sessions/voice-agent-bootcamp-build-and-deploy-your-first-agent-from-scratch"
+    },
+    {
+      "id": "ato-2026-26834-20261020-1",
+      "title": "AI Tinkerers Raleigh: Top Demos of the Year and Their Community Impact",
+      "room": "Room 201",
+      "track": "Community",
+      "startsAt": "2026-10-20T20:00:00.000Z",
+      "endsAt": "2026-10-20T20:30:00.000Z",
+      "url": "https://2026.allthingsopen.org/sessions/ai-tinkerers-raleigh-top-demos-of-the-year-and-their-community-impact"
+    },
+    {
+      "id": "ato-2026-26837-20261020-1",
+      "title": "Beyond the Table: Data Strategy and Governance in the Age of Apache Iceberg",
+      "room": "Room 302B",
+      "track": "Big Data",
+      "startsAt": "2026-10-20T19:15:00.000Z",
+      "endsAt": "2026-10-20T19:45:00.000Z",
+      "url": "https://2026.allthingsopen.org/sessions/beyond-the-table-data-strategy-and-governance-in-the-age-of-apache-iceberg"
+    },
+    {
+      "id": "ato-2026-26971-20261020-1",
+      "title": "Don’t Let the Chocolate Pile Up: Scaling DevRel Content with AI Agents",
+      "room": "Room 305B",
+      "track": "DevRel",
+      "startsAt": "2026-10-20T14:30:00.000Z",
+      "endsAt": "2026-10-20T15:00:00.000Z",
+      "url": "https://2026.allthingsopen.org/sessions/dont-let-the-chocolate-pile-up-scaling-devrel-content-with-ai-agents"
+    },
+    {
+      "id": "ato-2026-26974-20261020-1",
+      "title": "My AI-Driven React Workflow: Building faster with Agents",
+      "room": "Room 305A",
+      "track": "Developer 2",
+      "startsAt": "2026-10-20T15:15:00.000Z",
+      "endsAt": "2026-10-20T15:45:00.000Z",
+      "url": "https://2026.allthingsopen.org/sessions/my-ai-driven-react-workflow-building-faster-with-agents"
+    },
+    {
+      "id": "ato-2026-26989-20261020-1",
+      "title": "API Call to Custom Agent in 30 Minutes",
+      "room": "Room 301B",
+      "track": "101",
+      "startsAt": "2026-10-20T19:15:00.000Z",
+      "endsAt": "2026-10-20T19:45:00.000Z",
+      "url": "https://2026.allthingsopen.org/sessions/api-call-to-custom-agent-in-30-minutes"
+    },
+    {
+      "id": "ato-2026-26990-20261020-1",
+      "title": "AI Systems Fail Silently — Building Trust Layers with Open Source for Reliable AI",
+      "room": "Ballroom A",
+      "track": "Machine Learning/AI 1",
+      "startsAt": "2026-10-20T18:30:00.000Z",
+      "endsAt": "2026-10-20T19:00:00.000Z",
+      "url": "https://2026.allthingsopen.org/sessions/ai-systems-fail-silently-building-trust-layers-with-open-source-for-reliable-ai"
+    },
+    {
+      "id": "ato-2026-27047-20261020-1",
+      "title": "The State of AI: Navigating the GenAI Divide with Enterprise Guardrails and Responsible Innovation",
+      "room": "Room 206",
+      "track": "Business",
+      "startsAt": "2026-10-20T15:15:00.000Z",
+      "endsAt": "2026-10-20T15:45:00.000Z",
+      "url": "https://2026.allthingsopen.org/sessions/the-state-of-ai-navigating-the-genai-divide-with-enterprise-guardrails-and-responsible-innovation"
+    },
+    {
+      "id": "ato-2026-27060-20261020-1",
+      "title": "You Never Know When You Need a Fork: Lessons learned building Valkey",
+      "room": "Room 206",
+      "track": "Business",
+      "startsAt": "2026-10-20T18:30:00.000Z",
+      "endsAt": "2026-10-20T19:00:00.000Z",
+      "url": "https://2026.allthingsopen.org/sessions/you-never-know-when-you-need-a-fork-lessons-learned-building-valkey"
+    },
+    {
+      "id": "ato-2026-27066-20261019-1",
+      "title": "Taming Agentic AI: How to run Agents generated Code Safely on Kubernetes",
+      "room": "Room 302 A & B",
+      "track": "Deep Dive Sessions 4",
+      "startsAt": "2026-10-19T13:00:00.000Z",
+      "endsAt": "2026-10-19T14:45:00.000Z",
+      "url": "https://2026.allthingsopen.org/sessions/taming-agentic-ai-how-to-run-agents-generated-code-safely-on-kubernetes"
+    },
+    {
+      "id": "ato-2026-27069-20261020-1",
+      "title": "Building the Same AI Agent with LangGraph, CrewAI, and a Language You Haven’t Heard Of",
+      "room": "Ballroom B",
+      "track": "Developer 1",
+      "startsAt": "2026-10-20T19:15:00.000Z",
+      "endsAt": "2026-10-20T19:45:00.000Z",
+      "url": "https://2026.allthingsopen.org/sessions/building-the-same-ai-agent-with-langgraph-crewai-and-a-language-you-havent-heard-of"
+    },
+    {
+      "id": "ato-2026-27073-20261020-1",
+      "title": "Agentic AI is a Black Box and What Open Source Can Do About It",
+      "room": "Ballroom C",
+      "track": "Machine Learning/AI 2",
+      "startsAt": "2026-10-20T16:00:00.000Z",
+      "endsAt": "2026-10-20T16:30:00.000Z",
+      "url": "https://2026.allthingsopen.org/sessions/agentic-ai-is-a-black-box-and-what-open-source-can-do-about-it"
+    },
+    {
+      "id": "ato-2026-27078-20261020-1",
+      "title": "From Embeddings to GEMM: Building a 50ms Visual Search Engine Without a Vector Database",
+      "room": "Room 301A",
+      "track": "Machine Learning/AI 3",
+      "startsAt": "2026-10-20T18:30:00.000Z",
+      "endsAt": "2026-10-20T19:00:00.000Z",
+      "url": "https://2026.allthingsopen.org/sessions/from-embeddings-to-gemm-building-a-50ms-visual-search-engine-without-a-vector-database"
+    },
+    {
+      "id": "ato-2026-27081-20261020-1",
+      "title": "Becoming a More Effective Open Source Contributor Using AI Tooling",
+      "room": "Room 301B",
+      "track": "101",
+      "startsAt": "2026-10-20T18:30:00.000Z",
+      "endsAt": "2026-10-20T19:00:00.000Z",
+      "url": "https://2026.allthingsopen.org/sessions/becoming-a-more-effective-open-source-contributor-using-ai-tooling"
+    },
+    {
+      "id": "ato-2026-27094-20261020-1",
+      "title": "Stop Scrolling: How to Make Developers Care About Your Open Source Project",
+      "room": "Room 305B",
+      "track": "DevRel",
+      "startsAt": "2026-10-20T16:00:00.000Z",
+      "endsAt": "2026-10-20T16:30:00.000Z",
+      "url": "https://2026.allthingsopen.org/sessions/stop-scrolling-how-to-make-developers-care-about-your-open-source-project"
+    },
+    {
+      "id": "ato-2026-27098-20261020-1",
+      "title": "To Boldly Go: Data Science Exploration with AI Agents (ft Star Trek’s LCARS theme)",
+      "room": "Room 301A",
+      "track": "Machine Learning/AI 3",
+      "startsAt": "2026-10-20T14:30:00.000Z",
+      "endsAt": "2026-10-20T15:00:00.000Z",
+      "url": "https://2026.allthingsopen.org/sessions/to-boldly-go-data-science-exploration-with-ai-agents-ft-star-treks-lcars-theme"
+    },
+    {
+      "id": "ato-2026-27099-20261019-1",
+      "title": "The Linux Helpdesk",
+      "room": "Room 302C",
+      "track": "Deep Dive Sessions 2",
+      "startsAt": "2026-10-19T18:30:00.000Z",
+      "endsAt": "2026-10-19T20:30:00.000Z",
+      "url": "https://2026.allthingsopen.org/sessions/the-linux-helpdesk"
+    },
+    {
+      "id": "ato-2026-27102-20261020-1",
+      "title": "Beyond Upgrades: Continuous Modernization at Scale",
+      "room": "Room 304",
+      "track": "DevOps",
+      "startsAt": "2026-10-20T18:30:00.000Z",
+      "endsAt": "2026-10-20T19:00:00.000Z",
+      "url": "https://2026.allthingsopen.org/sessions/beyond-upgrades-continuous-modernization-at-scale"
+    },
+    {
+      "id": "ato-2026-27105-20261020-1",
+      "title": "AI Sandboxes: Running Coding Agents Safely in Production-Grade Environments",
+      "room": "Room 302C",
+      "track": "Cloud",
+      "startsAt": "2026-10-20T16:00:00.000Z",
+      "endsAt": "2026-10-20T16:30:00.000Z",
+      "url": "https://2026.allthingsopen.org/sessions/ai-sandboxes-running-coding-agents-safely-in-production-grade-environments"
+    },
+    {
+      "id": "ato-2026-27106-20261019-1",
+      "title": "AI Agents in Production",
+      "room": "Ballroom B",
+      "track": "AI Agents in Production",
+      "startsAt": "2026-10-19T13:00:00.000Z",
+      "endsAt": "2026-10-19T17:00:00.000Z",
+      "url": "https://2026.allthingsopen.org/sessions/ai-agents-in-production"
+    },
+    {
+      "id": "ato-2026-27106-20261019-2",
+      "title": "AI Agents in Production",
+      "room": "Ballroom B",
+      "track": "AI Agents in Production",
+      "startsAt": "2026-10-19T18:30:00.000Z",
+      "endsAt": "2026-10-19T20:30:00.000Z",
+      "url": "https://2026.allthingsopen.org/sessions/ai-agents-in-production"
+    },
+    {
+      "id": "ato-2026-27109-20261019-1",
+      "title": "AI Agents & Vibe Coding",
+      "room": "Ballroom A",
+      "track": "AI Agents & Vibe Coding",
+      "startsAt": "2026-10-19T13:00:00.000Z",
+      "endsAt": "2026-10-19T17:00:00.000Z",
+      "url": "https://2026.allthingsopen.org/sessions/ai-agents-vibe-coding"
+    },
+    {
+      "id": "ato-2026-27109-20261019-2",
+      "title": "AI Agents & Vibe Coding",
+      "room": "Ballroom A",
+      "track": "AI Agents & Vibe Coding",
+      "startsAt": "2026-10-19T18:30:00.000Z",
+      "endsAt": "2026-10-19T20:30:00.000Z",
+      "url": "https://2026.allthingsopen.org/sessions/ai-agents-vibe-coding"
+    },
+    {
+      "id": "ato-2026-27112-20261019-1",
+      "title": "AI for DevSecOps",
+      "room": "Ballroom C",
+      "track": "AI for DevSecOps",
+      "startsAt": "2026-10-19T13:00:00.000Z",
+      "endsAt": "2026-10-19T17:00:00.000Z",
+      "url": "https://2026.allthingsopen.org/sessions/ai-for-devsecops"
+    },
+    {
+      "id": "ato-2026-27112-20261019-2",
+      "title": "AI for DevSecOps",
+      "room": "Ballroom C",
+      "track": "AI for DevSecOps",
+      "startsAt": "2026-10-19T18:30:00.000Z",
+      "endsAt": "2026-10-19T20:30:00.000Z",
+      "url": "https://2026.allthingsopen.org/sessions/ai-for-devsecops"
+    },
+    {
+      "id": "ato-2026-27239-20261020-1",
+      "title": "The Beginners Guide to Training Your Own AI Coding Model on Your Own Data",
+      "room": "Ballroom C",
+      "track": "Machine Learning/AI 2",
+      "startsAt": "2026-10-20T20:00:00.000Z",
+      "endsAt": "2026-10-20T20:30:00.000Z",
+      "url": "https://2026.allthingsopen.org/sessions/the-beginners-guide-to-training-your-own-ai-coding-model-on-your-own-data"
+    },
+    {
+      "id": "ato-2026-27272-20261020-1",
+      "title": "Building a MongoDB-Compatible Database in the Open",
+      "room": "Room 306A",
+      "track": "Databases",
+      "startsAt": "2026-10-20T15:15:00.000Z",
+      "endsAt": "2026-10-20T15:45:00.000Z",
+      "url": "https://2026.allthingsopen.org/sessions/building-a-mongodb-compatible-database-in-the-open"
+    },
+    {
+      "id": "ato-2026-27275-20261019-1",
+      "title": "Leadership Unbound – Breaking the Rules that Hold Women Leaders Back",
+      "room": "Room 305B",
+      "track": "Inclusion & Diversity in Open Source",
+      "startsAt": "2026-10-19T15:15:00.000Z",
+      "endsAt": "2026-10-19T15:45:00.000Z",
+      "url": "https://2026.allthingsopen.org/sessions/leadership-unbound-breaking-the-rules-that-hold-women-leaders-back"
+    },
+    {
+      "id": "ato-2026-27358-20261020-1",
+      "title": "Demystifying AI: A Practical Introduction for Developers",
+      "room": "Room 301B",
+      "track": "101",
+      "startsAt": "2026-10-20T15:15:00.000Z",
+      "endsAt": "2026-10-20T15:45:00.000Z",
+      "url": "https://2026.allthingsopen.org/sessions/demystifying-ai-a-practical-introduction-for-developers"
+    },
+    {
+      "id": "ato-2026-27361-20261020-1",
+      "title": "Contributors in Crisis: Why AI Spam Is Killing Open Source Onboarding (And What We Do About It)",
+      "room": "Room 201",
+      "track": "Community",
+      "startsAt": "2026-10-20T16:00:00.000Z",
+      "endsAt": "2026-10-20T16:30:00.000Z",
+      "url": "https://2026.allthingsopen.org/sessions/contributors-in-crisis-why-ai-spam-is-killing-open-source-onboarding-and-what-we-do-about-it"
+    },
+    {
+      "id": "ato-2026-27364-20261020-1",
+      "title": "The Self-Hosted Stack: Building Your Own Cloud with Open Source",
+      "room": "Room 302A",
+      "track": "Linux/Networking/Infrastructure",
+      "startsAt": "2026-10-20T15:15:00.000Z",
+      "endsAt": "2026-10-20T15:45:00.000Z",
+      "url": "https://2026.allthingsopen.org/sessions/the-self-hosted-stack-building-your-own-cloud-with-open-source"
+    },
+    {
+      "id": "ato-2026-27371-20261020-1",
+      "title": "Scaling AI: Operational Lessons from 500 GPUs",
+      "room": "Room 302C",
+      "track": "Cloud",
+      "startsAt": "2026-10-20T19:15:00.000Z",
+      "endsAt": "2026-10-20T19:45:00.000Z",
+      "url": "https://2026.allthingsopen.org/sessions/scaling-ai-operational-lessons-from-500-gpus"
+    },
+    {
+      "id": "ato-2026-27419-20261020-1",
+      "title": "Kubernetes Under Fire: Igniting Performance and Burning Through Bottlenecks with Kube-Burner",
+      "room": "Room 302C",
+      "track": "Cloud",
+      "startsAt": "2026-10-20T14:30:00.000Z",
+      "endsAt": "2026-10-20T15:00:00.000Z",
+      "url": "https://2026.allthingsopen.org/sessions/kubernetes-under-fire-igniting-performance-and-burning-through-bottlenecks-with-kube-burner"
+    },
+    {
+      "id": "ato-2026-27423-20261020-1",
+      "title": "Context management in agents: how to build a memory",
+      "room": "Ballroom C",
+      "track": "Machine Learning/AI 2",
+      "startsAt": "2026-10-20T15:15:00.000Z",
+      "endsAt": "2026-10-20T15:45:00.000Z",
+      "url": "https://2026.allthingsopen.org/sessions/context-management-in-agents-how-to-build-a-memory"
+    },
+    {
+      "id": "ato-2026-27426-20261020-1",
+      "title": "AI Can Contribute. It Can’t Lead.",
+      "room": "Room 201",
+      "track": "Community",
+      "startsAt": "2026-10-20T15:15:00.000Z",
+      "endsAt": "2026-10-20T15:45:00.000Z",
+      "url": "https://2026.allthingsopen.org/sessions/ai-can-contribute-it-cant-lead"
+    },
+    {
+      "id": "ato-2026-27429-20261020-1",
+      "title": "Your Production-Ready OSS AI Assistant",
+      "room": "Room 304",
+      "track": "DevOps",
+      "startsAt": "2026-10-20T16:00:00.000Z",
+      "endsAt": "2026-10-20T16:30:00.000Z",
+      "url": "https://2026.allthingsopen.org/sessions/your-production-ready-oss-ai-assistant"
+    },
+    {
+      "id": "ato-2026-27464-20261020-1",
+      "title": "Designing Production-Grade Agentic Systems: From Prototype to Scalable Infrastructure",
+      "room": "Ballroom A",
+      "track": "Machine Learning/AI 1",
+      "startsAt": "2026-10-20T16:00:00.000Z",
+      "endsAt": "2026-10-20T16:30:00.000Z",
+      "url": "https://2026.allthingsopen.org/sessions/designing-production-grade-agentic-systems-from-prototype-to-scalable-infrastructure"
+    },
+    {
+      "id": "ato-2026-27483-20261020-1",
+      "title": "Running Agents Locally with Open Source: From Laptop to Kubernetes",
+      "room": "Ballroom C",
+      "track": "Machine Learning/AI 2",
+      "startsAt": "2026-10-20T19:15:00.000Z",
+      "endsAt": "2026-10-20T19:45:00.000Z",
+      "url": "https://2026.allthingsopen.org/sessions/running-agents-locally-with-open-source-from-laptop-to-kubernetes"
+    },
+    {
+      "id": "ato-2026-27577-20261020-1",
+      "title": "Two Years to a Backdoor: Lessons from the XZ Utils Supply Chain Attack – an attempt to compromise OpenSSH",
+      "room": "Room 303",
+      "track": "Security",
+      "startsAt": "2026-10-20T16:00:00.000Z",
+      "endsAt": "2026-10-20T16:30:00.000Z",
+      "url": "https://2026.allthingsopen.org/sessions/two-years-to-a-backdoor-lessons-from-the-xz-utils-supply-chain-attack-an-attempt-to-compromise-openssh"
+    },
+    {
+      "id": "ato-2026-27580-20261019-1",
+      "title": "From Zero to Secure Agent: Building and Hardening AI Agents with Open Source Tools",
+      "room": "Room 301 A & B",
+      "track": "Deep Dive Sessions 1",
+      "startsAt": "2026-10-19T13:00:00.000Z",
+      "endsAt": "2026-10-19T14:45:00.000Z",
+      "url": "https://2026.allthingsopen.org/sessions/from-zero-to-secure-agent-building-and-hardening-ai-agents-with-open-source-tools"
+    },
+    {
+      "id": "ato-2026-27656-20261020-1",
+      "title": "eBPF for AI-Powered Root Cause Analysis",
+      "room": "Room 304",
+      "track": "DevOps",
+      "startsAt": "2026-10-20T14:30:00.000Z",
+      "endsAt": "2026-10-20T15:00:00.000Z",
+      "url": "https://2026.allthingsopen.org/sessions/ebpf-for-ai-powered-root-cause-analysis"
+    },
+    {
+      "id": "ato-2026-27757-20261020-1",
+      "title": "Who Authorized That? Fine-Grained Authorization for AI Agents",
+      "room": "Room 301A",
+      "track": "Machine Learning/AI 3",
+      "startsAt": "2026-10-20T16:00:00.000Z",
+      "endsAt": "2026-10-20T16:30:00.000Z",
+      "url": "https://2026.allthingsopen.org/sessions/who-authorized-that-fine-grained-authorization-for-ai-agents"
+    },
+    {
+      "id": "ato-2026-27760-20261019-1",
+      "title": "Cats, Lint Balls, and Zero Thread-Dropping – that’s what you get when assistive technology is functioning as designed",
+      "room": "Room 305B",
+      "track": "Inclusion & Diversity in Open Source",
+      "startsAt": "2026-10-19T13:15:00.000Z",
+      "endsAt": "2026-10-19T13:45:00.000Z",
+      "url": "https://2026.allthingsopen.org/sessions/cats-lint-balls-and-zero-thread-dropping-thats-what-you-get-when-assistive-technology-is-functioning-as-designed"
+    },
+    {
+      "id": "ato-2026-27768-20261020-1",
+      "title": "The Future of Apps is Open Source and Agentic",
+      "room": "Ballroom A",
+      "track": "Machine Learning/AI 1",
+      "startsAt": "2026-10-20T14:30:00.000Z",
+      "endsAt": "2026-10-20T15:00:00.000Z",
+      "url": "https://2026.allthingsopen.org/sessions/the-future-of-apps-is-open-source-and-agentic"
+    },
+    {
+      "id": "ato-2026-27777-20261019-1",
+      "title": "Check-in and Registration",
+      "room": "Room not listed",
+      "track": "Registration",
+      "startsAt": "2026-10-19T11:00:00.000Z",
+      "endsAt": "2026-10-19T20:00:00.000Z",
+      "url": "https://2026.allthingsopen.org/sessions/check-in-and-registration"
+    },
+    {
+      "id": "ato-2026-27777-20261019-2",
+      "title": "Check-in and Registration",
+      "room": "Room not listed",
+      "track": "Registration",
+      "startsAt": "2026-10-19T11:30:00.000Z",
+      "endsAt": "2026-10-19T20:00:00.000Z",
+      "url": "https://2026.allthingsopen.org/sessions/check-in-and-registration"
+    },
+    {
+      "id": "ato-2026-27777-20261020-1",
+      "title": "Check-in and Registration",
+      "room": "Room not listed",
+      "track": "Registration",
+      "startsAt": "2026-10-20T11:30:00.000Z",
+      "endsAt": "2026-10-20T20:00:00.000Z",
+      "url": "https://2026.allthingsopen.org/sessions/check-in-and-registration"
+    },
+    {
+      "id": "ato-2026-27784-20261019-1",
+      "title": "Break",
+      "room": "Room not listed",
+      "track": "Break",
+      "startsAt": "2026-10-19T14:00:00.000Z",
+      "endsAt": "2026-10-19T14:15:00.000Z",
+      "url": "https://2026.allthingsopen.org/sessions/break"
+    },
+    {
+      "id": "ato-2026-27784-20261019-2",
+      "title": "Break",
+      "room": "Room not listed",
+      "track": "Break",
+      "startsAt": "2026-10-19T14:45:00.000Z",
+      "endsAt": "2026-10-19T15:00:00.000Z",
+      "url": "https://2026.allthingsopen.org/sessions/break"
+    },
+    {
+      "id": "ato-2026-27784-20261019-3",
+      "title": "Break",
+      "room": "Room not listed",
+      "track": "Break",
+      "startsAt": "2026-10-19T15:00:00.000Z",
+      "endsAt": "2026-10-19T15:15:00.000Z",
+      "url": "https://2026.allthingsopen.org/sessions/break"
+    },
+    {
+      "id": "ato-2026-27784-20261019-4",
+      "title": "Break",
+      "room": "Room not listed",
+      "track": "Break",
+      "startsAt": "2026-10-19T15:15:00.000Z",
+      "endsAt": "2026-10-19T15:30:00.000Z",
+      "url": "https://2026.allthingsopen.org/sessions/break"
+    },
+    {
+      "id": "ato-2026-27784-20261019-5",
+      "title": "Break",
+      "room": "Room not listed",
+      "track": "Break",
+      "startsAt": "2026-10-19T18:15:00.000Z",
+      "endsAt": "2026-10-19T18:30:00.000Z",
+      "url": "https://2026.allthingsopen.org/sessions/break"
+    },
+    {
+      "id": "ato-2026-27784-20261019-6",
+      "title": "Break",
+      "room": "Room not listed",
+      "track": "Break",
+      "startsAt": "2026-10-19T19:15:00.000Z",
+      "endsAt": "2026-10-19T19:30:00.000Z",
+      "url": "https://2026.allthingsopen.org/sessions/break"
+    },
+    {
+      "id": "ato-2026-27784-20261019-7",
+      "title": "Break",
+      "room": "Room not listed",
+      "track": "Break",
+      "startsAt": "2026-10-19T20:15:00.000Z",
+      "endsAt": "2026-10-19T20:30:00.000Z",
+      "url": "https://2026.allthingsopen.org/sessions/break"
+    },
+    {
+      "id": "ato-2026-27784-20261019-8",
+      "title": "Break",
+      "room": "Room not listed",
+      "track": "Break",
+      "startsAt": "2026-10-19T20:30:00.000Z",
+      "endsAt": "2026-10-19T20:45:00.000Z",
+      "url": "https://2026.allthingsopen.org/sessions/break"
+    },
+    {
+      "id": "ato-2026-27784-20261020-1",
+      "title": "Break",
+      "room": "Room not listed",
+      "track": "Break",
+      "startsAt": "2026-10-20T14:15:00.000Z",
+      "endsAt": "2026-10-20T14:30:00.000Z",
+      "url": "https://2026.allthingsopen.org/sessions/break"
+    },
+    {
+      "id": "ato-2026-27784-20261020-2",
+      "title": "Break",
+      "room": "Room not listed",
+      "track": "Break",
+      "startsAt": "2026-10-20T15:00:00.000Z",
+      "endsAt": "2026-10-20T15:15:00.000Z",
+      "url": "https://2026.allthingsopen.org/sessions/break"
+    },
+    {
+      "id": "ato-2026-27784-20261020-3",
+      "title": "Break",
+      "room": "Room not listed",
+      "track": "Break",
+      "startsAt": "2026-10-20T15:45:00.000Z",
+      "endsAt": "2026-10-20T16:00:00.000Z",
+      "url": "https://2026.allthingsopen.org/sessions/break"
+    },
+    {
+      "id": "ato-2026-27784-20261020-4",
+      "title": "Break",
+      "room": "Room not listed",
+      "track": "Break",
+      "startsAt": "2026-10-20T18:15:00.000Z",
+      "endsAt": "2026-10-20T18:30:00.000Z",
+      "url": "https://2026.allthingsopen.org/sessions/break"
+    },
+    {
+      "id": "ato-2026-27784-20261020-5",
+      "title": "Break",
+      "room": "Room not listed",
+      "track": "Break",
+      "startsAt": "2026-10-20T19:00:00.000Z",
+      "endsAt": "2026-10-20T19:15:00.000Z",
+      "url": "https://2026.allthingsopen.org/sessions/break"
+    },
+    {
+      "id": "ato-2026-27784-20261020-6",
+      "title": "Break",
+      "room": "Room not listed",
+      "track": "Break",
+      "startsAt": "2026-10-20T19:45:00.000Z",
+      "endsAt": "2026-10-20T20:00:00.000Z",
+      "url": "https://2026.allthingsopen.org/sessions/break"
+    },
+    {
+      "id": "ato-2026-27784-20261020-7",
+      "title": "Break",
+      "room": "Room not listed",
+      "track": "Break",
+      "startsAt": "2026-10-20T20:30:00.000Z",
+      "endsAt": "2026-10-20T20:45:00.000Z",
+      "url": "https://2026.allthingsopen.org/sessions/break"
+    },
+    {
+      "id": "ato-2026-27785-20261019-1",
+      "title": "The Last Software Engineer",
+      "room": "Ballroom B",
+      "track": "Day 1 Keynotes",
+      "startsAt": "2026-10-19T20:45:00.000Z",
+      "endsAt": "2026-10-19T21:30:00.000Z",
+      "url": "https://2026.allthingsopen.org/sessions/the-last-software-engineer"
+    },
+    {
+      "id": "ato-2026-27786-20261019-1",
+      "title": "Monday Social",
+      "room": "Room not listed",
+      "track": "Socials",
+      "startsAt": "2026-10-19T21:30:00.000Z",
+      "endsAt": "2026-10-19T23:00:00.000Z",
+      "url": "https://2026.allthingsopen.org/sessions/monday-social"
+    },
+    {
+      "id": "ato-2026-27788-20261019-1",
+      "title": "Deep Dive 2",
+      "room": "Room 302C",
+      "track": "Deep Dive Sessions 2",
+      "startsAt": "2026-10-19T15:00:00.000Z",
+      "endsAt": "2026-10-19T17:00:00.000Z",
+      "url": "https://2026.allthingsopen.org/sessions/deep-dive-2"
+    },
+    {
+      "id": "ato-2026-27794-20261019-1",
+      "title": "Lightning Talks",
+      "room": "Ballroom B",
+      "track": "Day 1 Lightning Talks",
+      "startsAt": "2026-10-19T17:15:00.000Z",
+      "endsAt": "2026-10-19T18:15:00.000Z",
+      "url": "https://2026.allthingsopen.org/sessions/lightning-talks"
+    },
+    {
+      "id": "ato-2026-27798-20261019-1",
+      "title": "Welcome Intro",
+      "room": "Room 305B",
+      "track": "Inclusion & Diversity in Open Source",
+      "startsAt": "2026-10-19T13:00:00.000Z",
+      "endsAt": "2026-10-19T13:15:00.000Z",
+      "url": "https://2026.allthingsopen.org/sessions/welcome-intro"
+    },
+    {
+      "id": "ato-2026-27799-20261019-1",
+      "title": "Inclusion and Diversity",
+      "room": "Room 305B",
+      "track": "Inclusion & Diversity in Open Source",
+      "startsAt": "2026-10-19T18:30:00.000Z",
+      "endsAt": "2026-10-19T19:00:00.000Z",
+      "url": "https://2026.allthingsopen.org/sessions/inclusion-and-diversity"
+    },
+    {
+      "id": "ato-2026-27800-20261019-1",
+      "title": "The Edge of Ownership: How Open Source Communities Disrupt Tech",
+      "room": "Room 305B",
+      "track": "Inclusion & Diversity in Open Source",
+      "startsAt": "2026-10-19T16:30:00.000Z",
+      "endsAt": "2026-10-19T17:00:00.000Z",
+      "url": "https://2026.allthingsopen.org/sessions/the-edge-of-ownership-how-open-source-communities-disrupt-tech"
+    },
+    {
+      "id": "ato-2026-27801-20261019-1",
+      "title": "Final panel discussion – Audience Q&A",
+      "room": "Room 305B",
+      "track": "Inclusion & Diversity in Open Source",
+      "startsAt": "2026-10-19T19:00:00.000Z",
+      "endsAt": "2026-10-19T20:00:00.000Z",
+      "url": "https://2026.allthingsopen.org/sessions/final-panel-discussion-audience-qa"
+    },
+    {
+      "id": "ato-2026-27802-20261019-1",
+      "title": "Closing Remarks",
+      "room": "Room 305B",
+      "track": "Inclusion & Diversity in Open Source",
+      "startsAt": "2026-10-19T20:00:00.000Z",
+      "endsAt": "2026-10-19T20:30:00.000Z",
+      "url": "https://2026.allthingsopen.org/sessions/closing-remarks"
+    },
+    {
+      "id": "ato-2026-27803-20261019-1",
+      "title": "Welcome and Proposing of Discussion Topics by Attendees",
+      "room": "Rooms 201-206",
+      "track": "Community Leadership Summit",
+      "startsAt": "2026-10-19T13:00:00.000Z",
+      "endsAt": "2026-10-19T14:00:00.000Z",
+      "url": "https://2026.allthingsopen.org/sessions/welcome-and-proposing-of-discussion-topics-by-attendees"
+    },
+    {
+      "id": "ato-2026-27804-20261019-1",
+      "title": "Unconference session block",
+      "room": "Rooms 201-206",
+      "track": "Community Leadership Summit",
+      "startsAt": "2026-10-19T14:15:00.000Z",
+      "endsAt": "2026-10-19T15:00:00.000Z",
+      "url": "https://2026.allthingsopen.org/sessions/unconference-session-block"
+    },
+    {
+      "id": "ato-2026-27804-20261019-2",
+      "title": "Unconference session block",
+      "room": "Rooms 201-206",
+      "track": "Community Leadership Summit",
+      "startsAt": "2026-10-19T15:15:00.000Z",
+      "endsAt": "2026-10-19T16:00:00.000Z",
+      "url": "https://2026.allthingsopen.org/sessions/unconference-session-block"
+    },
+    {
+      "id": "ato-2026-27804-20261019-3",
+      "title": "Unconference session block",
+      "room": "Rooms 201-206",
+      "track": "Community Leadership Summit",
+      "startsAt": "2026-10-19T16:15:00.000Z",
+      "endsAt": "2026-10-19T17:00:00.000Z",
+      "url": "https://2026.allthingsopen.org/sessions/unconference-session-block"
+    },
+    {
+      "id": "ato-2026-27804-20261019-4",
+      "title": "Unconference session block",
+      "room": "Rooms 201-206",
+      "track": "Community Leadership Summit",
+      "startsAt": "2026-10-19T18:30:00.000Z",
+      "endsAt": "2026-10-19T19:15:00.000Z",
+      "url": "https://2026.allthingsopen.org/sessions/unconference-session-block"
+    },
+    {
+      "id": "ato-2026-27804-20261019-5",
+      "title": "Unconference session block",
+      "room": "Rooms 201-206",
+      "track": "Community Leadership Summit",
+      "startsAt": "2026-10-19T19:30:00.000Z",
+      "endsAt": "2026-10-19T20:15:00.000Z",
+      "url": "https://2026.allthingsopen.org/sessions/unconference-session-block"
+    },
+    {
+      "id": "ato-2026-27805-20261019-1",
+      "title": "Wrap Up & Thank You’s",
+      "room": "Rooms 201-206",
+      "track": "Community Leadership Summit",
+      "startsAt": "2026-10-19T20:30:00.000Z",
+      "endsAt": "2026-10-19T20:45:00.000Z",
+      "url": "https://2026.allthingsopen.org/sessions/wrap-up-thank-yous"
+    },
+    {
+      "id": "ato-2026-27818-20261020-1",
+      "title": "Welcome Keynote – Day 2",
+      "room": "Ballrom B",
+      "track": "Day 2 Keynotes",
+      "startsAt": "2026-10-20T12:45:00.000Z",
+      "endsAt": "2026-10-20T14:10:00.000Z",
+      "url": "https://2026.allthingsopen.org/sessions/opening-keynotes-day-2"
+    },
+    {
+      "id": "ato-2026-27819-20261020-1",
+      "title": "Developer 1",
+      "room": "Ballroom B",
+      "track": "Developer 1",
+      "startsAt": "2026-10-20T20:00:00.000Z",
+      "endsAt": "2026-10-20T20:30:00.000Z",
+      "url": "https://2026.allthingsopen.org/sessions/developer-1"
+    },
+    {
+      "id": "ato-2026-27822-20261020-1",
+      "title": "Linux/Networking/Infrastructure",
+      "room": "Room 302A",
+      "track": "Linux/Networking/Infrastructure",
+      "startsAt": "2026-10-20T16:00:00.000Z",
+      "endsAt": "2026-10-20T16:30:00.000Z",
+      "url": "https://2026.allthingsopen.org/sessions/linux-networking-infrastructure"
+    },
+    {
+      "id": "ato-2026-27822-20261020-2",
+      "title": "Linux/Networking/Infrastructure",
+      "room": "Room 302A",
+      "track": "Linux/Networking/Infrastructure",
+      "startsAt": "2026-10-20T18:30:00.000Z",
+      "endsAt": "2026-10-20T19:00:00.000Z",
+      "url": "https://2026.allthingsopen.org/sessions/linux-networking-infrastructure"
+    },
+    {
+      "id": "ato-2026-27824-20261020-1",
+      "title": "Open Source Architecture",
+      "room": "Room 306B",
+      "track": "AI/Open Source Architecture",
+      "startsAt": "2026-10-20T16:00:00.000Z",
+      "endsAt": "2026-10-20T16:30:00.000Z",
+      "url": "https://2026.allthingsopen.org/sessions/open-source-architecture"
+    },
+    {
+      "id": "ato-2026-27824-20261020-2",
+      "title": "Open Source Architecture",
+      "room": "Room 306B",
+      "track": "AI/Open Source Architecture",
+      "startsAt": "2026-10-20T20:00:00.000Z",
+      "endsAt": "2026-10-20T20:30:00.000Z",
+      "url": "https://2026.allthingsopen.org/sessions/open-source-architecture"
+    },
+    {
+      "id": "ato-2026-27825-20261020-1",
+      "title": "Open Source Operations",
+      "room": "Room 307",
+      "track": "AI/Open Source Projects and Processes",
+      "startsAt": "2026-10-20T20:00:00.000Z",
+      "endsAt": "2026-10-20T20:30:00.000Z",
+      "url": "https://2026.allthingsopen.org/sessions/open-source-operations"
+    },
+    {
+      "id": "ato-2026-27827-20261020-1",
+      "title": "DevOps",
+      "room": "Room 304",
+      "track": "DevOps",
+      "startsAt": "2026-10-20T15:15:00.000Z",
+      "endsAt": "2026-10-20T15:45:00.000Z",
+      "url": "https://2026.allthingsopen.org/sessions/devops"
+    },
+    {
+      "id": "ato-2026-27828-20261020-1",
+      "title": "Developer 2",
+      "room": "Room 305A",
+      "track": "Developer 2",
+      "startsAt": "2026-10-20T20:00:00.000Z",
+      "endsAt": "2026-10-20T20:30:00.000Z",
+      "url": "https://2026.allthingsopen.org/sessions/developer-2"
+    },
+    {
+      "id": "ato-2026-27829-20261020-1",
+      "title": "Open Source Infrastructure",
+      "room": "Room 306C",
+      "track": "AI/Open Source Infrastructure",
+      "startsAt": "2026-10-20T20:00:00.000Z",
+      "endsAt": "2026-10-20T20:30:00.000Z",
+      "url": "https://2026.allthingsopen.org/sessions/open-source-infrastructure"
+    },
+    {
+      "id": "ato-2026-27830-20261020-1",
+      "title": "Cloud",
+      "room": "Room 302C",
+      "track": "Cloud",
+      "startsAt": "2026-10-20T20:00:00.000Z",
+      "endsAt": "2026-10-20T20:30:00.000Z",
+      "url": "https://2026.allthingsopen.org/sessions/cloud"
+    },
+    {
+      "id": "ato-2026-27831-20261020-1",
+      "title": "Machine Learning / AI 3",
+      "room": "Room 301A",
+      "track": "Machine Learning/AI 3",
+      "startsAt": "2026-10-20T20:00:00.000Z",
+      "endsAt": "2026-10-20T20:30:00.000Z",
+      "url": "https://2026.allthingsopen.org/sessions/machine-learning-ai-3"
+    },
+    {
+      "id": "ato-2026-27834-20261020-1",
+      "title": "Big Data",
+      "room": "Room 302B",
+      "track": "Big Data",
+      "startsAt": "2026-10-20T16:00:00.000Z",
+      "endsAt": "2026-10-20T16:30:00.000Z",
+      "url": "https://2026.allthingsopen.org/sessions/big-data"
+    },
+    {
+      "id": "ato-2026-27834-20261020-2",
+      "title": "Big Data",
+      "room": "Room 302B",
+      "track": "Big Data",
+      "startsAt": "2026-10-20T20:00:00.000Z",
+      "endsAt": "2026-10-20T20:30:00.000Z",
+      "url": "https://2026.allthingsopen.org/sessions/big-data"
+    },
+    {
+      "id": "ato-2026-27836-20261020-1",
+      "title": "Closing Keynotes – Day 2",
+      "room": "Ballrom B",
+      "track": "Day 2 Keynotes",
+      "startsAt": "2026-10-20T20:45:00.000Z",
+      "endsAt": "2026-10-20T21:30:00.000Z",
+      "url": "https://2026.allthingsopen.org/sessions/closing-keynotes-day-2"
+    },
+    {
+      "id": "ato-2026-27837-20261020-1",
+      "title": "Farewell Social",
+      "room": "Room not listed",
+      "track": "Socials",
+      "startsAt": "2026-10-20T21:30:00.000Z",
+      "endsAt": "2026-10-20T23:00:00.000Z",
+      "url": "https://2026.allthingsopen.org/sessions/farewell-social"
+    },
+    {
+      "id": "ato-2026-27840-20261019-1",
+      "title": "Observability is Broken and Open-Source (will be) the Solution",
+      "room": "Ballroom B",
+      "track": "Day 1 Lightning Talks",
+      "startsAt": "2026-10-19T17:15:00.000Z",
+      "endsAt": "2026-10-19T18:15:00.000Z",
+      "url": "https://2026.allthingsopen.org/sessions/observability-is-broken-and-open-source-will-be-the-solution"
+    },
+    {
+      "id": "ato-2026-27841-20261019-1",
+      "title": "One Function Changed. What Breaks Next?",
+      "room": "Room 303",
+      "track": "Deep Dive Sessions 3",
+      "startsAt": "2026-10-19T15:00:00.000Z",
+      "endsAt": "2026-10-19T17:00:00.000Z",
+      "url": "https://2026.allthingsopen.org/sessions/one-function-changed-what-breaks-next"
+    },
+    {
+      "id": "ato-2026-27846-20261020-1",
+      "title": "From Source Code to Source of Truth: 30 Years of Open Source Database Evolution",
+      "room": "Room 306A",
+      "track": "Databases",
+      "startsAt": "2026-10-20T19:15:00.000Z",
+      "endsAt": "2026-10-20T19:45:00.000Z",
+      "url": "https://2026.allthingsopen.org/sessions/from-source-code-to-source-of-truth-30-years-of-open-source-database-evolution"
+    },
+    {
+      "id": "ato-2026-27894-20261019-1",
+      "title": "Closing the Agentic Loop",
+      "room": "Room 301 A & B",
+      "track": "Deep Dive Sessions 1",
+      "startsAt": "2026-10-19T15:00:00.000Z",
+      "endsAt": "2026-10-19T17:00:00.000Z",
+      "url": "https://2026.allthingsopen.org/sessions/closing-the-agentic-loop"
+    },
+    {
+      "id": "ato-2026-27895-20261019-1",
+      "title": "Job Search Like a Pro: Using Claude to Land Your Next Role",
+      "room": "Room 303",
+      "track": "Deep Dive Sessions 3",
+      "startsAt": "2026-10-19T13:00:00.000Z",
+      "endsAt": "2026-10-19T14:45:00.000Z",
+      "url": "https://2026.allthingsopen.org/sessions/job-search-like-a-pro-using-claude-to-land-your-next-role"
+    },
+    {
+      "id": "ato-2026-27898-20261020-1",
+      "title": "The Agent Is the New Database User: What Agent Workloads Demand from Analytics Infrastructure",
+      "room": "Room 306A",
+      "track": "Databases",
+      "startsAt": "2026-10-20T20:00:00.000Z",
+      "endsAt": "2026-10-20T20:30:00.000Z",
+      "url": "https://2026.allthingsopen.org/sessions/the-agent-is-the-new-database-user-what-agent-workloads-demand-from-analytics-infrastructure"
+    },
+    {
+      "id": "ato-2026-27901-20261019-1",
+      "title": "Build production-ready, agentic AI systems in a few lines of code using the open source Strands Agents SDK",
+      "room": "304",
+      "track": "Deep Dive Sessions 5",
+      "startsAt": "2026-10-19T15:00:00.000Z",
+      "endsAt": "2026-10-19T17:00:00.000Z",
+      "url": "https://2026.allthingsopen.org/sessions/build-production-ready-agentic-ai-systems-in-a-few-lines-of-code-using-the-open-source-strands-agents-sdk"
+    },
+    {
+      "id": "ato-2026-27906-20261019-1",
+      "title": "Provenance-Driven Development: Building Real Software with Atomic and OpenCode",
+      "room": "Room 302 A & B",
+      "track": "Deep Dive Sessions 4",
+      "startsAt": "2026-10-19T18:30:00.000Z",
+      "endsAt": "2026-10-19T20:30:00.000Z",
+      "url": "https://2026.allthingsopen.org/sessions/provenance-driven-development-building-real-software-with-atomic-and-opencode"
+    },
+    {
+      "id": "ato-2026-27909-20261020-1",
+      "title": "The State Of The Open Source Initiative",
+      "room": "Room 204",
+      "track": "Open Source Initiative",
+      "startsAt": "2026-10-20T14:30:00.000Z",
+      "endsAt": "2026-10-20T15:00:00.000Z",
+      "url": "https://2026.allthingsopen.org/sessions/the-state-of-the-open-source-initiative"
+    },
+    {
+      "id": "ato-2026-27912-20261020-1",
+      "title": "Open Source Licensing 101",
+      "room": "Room 204",
+      "track": "Open Source Initiative",
+      "startsAt": "2026-10-20T15:15:00.000Z",
+      "endsAt": "2026-10-20T15:45:00.000Z",
+      "url": "https://2026.allthingsopen.org/sessions/open-source-licensing-101"
+    },
+    {
+      "id": "ato-2026-27915-20261020-1",
+      "title": "The Latest on Public Policy and Open Source",
+      "room": "Room 204",
+      "track": "Open Source Initiative",
+      "startsAt": "2026-10-20T18:30:00.000Z",
+      "endsAt": "2026-10-20T19:00:00.000Z",
+      "url": "https://2026.allthingsopen.org/sessions/the-latest-on-public-policy-and-open-source"
+    },
+    {
+      "id": "ato-2026-27918-20261020-1",
+      "title": "The State of Open Source AI in 2026",
+      "room": "Room 204",
+      "track": "Open Source Initiative",
+      "startsAt": "2026-10-20T19:15:00.000Z",
+      "endsAt": "2026-10-20T19:45:00.000Z",
+      "url": "https://2026.allthingsopen.org/sessions/the-state-of-open-source-ai-in-2026"
+    },
+    {
+      "id": "ato-2026-27921-20261020-1",
+      "title": "Sharing is caring: Open data for Open Source compliance",
+      "room": "Room 204",
+      "track": "Open Source Initiative",
+      "startsAt": "2026-10-20T16:00:00.000Z",
+      "endsAt": "2026-10-20T16:30:00.000Z",
+      "url": "https://2026.allthingsopen.org/sessions/sharing-is-caring-open-data-for-open-source-compliance"
+    },
+    {
+      "id": "ato-2026-27922-20261020-1",
+      "title": "Is Open Source Dying? Short film and open discussion",
+      "room": "Room 204",
+      "track": "Open Source Initiative",
+      "startsAt": "2026-10-20T17:00:00.000Z",
+      "endsAt": "2026-10-20T18:00:00.000Z",
+      "url": "https://2026.allthingsopen.org/sessions/is-open-source-dying-short-film-and-open-discussion"
+    },
+    {
+      "id": "ato-2026-27923-20261020-1",
+      "title": "The OSI Must Do More When It Comes To Open Source Education and Advocacy",
+      "room": "Room 204",
+      "track": "Open Source Initiative",
+      "startsAt": "2026-10-20T20:00:00.000Z",
+      "endsAt": "2026-10-20T20:30:00.000Z",
+      "url": "https://2026.allthingsopen.org/sessions/the-osi-must-do-more-when-it-comes-to-open-source-education-and-advocacy"
+    },
+    {
+      "id": "ato-2026-27925-20261019-1",
+      "title": "Local to Cloud and Back: Building Hybrid Applications on Open Source",
+      "room": "304",
+      "track": "Deep Dive Sessions 5",
+      "startsAt": "2026-10-19T13:00:00.000Z",
+      "endsAt": "2026-10-19T14:45:00.000Z",
+      "url": "https://2026.allthingsopen.org/sessions/local-to-cloud-and-back-building-hybrid-applications-on-open-source"
+    },
+    {
+      "id": "ato-2026-27926-20261019-1",
+      "title": "All Things Claude AI: From coding to cowork to security and integrations",
+      "room": "Room 301 A & B",
+      "track": "Deep Dive Sessions 1",
+      "startsAt": "2026-10-19T18:30:00.000Z",
+      "endsAt": "2026-10-19T20:30:00.000Z",
+      "url": "https://2026.allthingsopen.org/sessions/all-things-claude-ai-from-coding-to-cowork-to-security-and-integrations"
+    },
+    {
+      "id": "ato-2026-27927-20261019-1",
+      "title": "Opening Ceremony and Hacking Kicks Off",
+      "room": "Room 305A",
+      "track": "MLH AI Hackathon",
+      "startsAt": "2026-10-19T13:00:00.000Z",
+      "endsAt": "2026-10-19T13:30:00.000Z",
+      "url": "https://2026.allthingsopen.org/sessions/opening-ceremony-and-hacking-kicks-off"
+    },
+    {
+      "id": "ato-2026-27928-20261019-1",
+      "title": "Team Formation Ceremony",
+      "room": "Room 305A",
+      "track": "MLH AI Hackathon",
+      "startsAt": "2026-10-19T13:30:00.000Z",
+      "endsAt": "2026-10-19T13:45:00.000Z",
+      "url": "https://2026.allthingsopen.org/sessions/team-formation-ceremony"
+    },
+    {
+      "id": "ato-2026-27929-20261019-1",
+      "title": "Projects Due!",
+      "room": "Room 305A",
+      "track": "MLH AI Hackathon",
+      "startsAt": "2026-10-19T17:30:00.000Z",
+      "endsAt": "2026-10-19T18:00:00.000Z",
+      "url": "https://2026.allthingsopen.org/sessions/projects-due"
+    },
+    {
+      "id": "ato-2026-27930-20261019-1",
+      "title": "Judging",
+      "room": "Room 305A",
+      "track": "MLH AI Hackathon",
+      "startsAt": "2026-10-19T18:30:00.000Z",
+      "endsAt": "2026-10-19T20:00:00.000Z",
+      "url": "https://2026.allthingsopen.org/sessions/judging"
+    },
+    {
+      "id": "ato-2026-27931-20261019-1",
+      "title": "Awards Ceremony & Closing",
+      "room": "Room 305A",
+      "track": "MLH AI Hackathon",
+      "startsAt": "2026-10-19T20:00:00.000Z",
+      "endsAt": "2026-10-19T20:20:00.000Z",
+      "url": "https://2026.allthingsopen.org/sessions/awards-ceremony-closing"
+    },
+    {
+      "id": "ato-2026-27933-20261020-1",
+      "title": "Getting People to Actually Contribute: How OSPOs Can Lower the Barrier to Entry",
+      "room": "Room 301B",
+      "track": "101",
+      "startsAt": "2026-10-20T14:30:00.000Z",
+      "endsAt": "2026-10-20T15:00:00.000Z",
+      "url": "https://2026.allthingsopen.org/sessions/getting-people-to-actually-contribute-how-ospos-can-lower-the-barrier-to-entry"
+    },
+    {
+      "id": "ato-2026-27936-20261020-1",
+      "title": "How to Run and Orchestrate LLMs Locally",
+      "room": "Room 306B",
+      "track": "AI/Open Source Architecture",
+      "startsAt": "2026-10-20T14:30:00.000Z",
+      "endsAt": "2026-10-20T15:00:00.000Z",
+      "url": "https://2026.allthingsopen.org/sessions/a-retry-loop-is-harder-to-find-than-a-forgotten-vm"
+    },
+    {
+      "id": "ato-2026-27937-20261020-1",
+      "title": "Powering your Business Process with Open Source",
+      "room": "Room 307",
+      "track": "AI/Open Source Projects and Processes",
+      "startsAt": "2026-10-20T14:30:00.000Z",
+      "endsAt": "2026-10-20T15:00:00.000Z",
+      "url": "https://2026.allthingsopen.org/sessions/powering-your-business-process-with-open-source"
+    },
+    {
+      "id": "ato-2026-27940-20261020-1",
+      "title": "One Engine, Every Ecosystem: The architecture of a platform-agnostic open source product",
+      "room": "Room 307",
+      "track": "AI/Open Source Projects and Processes",
+      "startsAt": "2026-10-20T15:15:00.000Z",
+      "endsAt": "2026-10-20T15:45:00.000Z",
+      "url": "https://2026.allthingsopen.org/sessions/one-engine-every-ecosystem-the-architecture-of-a-platform-agnostic-open-source-product"
+    },
+    {
+      "id": "ato-2026-27941-20261020-1",
+      "title": "Your AI Agents Have Too Many Keys: An Open Source Network for Autonomous Software",
+      "room": "Room 306C",
+      "track": "AI/Open Source Infrastructure",
+      "startsAt": "2026-10-20T16:00:00.000Z",
+      "endsAt": "2026-10-20T16:30:00.000Z",
+      "url": "https://2026.allthingsopen.org/sessions/your-ai-agents-have-too-many-keys-an-open-source-network-for-autonomous-software"
+    },
+    {
+      "id": "ato-2026-27942-20261020-1",
+      "title": "30 Years of OSS Version Control: What Actually Forced Each Change",
+      "room": "Ballroom B",
+      "track": "Developer 1",
+      "startsAt": "2026-10-20T18:30:00.000Z",
+      "endsAt": "2026-10-20T19:00:00.000Z",
+      "url": "https://2026.allthingsopen.org/sessions/30-years-of-oss-version-control-what-actually-forced-each-change"
+    },
+    {
+      "id": "ato-2026-27943-20261020-1",
+      "title": "Agents, Tools, and MCP, oh my! Next-level AI concepts for developers",
+      "room": "Room 305A",
+      "track": "Developer 2",
+      "startsAt": "2026-10-20T18:30:00.000Z",
+      "endsAt": "2026-10-20T19:00:00.000Z",
+      "url": "https://2026.allthingsopen.org/sessions/agents-tools-and-mcp-oh-my-next-level-ai-concepts-for-developers"
+    },
+    {
+      "id": "ato-2026-27944-20261020-1",
+      "title": "Building Data Catcher: A (former) intern’s guide to designing video games with open source tools",
+      "room": "Room 307",
+      "track": "AI/Open Source Projects and Processes",
+      "startsAt": "2026-10-20T18:30:00.000Z",
+      "endsAt": "2026-10-20T19:00:00.000Z",
+      "url": "https://2026.allthingsopen.org/sessions/building-data-catcher-a-former-interns-guide-to-designing-video-games-with-open-source-tools"
+    },
+    {
+      "id": "ato-2026-27945-20261020-1",
+      "title": "Threading the Needle: Balancing Open Source Philosophy Against Corporate Responsibility",
+      "room": "Room 302A",
+      "track": "Linux/Networking/Infrastructure",
+      "startsAt": "2026-10-20T19:15:00.000Z",
+      "endsAt": "2026-10-20T19:45:00.000Z",
+      "url": "https://2026.allthingsopen.org/sessions/threading-the-needle-balancing-open-source-philosophy-against-corporate-responsibility"
+    },
+    {
+      "id": "ato-2026-27955-20261019-1",
+      "title": "Open Agent Design: Building with Open Models, Extending with Frontier",
+      "room": "Room 302C",
+      "track": "Deep Dive Sessions 2",
+      "startsAt": "2026-10-19T13:00:00.000Z",
+      "endsAt": "2026-10-19T14:45:00.000Z",
+      "url": "https://2026.allthingsopen.org/sessions/open-agent-design-building-with-open-models-extending-with-frontier"
+    },
+    {
+      "id": "ato-2026-27958-20261020-1",
+      "title": "Open Meets Frontier: A More Efficient Way to Build Agents",
+      "room": "Ballrom B",
+      "track": "Day 2 Keynotes",
+      "startsAt": "2026-10-20T12:45:00.000Z",
+      "endsAt": "2026-10-20T14:10:00.000Z",
+      "url": "https://2026.allthingsopen.org/sessions/open-meets-frontier-a-more-efficient-way-to-build-agents"
+    },
+    {
+      "id": "ato-2026-28051-20261020-1",
+      "title": "Skill Issue: Why Your AI Agent Still Sucks",
+      "room": "Ballroom B",
+      "track": "Developer 1",
+      "startsAt": "2026-10-20T14:30:00.000Z",
+      "endsAt": "2026-10-20T15:00:00.000Z",
+      "url": "https://2026.allthingsopen.org/sessions/skill-issue-why-your-ai-agent-still-sucks"
+    },
+    {
+      "id": "ato-2026-28054-20261020-1",
+      "title": "Confidently Wrong: Handing a Coding Agent the Database Anyway",
+      "room": "Room 306A",
+      "track": "Databases",
+      "startsAt": "2026-10-20T14:30:00.000Z",
+      "endsAt": "2026-10-20T15:00:00.000Z",
+      "url": "https://2026.allthingsopen.org/sessions/confidently-wrong-handing-a-coding-agent-the-database-anyway"
+    },
+    {
+      "id": "ato-2026-28057-20261019-1",
+      "title": "This Sh*t Don’t Just Happen: The Invisible Work of Open Source Stewardship",
+      "room": "Ballroom B",
+      "track": "Day 1 Lightning Talks",
+      "startsAt": "2026-10-19T17:15:00.000Z",
+      "endsAt": "2026-10-19T18:15:00.000Z",
+      "url": "https://2026.allthingsopen.org/sessions/this-sht-dont-just-happen-the-invisible-work-of-open-source-stewardship"
+    },
+    {
+      "id": "ato-2026-28071-20261020-1",
+      "title": "Findings from the Survey on Generative AI and Open Source Software Development",
+      "room": "Ballroom C",
+      "track": "Machine Learning/AI 2",
+      "startsAt": "2026-10-20T14:30:00.000Z",
+      "endsAt": "2026-10-20T15:00:00.000Z",
+      "url": "https://2026.allthingsopen.org/sessions/findings-from-the-survey-on-generative-ai-and-open-source-software-development"
+    },
+    {
+      "id": "ato-2026-28089-20261020-1",
+      "title": "How to Use Scaffolding to Make Your Coding Agents Less Dumb",
+      "room": "Ballrom B",
+      "track": "Day 2 Keynotes",
+      "startsAt": "2026-10-20T20:45:00.000Z",
+      "endsAt": "2026-10-20T21:30:00.000Z",
+      "url": "https://2026.allthingsopen.org/sessions/how-to-use-scaffolding-to-make-your-coding-agents-less-dumb"
+    },
+    {
+      "id": "ato-2026-28096-20261020-1",
+      "title": "This is Software’s iPhone Moment",
+      "room": "Ballrom B",
+      "track": "Day 2 Keynotes",
+      "startsAt": "2026-10-20T12:45:00.000Z",
+      "endsAt": "2026-10-20T14:10:00.000Z",
+      "url": "https://2026.allthingsopen.org/sessions/this-is-softwares-iphone-moment"
+    },
+    {
+      "id": "ato-2026-28106-20261020-1",
+      "title": "Building Open Source Volunteer Infrastructure: How Industry Teamwork Sustains OSS",
+      "room": "Room 201",
+      "track": "Community",
+      "startsAt": "2026-10-20T14:30:00.000Z",
+      "endsAt": "2026-10-20T15:00:00.000Z",
+      "url": "https://2026.allthingsopen.org/sessions/building-open-source-volunteer-infrastructure-how-industry-teamwork-sustains-oss"
+    },
+    {
+      "id": "ato-2026-28111-20261020-1",
+      "title": "Where Is My Futuristic App? Generative UI and the Open Future",
+      "room": "Ballrom B",
+      "track": "Day 2 Keynotes",
+      "startsAt": "2026-10-20T12:45:00.000Z",
+      "endsAt": "2026-10-20T14:10:00.000Z",
+      "url": "https://2026.allthingsopen.org/sessions/where-is-my-futuristic-app-generative-ui-and-the-open-future-2"
+    },
+    {
+      "id": "ato-2026-28116-20261020-1",
+      "title": "An Agent Is Just a Directory",
+      "room": "Room 305A",
+      "track": "Developer 2",
+      "startsAt": "2026-10-20T16:00:00.000Z",
+      "endsAt": "2026-10-20T16:30:00.000Z",
+      "url": "https://2026.allthingsopen.org/sessions/an-agent-is-just-a-directory"
+    },
+    {
+      "id": "ato-2026-28117-20261020-1",
+      "title": "Zero Slack Security: Playing Defense in an Age of Agents",
+      "room": "Room 303",
+      "track": "Security",
+      "startsAt": "2026-10-20T19:15:00.000Z",
+      "endsAt": "2026-10-20T19:45:00.000Z",
+      "url": "https://2026.allthingsopen.org/sessions/zero-slack-security-playing-defense-in-an-age-of-agents"
+    },
+    {
+      "id": "ato-2026-28120-20261020-1",
+      "title": "Supply Chain Security in the Age of the AI Hacker",
+      "room": "Ballroom A",
+      "track": "Machine Learning/AI 1",
+      "startsAt": "2026-10-20T15:15:00.000Z",
+      "endsAt": "2026-10-20T15:45:00.000Z",
+      "url": "https://2026.allthingsopen.org/sessions/supply-chain-security-in-the-age-of-the-ai-hacker"
+    },
+    {
+      "id": "ato-2026-28121-20261020-1",
+      "title": "Building Accessibility into Open Source, One Practical Step at a Time",
+      "room": "Room 307",
+      "track": "AI/Open Source Projects and Processes",
+      "startsAt": "2026-10-20T19:15:00.000Z",
+      "endsAt": "2026-10-20T19:45:00.000Z",
+      "url": "https://2026.allthingsopen.org/sessions/building-accessibility-into-open-source-one-practical-step-at-a-time"
+    },
+    {
+      "id": "ato-2026-28164-20261020-1",
+      "title": "Three Projects, One Stack: How Foundation-Led Collaboration Is Reshaping Open Source Observability",
+      "room": "Room 304",
+      "track": "DevOps",
+      "startsAt": "2026-10-20T19:15:00.000Z",
+      "endsAt": "2026-10-20T19:45:00.000Z",
+      "url": "https://2026.allthingsopen.org/sessions/three-projects-one-stack-how-foundation-led-collaboration-is-reshaping-open-source-observability"
+    },
+    {
+      "id": "ato-2026-28173-20261020-1",
+      "title": "PostgreSQL for the AI Era: From Open Source to Cloud-Native Scale",
+      "room": "Ballroom C",
+      "track": "Machine Learning/AI 2",
+      "startsAt": "2026-10-20T17:00:00.000Z",
+      "endsAt": "2026-10-20T18:00:00.000Z",
+      "url": "https://2026.allthingsopen.org/sessions/postgresql-for-the-ai-era-from-open-source-to-cloud-native-scale"
+    },
+    {
+      "id": "ato-2026-28179-20261020-1",
+      "title": "When Information Isn’t Enough",
+      "room": "Room 305B",
+      "track": "DevRel",
+      "startsAt": "2026-10-20T19:15:00.000Z",
+      "endsAt": "2026-10-20T19:45:00.000Z",
+      "url": "https://2026.allthingsopen.org/sessions/when-information-isnt-enough"
+    },
+    {
+      "id": "ato-2026-28182-20261019-1",
+      "title": "Monday Lunch",
+      "room": "Room not listed",
+      "track": "Break",
+      "startsAt": "2026-10-19T17:00:00.000Z",
+      "endsAt": "2026-10-19T17:30:00.000Z",
+      "url": "https://2026.allthingsopen.org/sessions/monday-lunch"
+    },
+    {
+      "id": "ato-2026-28183-20261020-1",
+      "title": "Tuesday Lunch",
+      "room": "Room not listed",
+      "track": "Break",
+      "startsAt": "2026-10-20T16:30:00.000Z",
+      "endsAt": "2026-10-20T17:00:00.000Z",
+      "url": "https://2026.allthingsopen.org/sessions/tuesday-lunch"
+    },
+    {
+      "id": "ato-2026-28189-20261020-1",
+      "title": "Open Source Developer Relations: A Field Guide",
+      "room": "Room 305B",
+      "track": "DevRel",
+      "startsAt": "2026-10-20T15:15:00.000Z",
+      "endsAt": "2026-10-20T15:45:00.000Z",
+      "url": "https://2026.allthingsopen.org/sessions/open-source-developer-relations-a-field-guide"
+    },
+    {
+      "id": "ato-2026-28190-20261020-1",
+      "title": "Efficient Agents in Minutes",
+      "room": "Ballroom A",
+      "track": "Machine Learning/AI 1",
+      "startsAt": "2026-10-20T17:00:00.000Z",
+      "endsAt": "2026-10-20T18:00:00.000Z",
+      "url": "https://2026.allthingsopen.org/sessions/efficient-agents-in-minutes"
+    },
+    {
+      "id": "ato-2026-28257-20261020-1",
+      "title": "What Makes Open Source Work: Licensing and Beyond",
+      "room": "Room 307",
+      "track": "AI/Open Source Projects and Processes",
+      "startsAt": "2026-10-20T16:00:00.000Z",
+      "endsAt": "2026-10-20T16:30:00.000Z",
+      "url": "https://2026.allthingsopen.org/sessions/what-makes-open-source-work-licensing-and-beyond"
+    },
+    {
+      "id": "ato-2026-28294-20261019-1",
+      "title": "Building Agents Isn’t the Finish Line, It’s Where Enterprise Risk Begins​​",
+      "room": "Ballroom A",
+      "track": "AI Agents & Vibe Coding",
+      "startsAt": "2026-10-19T17:15:00.000Z",
+      "endsAt": "2026-10-19T18:15:00.000Z",
+      "url": "https://2026.allthingsopen.org/sessions/building-agents-isnt-the-finish-line-its-where-enterprise-risk-begins"
+    },
+    {
+      "id": "ato-2026-28297-20261020-1",
+      "title": "How Intuit Saved 7,779 Hours Last Month in Dev Setup & Build Times",
+      "room": "Room 306B",
+      "track": "AI/Open Source Architecture",
+      "startsAt": "2026-10-20T15:15:00.000Z",
+      "endsAt": "2026-10-20T15:45:00.000Z",
+      "url": "https://2026.allthingsopen.org/sessions/how-intuit-saved-7779-hours-last-month-in-dev-setup-build-times"
+    },
+    {
+      "id": "ato-2026-28298-20261020-1",
+      "title": "You Can Give Any Agent Access to kubectl. But how do you make one that *should* have access to kubectl?",
+      "room": "Room 306C",
+      "track": "AI/Open Source Infrastructure",
+      "startsAt": "2026-10-20T15:15:00.000Z",
+      "endsAt": "2026-10-20T15:45:00.000Z",
+      "url": "https://2026.allthingsopen.org/sessions/you-can-give-any-agent-access-to-kubectl-but-how-do-you-make-one-that-should-have-access-to-kubectl"
+    },
+    {
+      "id": "ato-2026-28363-20261020-1",
+      "title": "Building Functional Dev Environments for Humans and Agents",
+      "room": "Ballroom A",
+      "track": "Machine Learning/AI 1",
+      "startsAt": "2026-10-20T19:15:00.000Z",
+      "endsAt": "2026-10-20T19:45:00.000Z",
+      "url": "https://2026.allthingsopen.org/sessions/building-functional-dev-environments-for-humans-and-agents"
+    },
+    {
+      "id": "ato-2026-28451-20261020-1",
+      "title": "Letting Agents Cook Without Burning Your Budget",
+      "room": "Room 302C",
+      "track": "Cloud",
+      "startsAt": "2026-10-20T18:30:00.000Z",
+      "endsAt": "2026-10-20T19:00:00.000Z",
+      "url": "https://2026.allthingsopen.org/sessions/letting-agents-cook-without-burning-your-budget"
+    },
+    {
+      "id": "ato-2026-28456-20261019-1",
+      "title": "The Human *is* the Loop: Open source in the time of AI",
+      "room": "Ballroom B",
+      "track": "Day 1 Keynotes",
+      "startsAt": "2026-10-19T20:45:00.000Z",
+      "endsAt": "2026-10-19T21:30:00.000Z",
+      "url": "https://2026.allthingsopen.org/sessions/the-human-is-the-loop-open-source-in-the-time-of-ai"
+    },
+    {
+      "id": "ato-2026-28465-20261018-1",
+      "title": "Welcome Social & Panel Discussion",
+      "room": "Room not listed",
+      "track": "Socials",
+      "startsAt": "2026-10-18T22:00:00.000Z",
+      "endsAt": "2026-10-19T00:30:00.000Z",
+      "url": "https://2026.allthingsopen.org/sessions/welcome-social-panel-discussion"
+    },
+    {
+      "id": "ato-2026-28469-20261020-1",
+      "title": "5 Common Linux Adoption Barriers, and How to Overcome Them",
+      "room": "Room 302A",
+      "track": "Linux/Networking/Infrastructure",
+      "startsAt": "2026-10-20T14:30:00.000Z",
+      "endsAt": "2026-10-20T15:00:00.000Z",
+      "url": "https://2026.allthingsopen.org/sessions/5-common-linux-adoption-barriers-and-how-to-overcome-them"
+    },
+    {
+      "id": "ato-2026-28478-20261020-1",
+      "title": "When Code Costs Nothing: Tech Debt in the Age of GenAI",
+      "room": "Room 206",
+      "track": "Business",
+      "startsAt": "2026-10-20T19:15:00.000Z",
+      "endsAt": "2026-10-20T19:45:00.000Z",
+      "url": "https://2026.allthingsopen.org/sessions/when-code-costs-nothing-tech-debt-in-the-age-of-genai"
+    },
+    {
+      "id": "ato-2026-28624-20261019-1",
+      "title": "Benchmark the Conversation, Not Just the Model",
+      "room": "Ballroom C",
+      "track": "AI for DevSecOps",
+      "startsAt": "2026-10-19T17:15:00.000Z",
+      "endsAt": "2026-10-19T18:15:00.000Z",
+      "url": "https://2026.allthingsopen.org/sessions/benchmark-the-conversation-not-just-the-model"
+    },
+    {
+      "id": "ato-2026-28627-20261019-1",
+      "title": "Merge Forward: Addressing One of OSS’s Biggest Supply Chain Risks Through Human Connection",
+      "room": "Room 305B",
+      "track": "Inclusion & Diversity in Open Source",
+      "startsAt": "2026-10-19T14:00:00.000Z",
+      "endsAt": "2026-10-19T14:30:00.000Z",
+      "url": "https://2026.allthingsopen.org/sessions/merge-forward-addressing-one-of-osss-biggest-supply-chain-risks-through-human-connection"
+    },
+    {
+      "id": "ato-2026-28639-20261020-1",
+      "title": "The Agent Surface: Designing Products for Users Who Never Open the App",
+      "room": "Room 306B",
+      "track": "AI/Open Source Architecture",
+      "startsAt": "2026-10-20T19:15:00.000Z",
+      "endsAt": "2026-10-20T19:45:00.000Z",
+      "url": "https://2026.allthingsopen.org/sessions/the-agent-surface-designing-products-for-users-who-never-open-the-app"
+    },
+    {
+      "id": "ato-2026-28640-20261020-1",
+      "title": "Your Next Power User Won’t Learn Your UI",
+      "room": "Ballroom B",
+      "track": "Day 2 Lightning Talks",
+      "startsAt": "2026-10-20T17:00:00.000Z",
+      "endsAt": "2026-10-20T18:10:00.000Z",
+      "url": "https://2026.allthingsopen.org/sessions/your-next-power-user-wont-learn-your-ui"
+    },
+    {
+      "id": "ato-2026-28705-20261020-1",
+      "title": "Pics or It Didn’t Happen: Observability for Self-Hosted AI Agents",
+      "room": "Room 306C",
+      "track": "AI/Open Source Infrastructure",
+      "startsAt": "2026-10-20T18:30:00.000Z",
+      "endsAt": "2026-10-20T19:00:00.000Z",
+      "url": "https://2026.allthingsopen.org/sessions/pics-or-it-didnt-happen-observability-for-self-hosted-ai-agents"
+    },
+    {
+      "id": "ato-2026-28706-20261020-1",
+      "title": "And I Would’ve Gotten Away with It Too, If It Weren’t for Those Meddling Logs",
+      "room": "Ballroom B",
+      "track": "Day 2 Lightning Talks",
+      "startsAt": "2026-10-20T17:00:00.000Z",
+      "endsAt": "2026-10-20T18:10:00.000Z",
+      "url": "https://2026.allthingsopen.org/sessions/and-i-wouldve-gotten-away-with-it-too-if-it-werent-for-those-meddling-logs"
+    },
+    {
+      "id": "ato-2026-28709-20261020-1",
+      "title": "From Markup to Markdown",
+      "room": "Room 302A",
+      "track": "Linux/Networking/Infrastructure",
+      "startsAt": "2026-10-20T20:00:00.000Z",
+      "endsAt": "2026-10-20T20:30:00.000Z",
+      "url": "https://2026.allthingsopen.org/sessions/from-markup-to-markdown"
+    },
+    {
+      "id": "ato-2026-28718-20261020-1",
+      "title": "How Open is your Realtime AI Stack?",
+      "room": "Room 301A",
+      "track": "Machine Learning/AI 3",
+      "startsAt": "2026-10-20T19:15:00.000Z",
+      "endsAt": "2026-10-20T19:45:00.000Z",
+      "url": "https://2026.allthingsopen.org/sessions/how-open-is-your-realtime-ai-stack"
+    },
+    {
+      "id": "ato-2026-28755-20261020-1",
+      "title": "Lightning Talks",
+      "room": "Ballroom B",
+      "track": "Day 2 Lightning Talks",
+      "startsAt": "2026-10-20T17:00:00.000Z",
+      "endsAt": "2026-10-20T18:10:00.000Z",
+      "url": "https://2026.allthingsopen.org/sessions/lightning-talks-day-2"
+    },
+    {
+      "id": "ato-2026-28756-20261020-1",
+      "title": "What Makes Open Source Work: Licensing and Beyond",
+      "room": "Ballroom B",
+      "track": "Day 2 Lightning Talks",
+      "startsAt": "2026-10-20T17:00:00.000Z",
+      "endsAt": "2026-10-20T18:10:00.000Z",
+      "url": "https://2026.allthingsopen.org/sessions/what-makes-open-source-work-licensing-and-beyond-2"
+    },
+    {
+      "id": "ato-2026-28757-20261020-1",
+      "title": "Building Accessibility into Open Source, One Practical Step at a Time 2",
+      "room": "Ballroom B",
+      "track": "Day 2 Lightning Talks",
+      "startsAt": "2026-10-20T17:00:00.000Z",
+      "endsAt": "2026-10-20T18:10:00.000Z",
+      "url": "https://2026.allthingsopen.org/sessions/building-accessibility-into-open-source-one-practical-step-at-a-time-2"
+    },
+    {
+      "id": "ato-2026-28762-20261020-1",
+      "title": "Community",
+      "room": "Room 201",
+      "track": "Community",
+      "startsAt": "2026-10-20T18:30:00.000Z",
+      "endsAt": "2026-10-20T19:00:00.000Z",
+      "url": "https://2026.allthingsopen.org/sessions/community"
+    },
+    {
+      "id": "ato-2026-28763-20261020-1",
+      "title": "Make What Agents Want",
+      "room": "Room 306B",
+      "track": "AI/Open Source Architecture",
+      "startsAt": "2026-10-20T18:30:00.000Z",
+      "endsAt": "2026-10-20T19:00:00.000Z",
+      "url": "https://2026.allthingsopen.org/sessions/make-what-agents-want"
+    },
+    {
+      "id": "ato-2026-28764-20261020-1",
+      "title": "Make What Agents Want",
+      "room": "Ballroom A",
+      "track": "Machine Learning/AI 1",
+      "startsAt": "2026-10-20T20:00:00.000Z",
+      "endsAt": "2026-10-20T20:30:00.000Z",
+      "url": "https://2026.allthingsopen.org/sessions/make-what-agents-want-2"
+    },
+    {
+      "id": "ato-2026-28765-20261019-1",
+      "title": "Build Your First Kiro Crew App: An Agent That Triages Your Backlog While You Sleep",
+      "room": "304",
+      "track": "Deep Dive Sessions 5",
+      "startsAt": "2026-10-19T18:30:00.000Z",
+      "endsAt": "2026-10-19T20:30:00.000Z",
+      "url": "https://2026.allthingsopen.org/sessions/build-your-first-kiro-crew-app-an-agent-that-triages-your-backlog-while-you-sleep"
+    },
+    {
+      "id": "ato-2026-28772-20261020-1",
+      "title": "How we built a software factory with Kiro Crew to merge 1,000 PRs in a week",
+      "room": "Ballroom B",
+      "track": "Developer 1",
+      "startsAt": "2026-10-20T16:00:00.000Z",
+      "endsAt": "2026-10-20T16:30:00.000Z",
+      "url": "https://2026.allthingsopen.org/sessions/how-we-built-a-software-factory-with-kiro-crew-to-merge-1000-prs-in-a-week"
+    },
+    {
+      "id": "ato-2026-28846-20261019-1",
+      "title": "Brilliance Isn’t Enough: From Expertise to Impact in the AI Era",
+      "room": "Room 305B",
+      "track": "Inclusion & Diversity in Open Source",
+      "startsAt": "2026-10-19T14:30:00.000Z",
+      "endsAt": "2026-10-19T15:00:00.000Z",
+      "url": "https://2026.allthingsopen.org/sessions/brilliance-isnt-enough-from-expertise-to-impact-in-the-ai-era"
+    },
+    {
+      "id": "ato-2026-28853-20261019-1",
+      "title": "Welcome – Open Source Accessibility Summit",
+      "room": "Rooms 306A, B, & C",
+      "track": "Open Source Accessibility Summit",
+      "startsAt": "2026-10-19T13:00:00.000Z",
+      "endsAt": "2026-10-19T13:15:00.000Z",
+      "url": "https://2026.allthingsopen.org/sessions/welcome-open-source-accessibility-summit"
+    },
+    {
+      "id": "ato-2026-28854-20261019-1",
+      "title": "Keynote – Open Source Accessibility Event",
+      "room": "Rooms 306A, B, & C",
+      "track": "Open Source Accessibility Summit",
+      "startsAt": "2026-10-19T13:15:00.000Z",
+      "endsAt": "2026-10-19T13:45:00.000Z",
+      "url": "https://2026.allthingsopen.org/sessions/keynote-open-source-accessibility-event"
+    },
+    {
+      "id": "ato-2026-28855-20261019-1",
+      "title": "Introduction to the Open Source Accessibility Framework",
+      "room": "Rooms 306A, B, & C",
+      "track": "Open Source Accessibility Summit",
+      "startsAt": "2026-10-19T13:45:00.000Z",
+      "endsAt": "2026-10-19T14:15:00.000Z",
+      "url": "https://2026.allthingsopen.org/sessions/introduction-to-the-open-source-accessibility-framework"
+    },
+    {
+      "id": "ato-2026-28856-20261019-1",
+      "title": "Foundational Phase",
+      "room": "Rooms 306A, B, & C",
+      "track": "Open Source Accessibility Summit",
+      "startsAt": "2026-10-19T14:15:00.000Z",
+      "endsAt": "2026-10-19T15:15:00.000Z",
+      "url": "https://2026.allthingsopen.org/sessions/foundational-phase"
+    },
+    {
+      "id": "ato-2026-28861-20261019-1",
+      "title": "Testing Phase",
+      "room": "Rooms 306A, B, & C",
+      "track": "Open Source Accessibility Summit",
+      "startsAt": "2026-10-19T15:30:00.000Z",
+      "endsAt": "2026-10-19T17:00:00.000Z",
+      "url": "https://2026.allthingsopen.org/sessions/testing-phase"
+    },
+    {
+      "id": "ato-2026-28863-20261019-1",
+      "title": "Workflow Phase",
+      "room": "Rooms 306A, B, & C",
+      "track": "Open Source Accessibility Summit",
+      "startsAt": "2026-10-19T18:30:00.000Z",
+      "endsAt": "2026-10-19T19:30:00.000Z",
+      "url": "https://2026.allthingsopen.org/sessions/workflow-phase"
+    },
+    {
+      "id": "ato-2026-28864-20261019-1",
+      "title": "Community Phase",
+      "room": "Rooms 306A, B, & C",
+      "track": "Open Source Accessibility Summit",
+      "startsAt": "2026-10-19T19:30:00.000Z",
+      "endsAt": "2026-10-19T20:15:00.000Z",
+      "url": "https://2026.allthingsopen.org/sessions/community-phase"
+    },
+    {
+      "id": "ato-2026-28866-20261019-1",
+      "title": "Closing – Open Source Accessibility Summit",
+      "room": "Rooms 306A, B, & C",
+      "track": "Open Source Accessibility Summit",
+      "startsAt": "2026-10-19T20:15:00.000Z",
+      "endsAt": "2026-10-19T20:30:00.000Z",
+      "url": "https://2026.allthingsopen.org/sessions/closing-open-source-accessibility-summit"
+    },
+    {
+      "id": "ato-2026-28869-20261020-1",
+      "title": "The Last Mile of AI-Assisted Development",
+      "room": "Room 305A",
+      "track": "Developer 2",
+      "startsAt": "2026-10-20T19:15:00.000Z",
+      "endsAt": "2026-10-20T19:45:00.000Z",
+      "url": "https://2026.allthingsopen.org/sessions/the-last-mile-of-ai-assisted-development"
+    },
+    {
+      "id": "ato-2026-28875-20261020-1",
+      "title": "Unify Your Context: The Unix Way to Build an AI Org",
+      "room": "Ballroom B",
+      "track": "Day 2 Lightning Talks",
+      "startsAt": "2026-10-20T17:00:00.000Z",
+      "endsAt": "2026-10-20T18:10:00.000Z",
+      "url": "https://2026.allthingsopen.org/sessions/unify-your-context-the-unix-way-to-build-an-ai-org"
+    },
+    {
+      "id": "ato-2026-28877-20261020-1",
+      "title": "Unify Your Context: The Unix Way to Build an AI Org",
+      "room": "Room 306C",
+      "track": "AI/Open Source Infrastructure",
+      "startsAt": "2026-10-20T19:15:00.000Z",
+      "endsAt": "2026-10-20T19:45:00.000Z",
+      "url": "https://2026.allthingsopen.org/sessions/unify-your-context-the-unix-way-to-build-an-ai-org-2"
+    },
+    {
+      "id": "ato-2026-28882-20261020-1",
+      "title": "The Cobra Effect: How good intentions are killing open source",
+      "room": "Ballrom B",
+      "track": "Day 2 Keynotes",
+      "startsAt": "2026-10-20T12:45:00.000Z",
+      "endsAt": "2026-10-20T14:10:00.000Z",
+      "url": "https://2026.allthingsopen.org/sessions/the-cobra-effect-how-good-intentions-are-killing-open-source"
+    },
+    {
+      "id": "ato-2026-28885-20261020-1",
+      "title": "Stop Wasting GPUs: Building a Global Compute Cache for AI Inference",
+      "room": "Ballroom B",
+      "track": "Developer 1",
+      "startsAt": "2026-10-20T15:15:00.000Z",
+      "endsAt": "2026-10-20T15:45:00.000Z",
+      "url": "https://2026.allthingsopen.org/?post_type=os_session&p=28885"
+    },
+    {
+      "id": "ato-2026-28921-20261019-1",
+      "title": "Build Sprint",
+      "room": "Room 305A",
+      "track": "MLH AI Hackathon",
+      "startsAt": "2026-10-19T14:00:00.000Z",
+      "endsAt": "2026-10-19T15:00:00.000Z",
+      "url": "https://2026.allthingsopen.org/sessions/build-sprint"
+    },
+    {
+      "id": "ato-2026-28922-20261019-1",
+      "title": "Mini Workshops",
+      "room": "Room 305A",
+      "track": "MLH AI Hackathon",
+      "startsAt": "2026-10-19T15:00:00.000Z",
+      "endsAt": "2026-10-19T17:00:00.000Z",
+      "url": "https://2026.allthingsopen.org/sessions/mini-workshops"
+    }
+  ]
+}
