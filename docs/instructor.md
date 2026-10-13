@@ -8,39 +8,52 @@ setup while the presenter keeps the main group moving.
 
 | Minutes | Activity |
 | --- | --- |
-| 0-5 | Introduce the planner; start setup and downloads immediately |
-| 5-20 | Get local Docker working or redirect to the labeled Codespaces fallback |
+| 0-5 | Introduce the planner; launch the attendee Codespace |
+| 5-20 | Finish browser sign-in and automated setup; open the private app port |
 | 20-35 | Complete the two repository TODOs and save favorites |
-| 35-43 | Explore scheduling conflicts and local persistence |
+| 35-43 | Explore scheduling conflicts and development-database persistence |
 | 43-53 | Switch the same application to Azure; diagnose missing favorites |
 | 53-68 | Copy selected favorites; demonstrate an idempotent retry |
-| 68-80 | Create a cloud favorite, copy it back, and preserve local choices |
+| 68-80 | Create a cloud favorite, copy it back, and preserve development choices |
 | 80-90 | Demonstrate repeatable indexes and a document migration |
 | 90-98 | Export calendars, explain hosted-access expiry, and stop safely |
 | 98-100 | Point to the upstream project, docs, and contribution routes |
 | 100-105 | Questions and recovery buffer |
 
-The protected outcome is the same data-access code against the local and managed
-databases. Shorten the index/migration extension before sacrificing the central
+The protected outcome is the same data-access code against self-hosted development
+DocumentDB and managed Azure DocumentDB. "Local" means local to the development
+environment; with Codespaces, both environments are physically cloud-hosted.
+Shorten the index/migration extension before sacrificing the central
 connection-versus-data lesson, return trip, or cleanup explanation.
+
+Align attendee communications with this delivery choice: browser, GitHub account,
+and available Codespaces usage; no laptop Docker installation. Explain the
+development-local meaning of "local" at the start rather than promising offline
+laptop operation.
 
 ## Setup risks
 
-Assume attendees have not preinstalled or downloaded anything. Docker installation
-may require admin access or a reboot. At about minute 12, direct blocked attendees
-to Codespaces; target a working environment by minute 20.
+Attendees need a browser, GitHub account, connectivity, and available Codespaces
+usage. No local Docker, Node.js, Git, or Azure CLI installation is required.
+At about minute 12, triage blocked sign-in, organization policy, or usage limits
+with a helper; target a working environment by minute 20.
 
-Do not promise these timings without measuring cold downloads on representative
-hardware and networks. The images support Linux amd64 and arm64, but manifest
-availability is not a Windows, Intel Mac, Apple Silicon, and Linux rehearsal.
-The primary path requires Linux containers and eligible Docker tooling.
+Do not promise startup timings without measuring cold creation on representative
+accounts and networks. Optional local Docker is only for people who already have
+it working; it is not the default path or an installation exercise.
 
 Codespaces needs a GitHub account, available usage, and network access. Confirm
-the funding/access arrangement and an agreed last-resort option for people blocked
-on both paths. Do not publish app or database ports to bypass access controls.
+the funding/access arrangement and a pairing or instructor-follow-along option
+for people blocked from Codespaces. Do not publish app or database ports to bypass
+access controls.
 
-The TODO starter needs a text editor. A ZIP-download path avoids requiring Git,
-and the complete reference provides a recovery path without editing code.
+The browser editor supports the TODOs. The complete reference provides a recovery
+path without replacing an attendee's exercise file or changing their database.
+
+Optional GitHub CLI diagnostics require both the `codespace` OAuth scope and an
+SSH server in the dev container. Those are instructor-tooling requirements, not
+extra steps for browser-only attendees. The completed-exercise test contract
+accepts either an explicit unfinished TODO or the correct implementation.
 
 ## Schedule data
 
@@ -117,6 +130,11 @@ confused with a missing catalog.
 
 ## Azure readiness
 
+Use the separate **ATO 2026 - Organizer** configuration and
+[organizer runbook](organizer.md) to provision from Codespaces. Attendee startup
+does not request Azure-management credentials. Never share the authenticated
+organizer environment with students.
+
 Arrange organizer-provided workshop accounts before attendee delivery. Establish
 account/subscription scope, permitted regions and tiers, quotas, attendee access
 policy, expiry, and cleanup authority.
@@ -131,6 +149,10 @@ Azure portal accounts for this lab. Establish a permitted network route from
 laptops and Codespaces, including DNS/SRV lookup and validated TLS. Do not solve
 conference-network problems by allowing the whole internet or sharing admin
 credentials.
+
+A Codespace's outbound IP changed during the live rehearsal after stop/resume.
+Re-observe it and update only its exact firewall entry before cloud access;
+do not assume a previously allowlisted address is still correct.
 
 Do not assume that a database per attendee on one cluster is isolated. Public
 Azure DocumentDB documentation includes database-scoped examples as well as
@@ -152,7 +174,8 @@ separate.
 
 | Observation | Response |
 | --- | --- |
-| Docker cannot start or needs a reboot | Use the prepared Codespaces fallback; do not spend the lab repairing the OS |
+| Codespaces sign-in, policy, or quota blocks startup | Use the agreed pairing/follow-along path; do not spend the lab installing laptop tooling |
+| Container startup fails inside Codespaces | Read the setup error, fix it, and retry `npm run workspace:start`; never hide failure by changing targets |
 | App says `TODO_LIST_SESSIONS` or `TODO_SAVE_FAVORITE` | Work the corresponding exercise, or use the complete-reference override |
 | App says `DATABASE_UNAVAILABLE` | Confirm readiness and the intended target; inspect local logs privately |
 | App says `CATALOG_NOT_SEEDED` | Run seed against that explicit, approved target |
@@ -169,7 +192,7 @@ or replacing the attendee's starter file as a generic fix.
 
 ## Rehearsal checklist
 
-- Fresh setup, not just a warm developer machine.
+- Fresh attendee Codespace and organizer configuration, not just warm containers.
 - Working starter/reference switching without loss of favorites.
 - Both targets seeded with the same catalog.
 - Same repository methods against real local and managed DocumentDB.
@@ -177,8 +200,8 @@ or replacing the attendee's starter file as a generic fix.
 - Retry-safe copying in both directions, including partial outcomes.
 - Local choices preserved on the return trip.
 - Conflict boundary cases and usable calendar import.
-- Laptop-local operation without external app assets or connectivity.
-- Codespaces label, private port, cold startup, and available usage.
+- Honest development-versus-managed labels; no physical-laptop/offline claim.
+- Codespaces private port, cold startup, and available usage.
 - Two-identity isolation and approved network access.
 - Explicit shutdown, credential expiry, and verified cloud cleanup.
 - A full timed rehearsal, with buffer rather than a new last-minute feature.

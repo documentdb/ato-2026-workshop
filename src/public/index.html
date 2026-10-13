@@ -145,7 +145,7 @@
       </div>
       <div class="intro">
         <h1>Build your conference day.</h1>
-        <p class="muted">Pick the sessions you want to attend. Keep your favorites, spot overlaps, and discover what really moves when your app goes from local to cloud.</p>
+        <p class="muted">Pick the sessions you want to attend. Keep your favorites, spot overlaps, and discover what really moves between your development database and managed Azure DocumentDB.</p>
       </div>
     </header>
 
@@ -317,9 +317,9 @@
       }
       $("copy-help").textContent = config.targets.some((target) => target.id === destination())
         ? `Destination: ${label(destination())}. Select up to 100 favorites.`
-        : "Cloud access is not configured. Local planning and calendar export still work.";
+        : "Managed Azure access is not configured. Development planning and calendar export still work.";
       notice("location-notice", config.location === "codespaces"
-        ? "Codespaces fallback: your development database is hosted in Codespaces, not on your laptop. This path requires connectivity and does not demonstrate offline laptop operation."
+        ? "Codespaces development environment: Docker and DocumentDB run here, not on your laptop. You only need a browser and connectivity. Azure DocumentDB is a separate managed target."
         : "");
     }
 

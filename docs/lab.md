@@ -4,6 +4,10 @@ You are building against a real DocumentDB database, using the standard MongoDB
 Node.js driver. Your application code will stay the same when its database moves.
 Its data will not move unless you explicitly copy it.
 
+You only need a browser, a GitHub account, and available Codespaces usage.
+Docker, Node.js, the editor, and the development database run in your Codespace.
+Do not install Docker on your laptop for this workshop.
+
 The repository contains the October 12 snapshot of the published ATO schedule.
 It is not a live feed. Times are published program blocks; several keynotes or
 lightning talks may run in sequence inside the same block. Some Monday events
@@ -15,14 +19,18 @@ before seeding the real schedule.
 
 ## 1. Get to a working environment
 
-Follow [Start on your laptop](../README.md#start-on-your-laptop). If Docker needs
-administrator access or a reboot you cannot resolve quickly, tell a helper and
-switch to Codespaces. Around minute 12, stop spending the whole lab on setup.
+Follow [Start in Codespaces](../README.md#start-in-codespaces) and select
+**ATO 2026 - Attendee**. Wait for the development-database ready message, then
+open private port 3000 from the Ports tab.
 
 Use your own GitHub account for Codespaces. Check that you have usage available.
-If both local Docker and Codespaces are blocked, tell a helper; the instructor
-will need to arrange a pairing or follow-along option rather than pretend the
-environment is working.
+If account policy or quota blocks access, tell a helper early so they can arrange
+pairing or a follow-along path. Do not share account logins or start a last-minute
+Docker installation.
+
+Run every command below in the Codespaces terminal. The internal target name
+`local` means the development DocumentDB inside that Codespace; `cloud` means
+managed Azure DocumentDB.
 
 Open the planner. Check the active-database label and implementation label.
 `TODO_LIST_SESSIONS` is an exercise prompt, not a failed database connection.
@@ -64,11 +72,9 @@ the published program to interpret those overlap warnings.
 
 Restart the app, then refresh. Your favorites should still be there.
 
-On a physical-laptop setup, all app assets and the database are local once setup
-and downloads have finished. You can demonstrate this without changing shared
-conference equipment: briefly disconnect your own laptop, refresh, and save a
-favorite, then reconnect. Do not perform this step in Codespaces; that path is
-cloud-hosted.
+The development database is independent of Azure DocumentDB, but it is still
+hosted in Codespaces. Stay connected to the internet; disconnecting your laptop
+is not part of this workshop.
 
 ## 4. Connect the same code to Azure
 
@@ -89,7 +95,7 @@ docker compose exec app npm run seed -- --target cloud
 ```
 
 Select **Azure DocumentDB** and choose **Switch connection**.
-The session catalog should remain familiar, but your local favorites are absent.
+The session catalog should remain familiar, but your development favorites are absent.
 
 Before trying to "fix" the code, explain:
 
@@ -139,7 +145,8 @@ docker compose exec app npm run migrate -- --target local
 docker compose exec app npm run check -- --target local
 ```
 
-The index supports schedule ordering. The migration adds `attendanceMode` to
+The index exercise makes an index definition repeatable; it does not prove that
+a particular engine will use it for sorting. The migration adds `attendanceMode` to
 version-1 documents. Run it again: it should report zero newly migrated records.
 Apply the corresponding command to `cloud` only when that target is approved.
 
@@ -156,7 +163,9 @@ The file uses real session titles and dates from the captured schedule, not
 practice labels. Check the official schedule for subsequent changes and for the
 sequence of talks inside shared program blocks.
 
-Export before the end of any temporary cloud access. Local code and your local
-database can outlive the hosted sandbox. Follow the stop instructions in the
+Export before the end of temporary Azure access or Codespaces retention. Your
+downloaded calendar is independent of both services. Preserve code changes before
+deleting a Codespace; its development database is not permanent hosting. Follow
+the stop instructions in the
 [README](../README.md#stop-without-losing-your-planner); do not delete volumes as
 part of normal stopping.

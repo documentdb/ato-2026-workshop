@@ -29,7 +29,7 @@ try {
     const owner = await stat(directory);
     await chown(filename, owner.uid, owner.gid);
   }
-  console.log("Created private local configuration. No cloud target is configured.");
+  console.log("Created private development-database configuration. No managed Azure target is configured.");
 } catch (error) {
   if (error.code === "EEXIST") {
     console.log("Kept the existing .env unchanged. To change environments, edit it deliberately.");

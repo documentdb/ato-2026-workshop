@@ -1,0 +1,26 @@
+{
+  "name": "ATO 2026 - Organizer",
+  "image": "mcr.microsoft.com/devcontainers/javascript-node:5-24-bookworm@sha256:16eb68aa0d17eedaaf2566b180854fe4e506478e35aadf790fb02aa089024f13",
+  "features": {
+    "ghcr.io/devcontainers/features/docker-in-docker:2": {},
+    "ghcr.io/devcontainers/features/sshd:1": {},
+    "ghcr.io/devcontainers/features/azure-cli:1.3.0": {
+      "installBicep": true,
+      "bicepVersion": "v0.46.1"
+    }
+  },
+  "containerEnv": {
+    "WORKSHOP_ROLE": "organizer"
+  },
+  "forwardPorts": [3000],
+  "portsAttributes": {
+    "3000": {
+      "label": "Organizer development planner",
+      "onAutoForward": "notify",
+      "visibility": "private"
+    }
+  },
+  "onCreateCommand": "npm ci --ignore-scripts --no-audit --no-fund",
+  "postCreateCommand": "npm run setup && npm run organizer:check",
+  "postStartCommand": "npm run workspace:start"
+}

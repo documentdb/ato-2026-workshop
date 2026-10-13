@@ -7,7 +7,7 @@ import { readPracticeCatalog } from "./fixtures/catalog.js";
 import { findConflicts } from "../src/planner.js";
 import { createCalendar, escapeCalendarText, foldCalendarLine } from "../src/calendar.js";
 import { readConfig, validateCloudUri } from "../src/config.js";
-import { publicError, reportError } from "../src/errors.js";
+import { WorkshopError, publicError, reportError } from "../src/errors.js";
 import { validateSelection } from "../src/transfer.js";
 import * as starter from "../exercises/starter/repository.js";
 
@@ -108,9 +108,47 @@ test("copy selections are bounded, explicit, unique identifiers", () => {
   }
 });
 
-test("starter methods fail explicitly rather than returning fake successful data", async () => {
-  await assert.rejects(starter.listSessions({}, "version"), { code: "TODO_LIST_SESSIONS" });
-  await assert.rejects(starter.saveFavorite({}, "session-1"), { code: "TODO_SAVE_FAVORITE" });
+test("starter methods either explain their TODO or satisfy the completed exercise contract", async () => {
+  const documents = [{ _id: "session-1", catalogVersion: "version" }];
+  const db = {
+    collection(name) {
+      if (name === "sessions") {
+        return {
+          find(filter) {
+            assert.deepEqual(filter, { catalogVersion: "version" });
+            return {
+              sort(order) {
+                assert.deepEqual(order, { startsAt: 1, _id: 1 });
+                return { toArray: async () => documents };
+              },
+            };
+          },
+        };
+      }
+      assert.equal(name, "favorites");
+      return {
+        async updateOne(filter, update, options) {
+          assert.deepEqual(filter, { _id: "session-1" });
+          assert.deepEqual(options, { upsert: true });
+          assert.deepEqual(Object.keys(update), ["$setOnInsert"]);
+          assert.ok(Number.isFinite(Date.parse(update.$setOnInsert.savedAt)));
+          return { upsertedCount: 1 };
+        },
+      };
+    },
+  };
+  try {
+    assert.deepEqual(await starter.listSessions(db, "version"), documents);
+  } catch (error) {
+    if (!(error instanceof WorkshopError) || error.code !== "TODO_LIST_SESSIONS") throw error;
+    assert.equal(error.status, 501);
+  }
+  try {
+    assert.deepEqual(await starter.saveFavorite(db, "session-1"), { upsertedCount: 1 });
+  } catch (error) {
+    if (!(error instanceof WorkshopError) || error.code !== "TODO_SAVE_FAVORITE") throw error;
+    assert.equal(error.status, 501);
+  }
 });
 
 test("browser scripts parse and explicit light/dark themes win over OS preference", async () => {
