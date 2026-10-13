@@ -154,12 +154,12 @@ A Codespace's outbound IP changed during the live rehearsal after stop/resume.
 Re-observe it and update only its exact firewall entry before cloud access;
 do not assume a previously allowlisted address is still correct.
 
-Do not assume that a database per attendee on one cluster is isolated. Public
-Azure DocumentDB documentation includes database-scoped examples as well as
-cluster-wide role descriptions. Verify what the selected service actually enforces
-using two test identities and denied cross-attendee reads and writes. Separate
-participant clusters remain an option if database-scoped permissions are not
-sufficient; that topology is not yet approved or provisioned.
+Do not assume that a database per attendee on one cluster is isolated. Current
+native secondary-user permissions are cluster-wide. Use separately assigned
+clusters for the direct-credential model and verify denied cross-attendee access
+with two test identities. The two-cluster control-plane rehearsal succeeded;
+managed data-plane isolation and the classroom-scale rollout remain unverified
+and need their own approved scope.
 
 Record the approved scope, runtime bounds, exact workshop resource ownership,
 credential delivery/revocation, and cleanup owner before provisioning. If cleanup
