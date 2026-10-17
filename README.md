@@ -144,7 +144,8 @@ MongoDB feature parity or identical operational behavior.
 - `workshop_meta`: catalog ownership/readiness and practice/official metadata.
 - Switching connections does not seed, copy, replace, or delete favorites.
 - Explicit copying inserts only missing selected favorites; retries do not create
-  duplicates or overwrite their initial timestamps.
+  duplicates or overwrite their initial timestamps at the destination. Each site
+  records its own first-save time; copying does not transplant the source timestamp.
 - Per-record results distinguish copied, already present, invalid, failed, and
   unattempted. Partial success is not a transaction rollback.
 - Removals do not synchronize; this is not replication, general conflict

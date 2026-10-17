@@ -83,11 +83,13 @@ test("two real independent DocumentDB servers: independent data, retry-safe roun
   const partial = await copyFavorites(source, partialDestination, [ids[0], ids[1], ids[3]]);
   assert.equal(partial.complete, false);
   assert.deepEqual(partial.results.map((item) => item.status), ["copied", "failed", "invalid"]);
+  const destinationSavedAt = (await destination.collection("favorites").findOne({ _id: ids[0] })).savedAt;
   const retry = await copyFavorites(source, destination, [ids[0], ids[1]]);
   assert.equal(retry.complete, true);
   assert.deepEqual(retry.results.map((item) => item.status), ["already_present", "copied"]);
   const repeated = await copyFavorites(source, destination, [ids[0], ids[1]]);
-  assert.equal((await destination.collection("favorites").findOne({ _id: ids[0] })).savedAt, originalSavedAt);
+  assert.equal((await destination.collection("favorites").findOne({ _id: ids[0] })).savedAt, destinationSavedAt);
+  assert.equal((await source.collection("favorites").findOne({ _id: ids[0] })).savedAt, originalSavedAt);
   assert.ok(repeated.results.every((item) => item.status === "already_present"));
   await copyFavorites(destination, source, [ids[2]]);
   assert.deepEqual(new Set((await readPlanner(source, repository)).favorites), new Set(ids.slice(0, 3)));

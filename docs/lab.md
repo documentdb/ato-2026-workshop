@@ -121,7 +121,8 @@ Read the confirmation instead of assuming the destination.
 
 Partial results are per record: copied, already present, invalid, failed, or
 unattempted. A failed batch is not automatically rolled back. Resolve the cause
-and retry safely; initial save timestamps and existing choices are preserved.
+and retry safely; each destination's initial save timestamps and existing choices
+are preserved. Each site records its own first-save time, not the other site's.
 
 ## 6. Bring one back
 

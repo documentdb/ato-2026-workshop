@@ -170,10 +170,14 @@ cluster-wide, so database names alone do not isolate participants.
 
 ## 5. Rehearse the application
 
-Use the organizer's development app to verify the managed connection before
-attendee delivery. Then follow the [lab](lab.md): seed the same catalog, switch
-targets without moving favorites, copy selected favorites, retry safely, and
-copy a new cloud favorite back.
+Use the explicit presenter scenario in the [presenter runbook](presenter.md)
+to verify the managed connection: seed the same catalog, switch targets without
+moving favorites, copy selected favorites, retry safely, and copy a new cloud
+favorite back. The attendee lab now uses only Site A/B and does not enable Azure.
+If rehearsing from Codespaces, describe self-hosted-to-managed portability, not a
+physical-laptop/on-prem topology. These newly provisioned rehearsal resources still
+follow this legacy runbook's ownership-checked cleanup, not the existing-resource
+retention instructions in the presenter guide.
 
 Opening a Codespace from the repository does not demonstrate this managed
 data-plane journey. Neither the new organizer profile nor this complete procedure

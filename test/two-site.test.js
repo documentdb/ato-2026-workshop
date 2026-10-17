@@ -143,3 +143,10 @@ test("Compose default never passes Azure settings and keeps the old Site A volum
   assert.match(presenter, /WORKSHOP_SCENARIO: presenter/);
   assert.match(presenter, /\$\{CLOUD_DOCUMENTDB_URI:-\}/);
 });
+
+
+test("container package metadata stays readable by the non-root runtime with restrictive host modes", async () => {
+  const dockerfile = await readFile(new URL("../Dockerfile", import.meta.url), "utf8");
+  assert.match(dockerfile, /COPY --chown=node:node package\.json package-lock\.json \.npmrc \.\//);
+  assert.match(dockerfile, /USER node/);
+});
