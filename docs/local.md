@@ -1,42 +1,53 @@
 # Optional laptop-local setup
 
-The workshop is browser-first. Use this appendix only if you already have Docker
-working and prefer a physical-laptop environment; do not spend the timed workshop
-installing or repairing Docker.
+The attendee workshop is browser-first. Use this appendix only if Docker already
+works on your laptop; do not spend the timed workshop installing/repairing it.
+You need Docker with Linux containers, Docker Compose, a browser and text editor.
+No host Node.js, Azure CLI or Kubernetes installation is required.
 
-You need Docker with Linux containers, Docker Compose, a browser, and a text
-editor. No host Node.js installation is required. Download/extract the repository
-ZIP or clone it, then open a terminal in the project directory.
+Download/extract or clone the repository and open a terminal in its directory.
+Use a consistent directory and Compose project name to keep the same volumes.
 
 ```sh
 docker compose -f compose.setup.yaml run --rm setup
-docker compose up --build -d --wait --wait-timeout 240
-docker compose exec app npm run seed -- --target local
+docker compose -f compose.yaml up --build -d --wait --wait-timeout 240
+docker compose -f compose.yaml exec app npm run wait:database -- --target local
+docker compose -f compose.yaml exec app npm run wait:database -- --target site-b
+docker compose -f compose.yaml exec app npm run seed -- --target local
+docker compose -f compose.yaml exec app npm run seed -- --target site-b
 ```
 
-Open **http://localhost:3000**. The starter intentionally reports
-`TODO_LIST_SESSIONS` until you finish the first exercise. Continue with the
-[attendee guide](lab.md), interpreting its development target as your local
-container instead of a container inside Codespaces.
+Stop at any failing command, diagnose it, then retry; do not skip readiness or
+pretend the second site is available. These commands access only local sites.
 
-Setup creates private local credentials in `.env` and never replaces an existing
-file. The database has no published host port; the app is bound to loopback.
-Do not expose either publicly.
+Open **http://localhost:3000**. The starter reports `TODO_LIST_SESSIONS` until
+the first exercise is complete. Follow the [lab](lab.md); here both independent
+sites run on your physical laptop rather than inside Codespaces. It is still a
+two-site simulation, not two physical sites or cloud providers.
 
-On a network requiring an approved anonymous npm mirror, put its URL in
-`NPM_REGISTRY` in your private `.env`. Never include a token/password in a build
-argument or disable TLS verification.
+Setup creates independent private credentials. For an old `.env`, it preserves
+all old values and appends only missing Site B settings. It refuses partial/empty
+Site B credentials rather than guessing about an existing volume. Neither database
+publishes a host port; the app binds to loopback. Do not expose them publicly.
 
-Your development data persists in the named Docker volume. The
-[practice-to-official catalog instructions](../README.md#already-ran-the-practice-version)
-preserve an older notebook. Changing code variants does not reset the volume.
+On a network requiring an approved anonymous npm mirror, set `NPM_REGISTRY` in
+your private `.env`. Never put tokens/passwords in build arguments or disable TLS.
 
-To stop without deleting your notebook:
+Site A retains the original `documentdb-data` volume; Site B has its own
+`documentdb-site-b-data` volume. The
+[existing-notebook instructions](../README.md#existing-notebook-or-older-practice-version)
+preserve older practice data. Switching starter/reference does not reset either.
+
+To stop without deleting notebooks:
 
 ```sh
-docker compose stop
+docker compose -f compose.yaml stop
 ```
 
-Once setup and image downloads finish, the app and development database can run
-without internet access. Azure connectivity still needs a network connection.
-This optional behavior is not an offline promise for the Codespaces-first workshop.
+After dependencies/images are downloaded and startup completes, the self-hosted
+app/databases can operate without internet. Official schedule links still need
+connectivity. This is not an offline promise for Codespaces.
+
+For the **presenter-only** actual laptop/Azure capstone, follow the
+[separate runbook](presenter.md) and explicit presenter override. The normal
+attendee commands do not enable Azure even when cloud settings exist in `.env`.

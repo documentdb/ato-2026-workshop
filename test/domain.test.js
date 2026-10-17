@@ -11,7 +11,7 @@ import { WorkshopError, publicError, reportError } from "../src/errors.js";
 import { validateSelection } from "../src/transfer.js";
 import * as starter from "../exercises/starter/repository.js";
 
-const localEnv = { DOCUMENTDB_USERNAME: "test-user", DOCUMENTDB_PASSWORD: "test-only", LOCAL_DOCUMENTDB_HOST: "localhost" };
+const localEnv = { DOCUMENTDB_USERNAME: "test-user", DOCUMENTDB_PASSWORD: "test-only", LOCAL_DOCUMENTDB_HOST: "localhost", SITE_B_USERNAME: "site-b-user", SITE_B_PASSWORD: "site-b-only" };
 
 test("the practice catalog is explicit, stable, and independent of input ordering", async () => {
   const catalog = await readPracticeCatalog();
@@ -69,14 +69,14 @@ test("calendar folding counts UTF-8 octets, including the continuation space", (
   assert.equal(escapeCalendarText("a\r\nb,c;d\\e"), "a\\nb\\,c\\;d\\\\e");
 });
 
-test("only the local development target permits a development certificate", () => {
-  const config = readConfig({ ...localEnv, CLOUD_DOCUMENTDB_URI: "mongodb+srv://cluster.example.invalid/", CLOUD_DATABASE_NAME: "test_workshop" });
+test("only fixed local development targets permit a development certificate", () => {
+  const config = readConfig({ ...localEnv, WORKSHOP_SCENARIO: "presenter", CLOUD_DOCUMENTDB_URI: "mongodb+srv://cluster.example.invalid/", CLOUD_DATABASE_NAME: "test_workshop" });
   assert.equal(config.targets.local.developmentCertificate, true);
   assert.equal(config.targets.cloud.developmentCertificate, false);
   assert.equal(config.activeTarget, "local");
   assert.throws(() => readConfig({ ...localEnv, LOCAL_DOCUMENTDB_HOST: "remote.example.invalid" }), /development database/);
   assert.throws(() => readConfig({ ...localEnv, ACTIVE_TARGET: "cloud" }), /not configured/);
-  assert.throws(() => readConfig({ ...localEnv, CLOUD_DOCUMENTDB_URI: "mongodb+srv://cluster.example.invalid/" }), /explicit database name/);
+  assert.throws(() => readConfig({ ...localEnv, WORKSHOP_SCENARIO: "presenter", CLOUD_DOCUMENTDB_URI: "mongodb+srv://cluster.example.invalid/" }), /explicit database name/);
   assert.throws(() => readConfig({ ...localEnv, WORKSHOP_MODE: "typo" }), /WORKSHOP_MODE/);
   assert.throws(() => readConfig({ ...localEnv, WORKSHOP_PUBLIC_HOST: "*.example.invalid" }), /exact hostname/);
 });

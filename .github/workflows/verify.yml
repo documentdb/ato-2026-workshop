@@ -1,0 +1,33 @@
+name: Verify workshop
+on:
+  pull_request:
+  push:
+    branches: [main]
+permissions:
+  contents: read
+jobs:
+  two-site-workshop:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      COMPOSE_PROJECT_NAME: ato-ci
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+      - run: npm ci --ignore-scripts --no-audit --no-fund
+      - run: npm test
+      - name: Start and seed only the two self-hosted sites
+        run: npm run workspace:start
+      - name: Exercise two independent database servers
+        run: docker compose -f compose.yaml exec -T app npm run test:database
+      - name: Verify complete-reference recovery
+        run: |
+          docker compose -f compose.yaml -f compose.complete.yaml up -d --wait --wait-timeout 240 app
+          curl --fail --silent http://localhost:3000/api/state > /tmp/planner-state.json
+          node --input-type=module -e 'import fs from "node:fs"; const s=JSON.parse(fs.readFileSync("/tmp/planner-state.json")); if(s.target!=="local" || s.sessions.length!==216) process.exit(1)'
+      - name: Stop this ephemeral CI project only
+        if: always()
+        run: docker compose -f compose.yaml down --volumes

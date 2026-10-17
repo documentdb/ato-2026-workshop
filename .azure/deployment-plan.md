@@ -1,110 +1,75 @@
-# Azure deployment plan
+# Workshop delivery plan
 
-**Status: Ready for Validation - Codespaces-first; live organizer checks pending.**
+**Direction: subscription-free attendee lab; existing-resource presenter capstone.**
+No new Azure deployment is required for the selected workshop. The organizer has
+an existing Azure DocumentDB instance available for a presenter-only demonstration.
+Availability is not a claim that the application round trip has been rehearsed.
 
-## Direction
+## Mandatory attendee path
 
-Attendees use a browser and a GitHub account. Node.js, Docker, and the development
-DocumentDB run inside their Codespace. A physical-laptop database and offline
-operation are no longer workshop requirements. Local Docker remains optional.
+- Browser + GitHub account + available Codespaces usage/connectivity.
+- Two independent OSS DocumentDB containers, credentials and named volumes:
+  Site A / Site B. The old `documentdb-data` volume remains Site A.
+- Same two MongoDB-driver TODOs/reference, explicit connection switching,
+  selected-favorite copying, repeatable retry, return trip, calendar export.
+- Site simulation, not actual on-prem/cloud topology, replication or failover.
+- No Azure credentials, Azure management login, new subscriptions or Kubernetes.
+- Base Compose excludes cloud settings even from a legacy `.env`; bounded startup
+  waits for and seeds both local sites, stopping on failure.
+- Setup preserves existing notebook configuration and appends only absent Site B
+  fields. Partial credentials or incompatible catalog remnants fail for review.
 
-The teaching comparison is a self-hosted development database versus managed
-Azure DocumentDB. Both may physically run in the cloud; do not describe the
-Codespaces path as offline or as running on the attendee's laptop.
+## Presenter-only cloud path
 
-## Role separation
+Use [docs/presenter.md](../docs/presenter.md), a physical laptop running the app
+and local DocumentDB, and one existing approved managed Azure DocumentDB endpoint.
+A dedicated authorized demo database prevents mixing workshop and shared app data.
+`compose.presenter.yaml` explicitly selects local/cloud targets instead of Site A/B.
+It neither provisions nor automatically seeds Azure. Attendees receive no credentials.
 
-| Environment | Tools and purpose | Azure access |
-| --- | --- | --- |
-| Attendee (default) | Node.js, Docker, DocumentDB, TODOs/reference app | Organizer-issued database credentials only |
-| Organizer (alternate) | Attendee tools plus Azure CLI and Bicep | Explicit Entra sign-in and approved deployment scope |
+The proof is selected same-driver operations and explicit application-level
+copy-out/back, not streaming replication or full MongoDB/operational parity.
+Codespaces-to-Azure must be described as self-hosted-to-managed, not on-prem.
+Have a rehearsed recording; cloud/network problems must not block attendee completion.
 
-The organizer configuration installs tools but does not sign in or provision
-anything on startup. A configuration name is not an authorization boundary:
-Azure RBAC, identity, and network controls still enforce access. Never share the
-organizer's Azure login cache or authenticated Codespace with attendees.
+Keep validated cloud TLS, private credential handling and approved narrow network
+access. Do not disable certificates, open all-address firewall ranges, or share
+an authenticated organizer environment. Existing resources can still incur costs;
+cleanup follows their owner's policy, not generic cluster/group deletion.
 
-## Preparation work
+## Retained optional infrastructure
 
-- Make the browser-first entry point and attendee prerequisites the default.
-- Share a bounded development-database startup command between both configurations.
-- Preinstall Azure CLI and Bicep in the organizer configuration.
-- Provide a Linux/Codespaces helper that prepares private, owner-only deployment
-  inputs outside Git, without performing Azure operations.
-- Document explicit validation, deployment, observation, and ownership-checked
-  cleanup commands in the organizer runbook.
-- Preserve the same data layer, explicit copying, existing favorites, and the
-  optional laptop-local path.
+The Organizer dev-container, Azure CLI/Bicep tooling, private parameter helper,
+and two-M30-cluster rehearsal templates remain for **separately authorized future
+provisioning only**. See [the legacy runbook](../docs/legacy-azure-provisioning.md).
+They are not an attendee dependency, classroom-capacity plan, or authorization
+to deploy. Native-user cluster-wide permissions are why a shared managed cluster
+with database-per-attendee credentials was not chosen for this workshop.
 
-## Infrastructure recipe
+Earlier evidence: a real single-development-database Codespace app/API rehearsal
+passed; the previous corrected Azure two-cluster control-plane deployment reached
+Ready with public access disabled and was cleaned up. Managed CRUD/copy-back/
+cross-attendee authentication did **not** finish in that run. Do not carry that
+control-plane result forward as a managed data-plane or revised two-site proof.
 
-Use standalone Bicep through Azure CLI from the organizer Codespace. No `azd`
-project, CI workflow, standing worker, or new IAM role assignment is introduced.
+## Verification gates
 
-The current templates model a two-attendee rehearsal: a fresh group and two
-isolated M30 clusters in East US, one shard and 128 GiB per cluster, native
-authentication, no HA or replicas, and public access initially disabled. This
-is a rehearsal inventory, not a classroom-wide sizing recommendation.
+Automated gates in this revision:
 
-Only observed single IPv4 client addresses are allowed. Do not create an
-all-address firewall range or the special Azure-service bypass rule. Re-observe
-Codespaces egress after a restart.
+- Offline Linux tests, including owner-only organizer files and setup preservation.
+- Two actual independent local database services, temporary per-run test databases,
+  copy-out/back/retry, partial outcomes, timestamp retention, index/migration, HTTP.
+- Complete-reference recovery and expected 216-entry catalog.
+- No cloud endpoint used by attendee startup or database integration tests.
 
-## Credentials and execution boundary
+Still requiring environment-specific acceptance (not replaced by local/CI checks):
 
-The parameter-preparation helper generates credentials in private storage in the
-organizer environment. It does not deploy, grant approval, or verify cloud state.
-The parameter file is sensitive even though Bicep marks its password object
-secure. Keep it out of Git, terminal output, screenshots, and attendee workspaces.
+- [ ] Fresh revised attendee/organizer Codespaces builds and cold startup timing.
+- [ ] Measured two-site resource needs on representative accounts/machines.
+- [ ] Presenter actual laptop → approved managed Azure seed, copy-out, retry, copy-back.
+- [ ] Approved real-network access and private credential delivery to the presenter.
+- [ ] Verified backup recording and calendar-application import.
+- [ ] Full 105-minute timed rehearsal, pairing fallback, export and safe stopping.
 
-Before any live run, confirm the actual subscription, region, permissions,
-resource inventory, execution limits, provider-specific usage policy, expiry,
-and cleanup authority outside this public repository. Keep ownership records
-before writes and verify real provider results afterward.
-
-The organizer runbook is supervised, not an unattended scheduler. Stopping a
-Codespace does not stop or delete Azure resources. An expiry tag is not an
-automatic cleanup mechanism.
-
-## Existing rehearsal evidence
-
-- A real two-core Codespace ran the published app and its development database.
-  Completed exercises, 216 schedule entries, favorites, duplicate prevention,
-  overlaps, and calendar export were exercised.
-- The corrected exercise-aware tests passed locally and in Codespaces.
-- Azure template validation and what-if passed, but the first real request
-  rejected the documented `networkBypassMode` property. The templates now omit it.
-- The corrected two-cluster deployment reached `Succeeded` and both clusters
-  reached `Ready` with public access disabled. Managed CRUD, copy-back, and
-  cross-attendee authentication were not completed within that rehearsal.
-- The temporary Codespace, clusters, and empty group were deleted and temporary
-  credentials removed.
-
-## Remaining validation
-
-- [ ] Fresh startup of both revised dev-container configurations.
-- [ ] Organizer Azure sign-in under the target tenant's MFA/conditional-access policy.
-- [ ] Approved scope, quotas, policy checks, validation, and what-if for a new run.
-- [ ] Managed database connection, seed, copy-out, copy-back, and credential isolation.
-- [ ] Narrow-IP refresh after stop/resume and verified resource cleanup.
-- [ ] Calendar-app import and the full 105-minute attendee rehearsal.
-
-Static checks or a previously healthy Codespace do not establish these outcomes.
-
-## Local validation proof
-
-- Twenty-five focused checks passed in a non-root Linux container, including
-  owner-only organizer-file permissions, refusal to overwrite a prior run, and
-  refusal to write organizer state inside the repository.
-- Windows checks passed with the POSIX-only permission test explicitly skipped.
-- The rehearsal Bicep compiled successfully.
-- The Azure CLI feature's `installBicep` option and pinned feature release were
-  checked against the official published manifest. The pinned Bicep release
-  includes public Linux x64 and arm64 assets.
-- Shared startup is bounded and seeds only the development target. Neither
-  configuration signs in to Azure or provisions cloud resources on startup.
-- No managed identities or new Azure IAM role assignments are introduced.
-
-The new organizer profile has not yet completed a fresh Codespaces build or a
-managed-data-plane rehearsal. This is preparation evidence, not a `Validated`
-Azure deployment or permission to start a new live run.
+No unattended cleanup worker, cloud IAM grants, Kubernetes dependency, background
+sync, Azure app hosting or new cloud resources are introduced by this plan.

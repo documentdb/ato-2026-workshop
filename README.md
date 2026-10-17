@@ -4,206 +4,222 @@ A 105-minute DocumentDB workshop for All Things Open 2026. Build a personal
 conference planner: browse sessions, save favorites, flag overlaps, and download
 a calendar. Then discover why changing a database connection does not move data.
 
-**Codespaces-first:** attendees need a browser, a GitHub account, and available
-Codespaces usage. No Docker, Node.js, Git, or Azure CLI installation is required
-on their laptops. Docker and the development database run inside Codespaces.
+**No attendee Azure subscription, cloud database credentials, or Kubernetes setup.**
+Attendees use two independent self-hosted DocumentDB instances: **Site A / Site B**.
+They share application code, not storage, credentials, or favorites. In Codespaces,
+both instances run inside the same development environment: this is a **two-site
+simulation**, not an on-prem deployment, live hybrid cloud, replication, or failover.
+The presenter separately demonstrates the same application against a real local
+laptop database and an existing, authorized Azure DocumentDB instance.
 
-The app includes a snapshot of the
-[official ATO schedule](https://2026.allthingsopen.org/schedule), captured on
-October 12, 2026. It contains 216 distinct scheduled entries across October 18-20.
-A live Codespaces app/API rehearsal passed. The revised organizer configuration
-and the full managed-Azure round trip still need a fresh end-to-end rehearsal.
-Opening either configuration does not provision Azure resources.
+**Codespaces-first:** bring a browser, a GitHub account, and available Codespaces
+usage. No Docker, Node.js, Git, Azure CLI, or Kubernetes installation is required
+on attendees' laptops. Codespaces still requires internet access and available
+usage; it is not a promise of free or offline hosting.
 
-The web schedule is the primary data source; the supplied October 9 Monday and
-Tuesday PDFs were cross-checked, not silently merged. See the
-[source notes](docs/instructor.md#schedule-data) for duplicates, unresolved
-disagreements, unavailable details, and the excluded invalid break time.
+The app includes the [official ATO schedule](https://2026.allthingsopen.org/schedule)
+snapshot captured October 12, 2026: **216 distinct scheduled entries, October 18–20**.
+The earlier single-development-database app/API was rehearsed in Codespaces.
+The revised two-site cold Codespaces startup, timed classroom delivery, calendar-app
+import, and presenter Azure round trip still require their own acceptance rehearsal.
+Automated local/CI checks are not proof of those environments.
+
+The web schedule is primary; October 9 Monday/Tuesday PDFs were cross-checked,
+not silently merged. See [source notes](docs/instructor.md#schedule-data) for
+cross-listings, unresolved disagreements, and the excluded invalid break time.
 
 ## Start in Codespaces
 
 1. [Open the workshop in Codespaces](https://codespaces.new/documentdb/ato-2026-workshop).
-   Choose **ATO 2026 - Attendee** if prompted for a dev-container configuration.
-2. Wait for setup to finish. It installs dependencies, generates private
-   development credentials, starts DocumentDB and the app, and seeds the catalog.
-   The terminal reports when the development database and catalog are ready.
-3. Open port **3000** from the **Ports** tab. Keep its visibility **Private**.
-4. Follow the [attendee guide](docs/lab.md). The starter's `TODO_LIST_SESSIONS`
-   prompt is intentional until you complete the first exercise.
+   Choose **ATO 2026 - Attendee** if prompted.
+2. Wait for setup to finish. It installs dependencies, generates independent
+   private development credentials, starts both databases and the app, waits for
+   each database, and seeds the same catalog in both. It does not copy favorites.
+3. When the terminal says **Site A and Site B are ready and both catalogs are
+   seeded**, open port **3000** in the **Ports** tab. Keep visibility **Private**.
+4. Follow the [attendee guide](docs/lab.md). `TODO_LIST_SESSIONS` is intentional
+   until you finish the first exercise; it is not a database connection failure.
 
 Every workshop terminal command runs **inside Codespaces**, unless explicitly
-following the optional laptop-local appendix. The browser editor is your editor.
+following the optional [laptop-local appendix](docs/local.md).
 
-The Codespace needs connectivity and available GitHub usage; a GitHub account
-alone does not guarantee access or free usage. If account policy or quota blocks
-startup, ask a helper for a pairing or follow-along path. Do not publish ports or
-share login sessions to get around access controls.
+If account policy or quota blocks startup, ask a helper for the agreed pairing or
+follow-along path. Do not share logins or publish ports to bypass access controls.
+Two databases need more memory/storage than the earlier single-site version;
+preflight cold creation on the chosen Codespaces machine before class. Helpers
+should triage at minute 12, not spend the workshop installing Docker on laptops.
 
-The source calls its development target `local`: that means local to the
-development environment, not physically on your laptop. The second target,
-`cloud`, is managed Azure DocumentDB. This is not an offline workshop.
-
-Setup never overwrites an existing `.env`. If startup fails, inspect the terminal
-error, resolve it, and retry:
+Retry a failed setup after reading and resolving the error:
 
 ```sh
 npm run workspace:start
 ```
 
-This starts and seeds only the development database; it does not sign in to Azure
-or provision cloud resources.
+This command selects the attendee Compose file explicitly, starts at Site A,
+waits for **both** local services, and seeds only `local` and `site-b`.
+A failed step stops startup; readiness is not reported after a failed second site.
+The default Compose file does not pass Azure connection values to the app, even
+if they remain in an older `.env`. No Azure login, provisioning, or seed occurs.
 
-### Already ran the practice version?
+### Existing notebook or older practice version?
 
-Seeding this snapshot into a practice database intentionally returns
-`CATALOG_MISMATCH`. Do not delete the volume or overwrite its catalog to get past it.
-To keep that practice notebook intact, choose a fresh local database name in your
-private `.env`, for example `LOCAL_DATABASE_NAME=ato_workshop_2026`, recreate the
-app with your usual Compose command, and seed `local` again. The old database
-and its favorites remain in the volume. Reverting the name selects the old data.
+Keep the same checkout directory and Compose project name to retain the existing
+`documentdb-data` volume: it is still **Site A**. Site B gets a new, separate
+`documentdb-site-b-data` volume. Changing directories/project names selects other
+volumes; it does not move your notebook.
 
-Practice favorites are fictional sessions and cannot be mapped automatically
-onto real conference sessions. No existing database or favorite is migrated by
-updating this repository.
+Setup preserves every existing `.env` value and appends only missing Site B
+settings. It never rotates Site A credentials. Partial/empty Site B credentials
+require manual review rather than generating a password for a possibly existing
+volume. Do not delete `.env` or volumes as a repair step.
+
+Seeding the real snapshot into a practice database returns `CATALOG_MISMATCH`.
+Choose a fresh name in your private `.env`, for example
+`LOCAL_DATABASE_NAME=ato_workshop_2026` (and `SITE_B_DATABASE_NAME` if Site B also
+contains an older catalog). Recreate the app, then seed both targets:
+
+```sh
+docker compose -f compose.yaml up -d --wait --wait-timeout 240 app
+docker compose -f compose.yaml exec app npm run seed -- --target local
+docker compose -f compose.yaml exec app npm run seed -- --target site-b
+```
+
+The old database/favorites remain in their volume; reverting the name selects
+them again. Use the complete-reference override too if that is your active mode.
+Fictional practice favorites cannot automatically map to real conference sessions.
+An interrupted seed of the same catalog can be retried; incompatible partial
+catalogs are rejected rather than silently hidden or overwritten.
 
 ## Complete reference and recovery
 
-The two implementations use the same application, fixture, configuration, and
-database volume:
+The starter and reference use the same app, catalog, configuration, and volumes:
 
-| Version | File | Purpose |
-| --- | --- | --- |
-| TODO starter | [exercises/starter/repository.js](exercises/starter/repository.js) | Two focused database exercises |
-| Complete reference | [examples/complete/repository.js](examples/complete/repository.js) | Working implementation and recovery path |
+- [TODO starter](exercises/starter/repository.js): two focused driver exercises.
+- [Complete reference](examples/complete/repository.js): working recovery path.
 
-In the Codespaces terminal, run the complete reference without editing or
-replacing your exercise:
+Run the reference **without replacing your exercise or resetting favorites**:
 
 ```sh
 docker compose -f compose.yaml -f compose.complete.yaml up -d --wait --wait-timeout 240 app
 ```
 
-To return to the starter:
+Return to the starter (unless you deliberately set `WORKSHOP_MODE` in `.env`):
 
 ```sh
-docker compose up -d --wait --wait-timeout 240 app
+docker compose -f compose.yaml up -d --wait --wait-timeout 240 app
 ```
 
-Refresh the browser after a restart. The API's request token changes when the
-server restarts. Changes to the repository exercise file restart the Node server
-automatically. If Docker file notifications are unavailable, use:
+Refresh the browser after every app restart: its request token changes. Node
+watches the exercise file. If Docker file notifications are unavailable:
 
 ```sh
-docker compose restart app
+docker compose -f compose.yaml restart app
 ```
 
-## Attendee and organizer environments
+The attendee app always restarts at **Site A**. Switching the live connection is
+explicit and never falls back silently after a failure. `WORKSHOP_MODE` selects
+starter/reference; the separate `WORKSHOP_SCENARIO` selects attendee/presenter.
+The base Compose file fixes the scenario to `attendee`.
 
-| Configuration | Purpose | Azure identity |
-| --- | --- | --- |
-| **ATO 2026 - Attendee** (default) | Complete the TODOs, compare databases, copy favorites, export a calendar | No Azure-management login; use assigned database credentials |
-| **ATO 2026 - Organizer** | The same development environment, plus preinstalled Azure CLI and Bicep | Explicit sign-in by an authorized organizer |
+## What the two sites teach
 
-See [deploying from an organizer Codespace](docs/organizer.md). Do not share an
-authenticated organizer Codespace, Azure login cache, or administrator credentials
-with attendees. Selecting a configuration installs tools; it grants no Azure
-permissions.
+```text
+Browser -> Node app -> Site A (OSS DocumentDB, own credentials + volume)
+                   -> Site B (OSS DocumentDB, own credentials + volume)
+                      One active target at a time; explicit copying only
 
-Optional GitHub CLI diagnostics use the SSH feature. Browser-only attendees do
-not need a local GitHub CLI or SSH setup.
+Presenter capstone, separately:
+Laptop app + local DocumentDB <-> existing managed Azure DocumentDB
+                                 Explicit favorite copying, not replication
+```
 
-## Optional laptop-local path
+The standard MongoDB Node.js driver talks to DocumentDB's MongoDB-compatible API.
+The repository methods do not branch by deployment. The self-hosted DocumentDB
+engine is built on PostgreSQL; Azure supplies a managed operational environment.
+The exercise proves the specific driver operations tested here, not universal
+MongoDB feature parity or identical operational behavior.
 
-Already have Docker and prefer your own machine? The
-[laptop-local appendix](docs/local.md) uses the same application and Compose
-files. It is not an attendee prerequisite and is not part of the timed setup.
+- `sessions`: seeded catalog with stable identifiers and UTC times.
+- `favorites`: selected session ID and its initial save timestamp.
+- `workshop_meta`: catalog ownership/readiness and practice/official metadata.
+- Switching connections does not seed, copy, replace, or delete favorites.
+- Explicit copying inserts only missing selected favorites; retries do not create
+  duplicates or overwrite their initial timestamps at the destination. Each site
+  records its own first-save time; copying does not transplant the source timestamp.
+- Per-record results distinguish copied, already present, invalid, failed, and
+  unattempted. Partial success is not a transaction rollback.
+- Removals do not synchronize; this is not replication, general conflict
+  resolution, or automatic failover.
 
-## How the data works
-
-- `sessions` holds a seeded catalog with stable identifiers and UTC times.
-- `favorites` holds a selected session ID and its initial save timestamp.
-- `workshop_meta` identifies the catalog version and whether it is practice data.
-- The browser talks to the Node API, never directly to a database.
-- Connection changes do not seed, copy, replace, or delete favorites.
-- Explicit copying only inserts missing selected favorites. Repeating it does
-  not duplicate favorites or overwrite their original save timestamps.
-- Copy results distinguish copied, already present, invalid, failed, and
-  unattempted records. Retrying is safe after resolving a partial failure.
-- Copying does not synchronize removals or resolve arbitrary document conflicts.
-
-Both database targets need the same catalog before a copy. The seed command is
-explicit, preserves favorites and migrated documents, and refuses a known
-different catalog. Loading a new conference schedule is a reviewed data change,
-not an automatic startup refresh.
-
-Calendar export is a snapshot, not a calendar subscription. It retains the
-published block times; individual keynotes or lightning talks within a shared
-block do not have invented per-talk timings. Overlap warnings are checks, not
-proof that two talks in the same program compete. Favorites do not reserve seats
-or confer access to events requiring separate registration.
-
-The original practice catalog is retained only as a deterministic test fixture.
-Actual schedule changes still require a reviewed update:
+Both sites need the same catalog. Seeding preserves favorites and migrations and
+rejects a different catalog. A schedule update is a reviewed data change, not a
+startup scrape. Reproduce the checked-in catalog/audit offline with:
 
 ```sh
 npm run import:schedule
 ```
 
-This offline command reproduces the catalog and
-[audit report](data/schedule-import-report.json) from the captured
-[public metadata](data/schedule-source.json). It neither scrapes the network nor
-changes a database. Capture and review a new source snapshot deliberately before
-using it for an update.
+The [captured source](data/schedule-source.json) and
+[audit report](data/schedule-import-report.json) preserve provenance. A replacement
+snapshot requires reviewed migration or fresh databases.
 
-## Managed Azure DocumentDB, later
+Calendar export is a snapshot, not a subscription. Published blocks may contain
+sequential keynotes/lightning talks; no per-talk timing is invented. Overlap
+warnings need interpretation. Favorites neither reserve seats nor grant entry to
+separately registered events.
 
-An organizer must provide an approved, isolated sandbox and its database
-credentials. Leave the cloud fields in `.env` blank until then. Never commit the
-file, paste connection strings into screenshots, or put credentials in the UI.
+## Presenter-only real Azure capstone
 
-See [organizer guidance](docs/instructor.md#azure-readiness) before enabling cloud
-access. The managed database must validate TLS; the development container's
-self-signed certificate exception is not used for the cloud target.
+Follow [the presenter runbook](docs/presenter.md). Use one existing approved Azure
+DocumentDB instance and a dedicated approved demo database. Attendees never need
+its credentials. An existing resource avoids new provisioning, not access policy
+or charges. Managed TLS validation remains enabled.
 
-The primary app stays in Codespaces. Azure app hosting, background sync, personal
-Azure-account creation, and an attendee login system are not workshop requirements.
+Use **actual laptop-local** DocumentDB for an on-prem/cloud analogy. A Codespace
+connected to Azure is self-hosted-to-managed, not an on-prem demonstration.
+Keep a rehearsed recording as backup; the attendee lab and calendar outcome
+remain complete if cloud networking fails. Kubernetes is optional future reading,
+not a dependency or a substitute for cloud resource access.
+
+The [organizer guide](docs/organizer.md) describes classroom preparation.
+The alternate Organizer Codespace includes Azure CLI/Bicep for separately
+approved legacy provisioning only; it grants no permissions and still starts
+only the attendee simulation. Do not share an authenticated organizer environment.
 
 ## Stop without losing your planner
 
-Export your calendar and preserve your code changes, then stop your Codespace
-from [Your codespaces](https://github.com/codespaces). Stopping compute does not
-necessarily end storage charges. Deletion or retention expiry removes its
-development database and unpreserved work; this is not permanent hosting.
+Export your calendar and preserve code, then stop your Codespace from
+[Your codespaces](https://github.com/codespaces). Stopping compute may not stop
+storage charges. Deletion or retention expiry removes local databases and
+unpreserved work: Codespaces is not permanent hosting.
 
-Do not delete Docker volumes or replace `.env` as a recovery step. That can lose
-favorites or leave credentials out of sync with the database.
-
-Stopping or deleting a Codespace does **not** delete Azure resources. The organizer
-must follow the separately approved cleanup procedure in the
-[organizer runbook](docs/organizer.md#cleanup-and-shutdown).
+Laptop users can `docker compose -f compose.yaml stop`. Do not delete volumes or
+replace `.env` for normal stopping. Deleting/stopping a Codespace does **not**
+stop or delete Azure resources. The presenter follows the approved ownership and
+cleanup policy for the existing Azure resource; never delete a shared cluster.
 
 ## Contributor checks
 
-In either Codespaces configuration, or for contributors with Node.js 24.13 or newer:
+With Node.js 24.13 or newer (already available inside Codespaces):
 
 ```sh
-npm ci
+npm ci --ignore-scripts
 npm test
 ```
 
-With the development Compose stack running:
+With the two-site Compose stack running:
 
 ```sh
-docker compose exec app npm run test:database
+docker compose -f compose.yaml exec app npm run test:database
 ```
 
-Database checks use uniquely named temporary databases on the **local** endpoint
-and remove only those databases. They explicitly ignore cloud configuration.
-They exercise independence, additive round trips, duplicate prevention, partial
-results, indexes, migrations, and the API. They are not an Azure compatibility
-claim.
+Integration checks use uniquely named temporary databases on **two different
+local server services**, never the configured cloud endpoint. They remove only
+their own temporary databases. Checks cover independent favorites, additive
+round trips, timestamp/duplicate preservation, partial results, indexes,
+migrations, and HTTP target switching. CI runs these checks on Linux; this is
+not a live Azure or fresh Codespaces claim.
 
-See the [attendee guide](docs/lab.md), [instructor guide](docs/instructor.md),
-[organizer runbook](docs/organizer.md), and [Azure plan](.azure/deployment-plan.md).
-Code is available under the
-[MIT license](LICENSE).
+See the [lab](docs/lab.md), [instructor guide](docs/instructor.md),
+[presenter runbook](docs/presenter.md), and [delivery plan](.azure/deployment-plan.md).
+Code is available under the [MIT license](LICENSE).

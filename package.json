@@ -21,7 +21,8 @@
     "check": "node scripts/database.mjs check",
     "import:schedule": "node scripts/import-schedule.mjs",
     "test": "node --test test/*.test.js",
-    "test:database": "node --test test/database.integration.js"
+    "test:database": "node --test test/database.integration.js",
+    "wait:database": "node scripts/database.mjs wait"
   },
   "dependencies": {
     "mongodb": "7.1.0"

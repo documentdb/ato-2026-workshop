@@ -1,59 +1,72 @@
 # Instructor and helper guide
 
 Audience: developers comfortable with APIs, new to DocumentDB and hybrid apps.
-Use short explanations and observable checkpoints. One or two helpers support
-setup while the presenter keeps the main group moving.
+One or two helpers handle setup while the presenter keeps the group moving.
+The protected attendee outcome is a useful planner and a completed copy/return
+trip across two independent OSS DocumentDB instances—without Azure access.
 
 ## The 105-minute journey
 
 | Minutes | Activity |
 | --- | --- |
-| 0-5 | Introduce the planner; launch the attendee Codespace |
-| 5-20 | Finish browser sign-in and automated setup; open the private app port |
-| 20-35 | Complete the two repository TODOs and save favorites |
-| 35-43 | Explore scheduling conflicts and development-database persistence |
-| 43-53 | Switch the same application to Azure; diagnose missing favorites |
-| 53-68 | Copy selected favorites; demonstrate an idempotent retry |
-| 68-80 | Create a cloud favorite, copy it back, and preserve development choices |
-| 80-90 | Demonstrate repeatable indexes and a document migration |
-| 90-98 | Export calendars, explain hosted-access expiry, and stop safely |
-| 98-100 | Point to the upstream project, docs, and contribution routes |
-| 100-105 | Questions and recovery buffer |
+| 0–20 | One-minute finished-planner demo, architecture, Codespaces setup; triage at minute 12 |
+| 20–50 | Two repository TODOs, favorites, overlaps, persistence |
+| 50–70 | Site A/B switch, missing favorites, explicit copy, retry, return trip |
+| 70–85 | Presenter-only actual laptop-to-Azure demonstration or rehearsed recording |
+| 85–95 | Repeatable indexes and migration extension |
+| 95–105 | Calendar export, safe stopping, upstream pointers, questions |
 
-The protected outcome is the same data-access code against self-hosted development
-DocumentDB and managed Azure DocumentDB. "Local" means local to the development
-environment; with Codespaces, both environments are physically cloud-hosted.
-Shorten the index/migration extension before sacrificing the central
-connection-versus-data lesson, return trip, or cleanup explanation.
+This is a planned allocation, not a measured rehearsal. Setup delays consume the
+index/migration extension first. Protect the return trip, calendar export, and
+cleanup. Keep cloud troubleshooting off the critical attendee path.
 
-Align attendee communications with this delivery choice: browser, GitHub account,
-and available Codespaces usage; no laptop Docker installation. Explain the
-development-local meaning of "local" at the start rather than promising offline
-laptop operation.
+## Opening explanation
 
-## Setup risks
+Show the finished planner for one minute. Draw browser → Node app → DocumentDB.
+The MongoDB Node.js driver sends operations to DocumentDB's MongoDB-compatible
+API; the self-hosted engine is built on PostgreSQL. Both repository methods stay
+the same when the deployment changes. This verifies selected operations, not
+universal MongoDB parity or identical managed/self-hosted operations.
 
-Attendees need a browser, GitHub account, connectivity, and available Codespaces
-usage. No local Docker, Node.js, Git, or Azure CLI installation is required.
-At about minute 12, triage blocked sign-in, organization policy, or usage limits
-with a helper; target a working environment by minute 20.
+Say: **“Same code, separate data.”** Attendees have two independent containers,
+credentials, and storage volumes, **not** two databases sharing one server.
+In Codespaces both are hosted inside one development environment, not physically
+on-prem. Site A/B are a simulation of site boundaries; copying selected favorites
+is application logic, not streaming replication, automatic failover, or a generic
+synchronization engine. The presenter demonstrates the actual laptop/cloud boundary.
 
-Do not promise startup timings without measuring cold creation on representative
-accounts and networks. Optional local Docker is only for people who already have
-it working; it is not the default path or an installation exercise.
+## Setup risks and recovery
 
-Codespaces needs a GitHub account, available usage, and network access. Confirm
-the funding/access arrangement and a pairing or instructor-follow-along option
-for people blocked from Codespaces. Do not publish app or database ports to bypass
-access controls.
+Attendees need a browser, GitHub account, internet, and available Codespaces usage.
+Confirm machine capacity, quota/funding and conference-network access in advance.
+Two database containers increase cold-start/storage/memory demand. Do not promise
+startup times without measuring representative fresh accounts/machines.
 
-The browser editor supports the TODOs. The complete reference provides a recovery
-path without replacing an attendee's exercise file or changing their database.
+At minute 12, helpers triage blocked sign-in, policy, quota and startup. Target a
+working environment by minute 20. Use the agreed pairing/follow-along option;
+never share logins or publish app/database ports. Optional laptop Docker is only
+for people who already have it working—not an installation exercise.
 
-Optional GitHub CLI diagnostics require both the `codespace` OAuth scope and an
-SSH server in the dev container. Those are instructor-tooling requirements, not
-extra steps for browser-only attendees. The completed-exercise test contract
-accepts either an explicit unfinished TODO or the correct implementation.
+`npm run workspace:start` safely adds missing Site B configuration, explicitly
+uses the attendee Compose file, waits for each database, and seeds both catalogs.
+It does not authenticate to or seed Azure. A failed Site B wait/seed is a failed
+setup, not silent success with one working site. An older Azure URI in `.env`
+is not passed into the attendee app. Keep secrets out of logs/screenshots.
+
+Both dev-container configurations start this simulation; the Organizer profile's
+Azure tooling is optional and does not confer permissions. The browser editor
+supports the TODOs. The complete-reference override preserves exercises and data.
+Optional GitHub CLI/SSH diagnostics are helper tools, not attendee prerequisites.
+
+## Observable checkpoints
+
+- Both sites ready and seeded; the intentional TODO explains the empty planner.
+- TODO 1: 216 entries. TODO 2: save two favorites and retain them across app restart.
+- Switch A → B: same catalog, no automatic favorite movement; A remains intact.
+- Copy A → B; switch back to A before repeating that same direction; Already present.
+- New favorite at B; copy B → A; original A choices survive.
+- Removal is local to its site, not propagated to copies.
+- Export from the intended site, preserve code, stop without deleting volumes.
 
 ## Schedule data
 
@@ -128,89 +141,68 @@ Seed the same snapshot in both targets, but never pre-copy attendee favorites.
 Otherwise the missing-favorites exercise either hides its own lesson or becomes
 confused with a missing catalog.
 
-## Azure readiness
+## Presenter Azure readiness
 
-Use the separate **ATO 2026 - Organizer** configuration and
-[organizer runbook](organizer.md) to provision from Codespaces. Attendee startup
-does not request Azure-management credentials. Never share the authenticated
-organizer environment with students.
+Follow the dedicated [presenter runbook](presenter.md). The organizer already has
+an existing authorized Azure DocumentDB instance: no classroom cluster fleet or
+new test subscriptions are required. Attendees never receive those credentials.
+Use an approved dedicated demo database; no generic deletion of shared resources.
 
-Arrange organizer-provided workshop accounts before attendee delivery. Establish
-account/subscription scope, permitted regions and tiers, quotas, attendee access
-policy, expiry, and cleanup authority.
+Use actual laptop-local DocumentDB for the live hybrid story. A Codespaces source
+must instead be labeled self-hosted-to-managed. Rehearse the same catalog, local
+favorites, empty managed favorites, explicit copy/retry, and return trip before
+class. The repo's earlier managed round trip remains unverified until that proof
+is recorded. Have a checked recording; if live connectivity fails, switch to it
+rather than spend attendee time debugging access.
 
-A separately approved Azure subscription may be used for rehearsal before event
-accounts are available. Confirm the target before any provider access or database
-operation. Rehearsal success does not prove that event accounts have the same
-policies, quotas, or permissions.
+Validated cloud TLS stays enabled. Observe current source IP/DNS and use approved
+narrow network rules; never broaden to all addresses or disable certificates.
+Editing `.env` does not rotate database users and requires recreating the app.
+Presenter commands select `compose.presenter.yaml` explicitly; normal attendee
+startup selects only `compose.yaml` and will return to Site A/B.
 
-Attendees should receive prepared, isolated data-plane access; they do not need
-Azure portal accounts for this lab. Establish a permitted network route from
-laptops and Codespaces, including DNS/SRV lookup and validated TLS. Do not solve
-conference-network problems by allowing the whole internet or sharing admin
-credentials.
-
-A Codespace's outbound IP changed during the live rehearsal after stop/resume.
-Re-observe it and update only its exact firewall entry before cloud access;
-do not assume a previously allowlisted address is still correct.
-
-Do not assume that a database per attendee on one cluster is isolated. Current
-native secondary-user permissions are cluster-wide. Use separately assigned
-clusters for the direct-credential model and verify denied cross-attendee access
-with two test identities. The two-cluster control-plane rehearsal succeeded;
-managed data-plane isolation and the classroom-scale rollout remain unverified
-and need their own approved scope.
-
-Record the approved scope, runtime bounds, exact workshop resource ownership,
-credential delivery/revocation, and cleanup owner before provisioning. If cleanup
-fails, stop new provisioning and escalate visibly. Management access expiring
-does not prove resource deletion.
-
-Follow the organizer's approved resource policy, service quotas, subscription
-policies, time/retry bounds, and cleanup requirements. Codespaces billing is
-separate.
+The operator is optional further reading, not a workshop dependency. OSS operator
+cross-cluster replication/promotion is a different demonstration from this app's
+favorite copying to managed Azure. Do not imply those engines automatically
+replicate together. No extra cloud resources are authorized by this guide.
 
 ## Troubleshooting without losing the lesson
 
 | Observation | Response |
 | --- | --- |
-| Codespaces sign-in, policy, or quota blocks startup | Use the agreed pairing/follow-along path; do not spend the lab installing laptop tooling |
-| Container startup fails inside Codespaces | Read the setup error, fix it, and retry `npm run workspace:start`; never hide failure by changing targets |
-| App says `TODO_LIST_SESSIONS` or `TODO_SAVE_FAVORITE` | Work the corresponding exercise, or use the complete-reference override |
-| App says `DATABASE_UNAVAILABLE` | Confirm readiness and the intended target; inspect local logs privately |
-| App says `CATALOG_NOT_SEEDED` | Run seed against that explicit, approved target |
-| Cloud favorites are empty | Check whether the connection succeeded; data movement is a separate operation |
-| Copy says `CATALOG_MISMATCH` | Compare the catalog versions; do not bypass the check |
-| Copy is incomplete | Read per-record outcomes; retry after resolving the failure |
-| Edits are not reflected | Save, restart the app if file watching is unavailable, then refresh |
-| Credentials changed in `.env` but auth fails | Recreate the app to load config; changing `.env` does not rotate existing database users |
-| Calendar export is blocked by orphaned favorites | Diagnose catalog drift instead of silently discarding favorite records |
+| Codespaces sign-in/policy/quota blocked | Pairing/follow-along; no last-minute laptop installation |
+| Site A or B startup/seed fails | Read the bounded setup error; fix and retry `npm run workspace:start` |
+| `TODO_LIST_SESSIONS` / `TODO_SAVE_FAVORITE` | Complete the exercise or use reference override |
+| `DATABASE_UNAVAILABLE` | Confirm intended site, readiness and private logs; never silently use the other site |
+| `CATALOG_NOT_SEEDED` | Seed that explicit local target, or retry interrupted same-catalog seed |
+| `CATALOG_MISMATCH` | Preserve the old notebook, choose a fresh database name, or review migration |
+| Site B favorites empty after switch | Expected: switching isn't copying |
+| Incomplete copy | Read per-record outcomes, resolve failure, retry same direction |
+| Browser fails after restart | Refresh to obtain the new request token; attendee restarts at Site A |
+| Changed credentials fail | Recreate app for config changes; `.env` edits do not rotate an existing volume's users |
+| Azure inaccessible | Presenter recording; attendee planner remains usable |
+| Orphaned favorites block export | Diagnose catalog drift instead of silently dropping favorites |
 
-Avoid `docker compose config` without its quiet flag: expanded configuration can
-print credentials. Avoid database reset, volume pruning, global container cleanup,
-or replacing the attendee's starter file as a generic fix.
+Avoid `docker compose config` without `--quiet`: expanded output can disclose
+credentials. Never reset databases, prune volumes, replace `.env`, or overwrite
+attendee exercises as generic recovery. Keep the same Compose project name to
+retain Site A's existing volume.
 
 ## Rehearsal checklist
 
-- Fresh attendee Codespace and organizer configuration, not just warm containers.
-- Working starter/reference switching without loss of favorites.
-- Both targets seeded with the same catalog.
-- Same repository methods against real local and managed DocumentDB.
-- Independent favorites before explicit copying.
-- Retry-safe copying in both directions, including partial outcomes.
-- Local choices preserved on the return trip.
-- Conflict boundary cases and usable calendar import.
-- Honest development-versus-managed labels; no physical-laptop/offline claim.
-- Codespaces private port, cold startup, and available usage.
-- Two-identity isolation and approved network access.
-- Explicit shutdown, credential expiry, and verified cloud cleanup.
-- A full timed rehearsal, with buffer rather than a new last-minute feature.
+- Fresh attendee Codespace with both instances and measured resource/startup cost.
+- Setup upgrade from a legacy `.env` without changing old credentials/data.
+- Starter/reference switching and restart persistence at both sites.
+- Same catalog, independent favorites before copying, safe repeat/return trip.
+- Second-site outage: clear error, no fallback; recovery retains both notebooks.
+- Usable calendar import, honest simulation labels, private forwarded port.
+- Actual presenter laptop/Azure round trip, narrow access, validated TLS, recording.
+- Safe stopping, code/data retention explanation, existing-resource cleanup owner.
+- Full 105-minute rehearsal with time to export; no last-minute feature expansion.
 
 ## Contribution pointers
 
 Use [DocumentDB](https://documentdb.io/),
 [the upstream repository](https://github.com/documentdb/documentdb), and
-[the project documentation](https://documentdb.io/docs/). Explain where attendees
-can reproduce an issue, propose a docs improvement, or contribute to the project.
-Keep roadmap remarks tied to current official sources rather than promising
-unannounced capabilities.
+[documentation](https://documentdb.io/docs/). Show how to reproduce an issue,
+improve docs, or contribute. Keep roadmap claims tied to current official sources.

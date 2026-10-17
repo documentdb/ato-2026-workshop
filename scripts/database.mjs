@@ -1,3 +1,4 @@
+import { setTimeout as delay } from "node:timers/promises";
 import { readConfig } from "../src/config.js";
 import { createConnections } from "../src/connections.js";
 import { readCatalog, requireCatalog, seedCatalog } from "../src/catalog.js";
@@ -5,13 +6,26 @@ import { WorkshopError, reportError } from "../src/errors.js";
 
 async function run() {
   const [operation, flag, target, ...extra] = process.argv.slice(2);
-  if (!["seed", "indexes", "migrate", "check"].includes(operation) ||
-      flag !== "--target" || !["local", "cloud"].includes(target) || extra.length) {
-    throw new WorkshopError(400, "USAGE", "Use: npm run <seed|indexes|migrate|check> -- --target <local|cloud>. The target is always explicit.");
+  if (!["wait", "seed", "indexes", "migrate", "check"].includes(operation) ||
+      flag !== "--target" || !["local", "site-b", "cloud"].includes(target) || extra.length) {
+    throw new WorkshopError(400, "USAGE", "Use: npm run <wait:database|seed|indexes|migrate|check> -- --target <local|site-b|cloud>. The target is always explicit.");
   }
   const connections = createConnections(readConfig());
   try {
     const db = connections.db(target);
+    if (operation === "wait") {
+      const deadline = Date.now() + 240000;
+      for (;;) {
+        try {
+          await db.command({ ping: 1 });
+          console.log(JSON.stringify({ target, ready: true }));
+          return;
+        } catch (error) {
+          if (Date.now() >= deadline) throw error;
+          await delay(2000);
+        }
+      }
+    }
     await db.command({ ping: 1 });
     if (operation === "seed") {
       const result = await seedCatalog(db, await readCatalog());

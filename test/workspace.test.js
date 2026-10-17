@@ -39,7 +39,7 @@ test("attendee and organizer configurations share startup, not Azure authenticat
   }
 });
 
-test("workspace startup waits for readiness and seeds only the development target", () => {
+test("workspace startup waits for both independent sites and never seeds Azure", () => {
   const calls = [];
   const messages = [];
   startWorkspace((program, args, options) => {
@@ -49,6 +49,9 @@ test("workspace startup waits for readiness and seeds only the development targe
   assert.deepEqual(calls.map((call) => call.args), workspaceSteps);
   assert.ok(calls.every((call) => call.program === "docker" && call.timeout === 600000));
   assert.deepEqual(calls[1].args.slice(-2), ["--target", "local"]);
+  assert.deepEqual(calls[2].args.slice(-2), ["--target", "site-b"]);
+  assert.deepEqual(calls.slice(3).map((call) => call.args.slice(-2)), [["--target", "local"], ["--target", "site-b"]]);
+  assert.ok(calls.every((call) => !call.args.includes("cloud") && call.args.includes("compose.yaml")));
   assert.match(messages[0], /ready.*seeded/);
 });
 
