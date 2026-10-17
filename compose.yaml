@@ -8,6 +8,15 @@ services:
       - documentdb-data:/data
     stop_grace_period: 30s
 
+  documentdb-site-b:
+    image: ghcr.io/documentdb/documentdb/documentdb-local:pg17-0.117.0@sha256:a22772de11861a97d395eecdbe6fbaedd245498b015e748ca409f526430ca781
+    environment:
+      USERNAME: ${SITE_B_USERNAME:?Run the setup command first}
+      PASSWORD: ${SITE_B_PASSWORD:?Run the setup command first}
+    volumes:
+      - documentdb-site-b-data:/data
+    stop_grace_period: 30s
+
   app:
     build:
       context: .
@@ -17,17 +26,25 @@ services:
     depends_on:
       documentdb:
         condition: service_started
+      documentdb-site-b:
+        condition: service_started
     environment:
       DOCUMENTDB_USERNAME: ${DOCUMENTDB_USERNAME:?Run the setup command first}
       DOCUMENTDB_PASSWORD: ${DOCUMENTDB_PASSWORD:?Run the setup command first}
       LOCAL_DOCUMENTDB_HOST: documentdb
       LOCAL_DATABASE_NAME: ${LOCAL_DATABASE_NAME:-ato_workshop}
-      CLOUD_DOCUMENTDB_URI: ${CLOUD_DOCUMENTDB_URI:-}
-      CLOUD_DATABASE_NAME: ${CLOUD_DATABASE_NAME:-}
+      SITE_B_USERNAME: ${SITE_B_USERNAME:?Run the setup command first}
+      SITE_B_PASSWORD: ${SITE_B_PASSWORD:?Run the setup command first}
+      SITE_B_DOCUMENTDB_HOST: documentdb-site-b
+      SITE_B_DATABASE_NAME: ${SITE_B_DATABASE_NAME:-ato_workshop}
+      # Attendee startup cannot inherit a legacy Azure URI or scenario.
+      CLOUD_DOCUMENTDB_URI: ""
+      CLOUD_DATABASE_NAME: ""
+      WORKSHOP_SCENARIO: attendee
       WORKSHOP_MODE: ${WORKSHOP_MODE:-starter}
       WORKSHOP_LOCATION: ${WORKSHOP_LOCATION:-laptop}
       WORKSHOP_PUBLIC_HOST: ${WORKSHOP_PUBLIC_HOST:-}
-      ACTIVE_TARGET: ${ACTIVE_TARGET:-local}
+      ACTIVE_TARGET: local
       HOST: 0.0.0.0
       PORT: "3000"
     ports:
@@ -45,4 +62,5 @@ services:
       start_period: 30s
 
 volumes:
+  documentdb-site-b-data:
   documentdb-data:

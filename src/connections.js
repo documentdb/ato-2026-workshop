@@ -6,7 +6,7 @@ export function createConnections(config) {
   return {
     db(target) {
       if (!Object.hasOwn(config.targets, target)) {
-        throw new WorkshopError(409, "TARGET_NOT_CONFIGURED", "This target is not configured. An organizer must supply approved sandbox access first.");
+        throw new WorkshopError(409, "TARGET_NOT_CONFIGURED", "This target is not configured. Select a target configured for this workshop scenario.");
       }
       if (!clients.has(target)) {
         const settings = config.targets[target];

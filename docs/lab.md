@@ -1,171 +1,183 @@
 # Your conference planner
 
-You are building against a real DocumentDB database, using the standard MongoDB
-Node.js driver. Your application code will stay the same when its database moves.
-Its data will not move unless you explicitly copy it.
+Build against real self-hosted DocumentDB using the standard MongoDB Node.js
+driver. Your application code stays the same when you switch databases.
+**Its data does not move unless you explicitly copy it.**
 
-You only need a browser, a GitHub account, and available Codespaces usage.
-Docker, Node.js, the editor, and the development database run in your Codespace.
-Do not install Docker on your laptop for this workshop.
+You need a browser, a GitHub account, and available Codespaces usage. No Azure
+subscription, cloud database credentials, Docker installation on your laptop,
+or Kubernetes knowledge is needed. Both independent databases run inside your
+Codespace. **Site A / Site B simulate two sites; they are not two clouds, an
+on-prem deployment, replication, or automatic failover.**
 
-The repository contains the October 12 snapshot of the published ATO schedule.
-It is not a live feed. Times are published program blocks; several keynotes or
-lightning talks may run in sequence inside the same block. Some Monday events
-require separate registration; saving a favorite does not book a place.
+The catalog is the October 12 snapshot of ATO's published schedule, not a live
+feed. Times are published blocks; keynotes/lightning talks may be sequential
+inside a shared block. Some Monday events require separate registration.
+Saving a favorite does not reserve admission.
 
-If you already ran the older practice version, follow the
-[non-destructive switch instructions](../README.md#already-ran-the-practice-version)
-before seeding the real schedule.
+Already used the practice version? Follow the
+[non-destructive notebook instructions](../README.md#existing-notebook-or-older-practice-version)
+before seeding. Never delete volumes to get past a catalog mismatch.
 
-## 1. Get to a working environment
+## 1. Start both sites
 
-Follow [Start in Codespaces](../README.md#start-in-codespaces) and select
-**ATO 2026 - Attendee**. Wait for the development-database ready message, then
-open private port 3000 from the Ports tab.
+Follow [Start in Codespaces](../README.md#start-in-codespaces), choosing
+**ATO 2026 - Attendee**. Wait for **both** sites to be ready and seeded, then open
+private port **3000**. Run the commands below in the Codespaces terminal.
 
-Use your own GitHub account for Codespaces. Check that you have usage available.
-If account policy or quota blocks access, tell a helper early so they can arrange
-pairing or a follow-along path. Do not share account logins or start a last-minute
-Docker installation.
+If account policy or quota blocks startup, tell a helper early for pairing or
+follow-along. Do not share logins, expose public ports, or install Docker during
+the timed lab. Retry a diagnosed setup failure with `npm run workspace:start`.
 
-Run every command below in the Codespaces terminal. The internal target name
-`local` means the development DocumentDB inside that Codespace; `cloud` means
-managed Azure DocumentDB.
-
-Open the planner. Check the active-database label and implementation label.
-`TODO_LIST_SESSIONS` is an exercise prompt, not a failed database connection.
-`DATABASE_UNAVAILABLE` means the chosen database is not ready or reachable.
+Check the active label: **Site A — self-hosted**. The implementation label should
+say **TODO starter**. `TODO_LIST_SESSIONS` is intentional; `DATABASE_UNAVAILABLE`
+is not. The internal CLI name `local` means Site A; `site-b` means Site B.
+Neither means managed Azure. Both sites have separate credentials and volumes.
 
 ## 2. Read the catalog
 
-Open [the starter repository](../exercises/starter/repository.js).
+Open [exercises/starter/repository.js](../exercises/starter/repository.js).
 Complete `listSessions(db, catalogVersion)`:
 
-- Use the `sessions` collection.
+- Use `sessions`.
 - Filter on the supplied `catalogVersion`.
 - Sort by `startsAt`, then `_id`, ascending.
 - Return the cursor's array.
 
-Do not change the connection code. Node watches this exercise file; refresh the
-browser after saving. You should see 216 published schedule entries.
+Do not change connection code. Save and refresh the browser: expect **216 entries**.
+The same repository function will run against both sites.
 
-Need a recovery point? Use the [complete reference](../README.md#complete-reference-and-recovery).
-Switching implementations does not replace your exercise or reset your data.
+Need recovery without replacing your exercise?
 
-## 3. Save a favorite
+```sh
+docker compose -f compose.yaml -f compose.complete.yaml up -d --wait --wait-timeout 240 app
+```
+
+Refresh. This selects the complete reference but retains your code and both
+notebooks. Return to the starter with:
+
+```sh
+docker compose -f compose.yaml up -d --wait --wait-timeout 240 app
+```
+
+## 3. Save favorites and prove persistence
 
 Complete `saveFavorite(db, sessionId)`:
 
-- Use the session identifier as the favorite's `_id`.
+- Use the session ID as the favorite's `_id`.
 - Use `updateOne` with `upsert: true`.
-- Set `savedAt` with `$setOnInsert` so retrying preserves the original timestamp.
+- Set `savedAt` with `$setOnInsert` so retries preserve the initial timestamp.
 - Return the driver's update result.
 
-Save two genuinely parallel Monday sessions, such as "Local to Cloud and Back:
-Building Hybrid Applications on Open Source" and "From Zero to Secure Agent:
-Building and Hardening AI Agents with Open Source Tools." Both are listed at
-9:00-10:45 a.m. Eastern in different rooms. Their cards and your favorites list
-should flag the overlap. Back-to-back sessions are not a conflict.
+Save two genuinely parallel Monday sessions, for example:
 
-Two talks sharing a keynote or lightning-talk block can be consecutive, so use
-the published program to interpret those overlap warnings.
+- “Local to Cloud and Back: Building Hybrid Applications on Open Source”
+- “From Zero to Secure Agent: Building and Hardening AI Agents with Open Source Tools”
 
-Restart the app, then refresh. Your favorites should still be there.
+Both are listed Monday, 9:00–10:45 a.m. Eastern, in different rooms. Their cards
+and favorites should flag an overlap. Back-to-back sessions do not conflict.
+Interpret shared keynote/lightning-talk blocks using the official program.
 
-The development database is independent of Azure DocumentDB, but it is still
-hosted in Codespaces. Stay connected to the internet; disconnecting your laptop
-is not part of this workshop.
-
-## 4. Connect the same code to Azure
-
-This section requires organizer-issued sandbox access. It is not runnable until
-the organizer confirms the target is authorized.
-
-Put the supplied connection URI and database name in the two cloud fields of
-your private `.env`. Keep real values out of source code, screenshots, and chat.
-Use the assigned database only. Do not change TLS validation settings.
-
-Recreate the app so it reads the updated configuration, using the same starter
-or complete-reference Compose command you have been using.
-
-Seed **the catalog only** in your assigned cloud database:
+Restart the app and refresh:
 
 ```sh
-docker compose exec app npm run seed -- --target cloud
+docker compose -f compose.yaml restart app
 ```
 
-Select **Azure DocumentDB** and choose **Switch connection**.
-The session catalog should remain familiar, but your development favorites are absent.
+Your Site A favorites remain. The browser is not their storage. A restart returns
+the attendee app to Site A and changes its request token; refresh after restarting.
+Stay connected to Codespaces: laptop-offline operation is not part of this lab.
 
-Before trying to "fix" the code, explain:
+## 4. Switch the connection, not the data
+
+Select **Site B — self-hosted**, then **Switch connection**.
+The same 216-entry catalog is there, but Site A's favorites are absent.
+
+Before “fixing” any code, explain:
 
 - Which database is active?
-- Did the switch fail, or is the selected database simply holding different data?
+- Did the connection fail, or does this database simply contain different data?
 - Where are the original favorites?
 
-Switch back to the development target and confirm the originals are still there.
-No data-access code needed a cloud-specific rewrite.
+Switch back to **Site A** and confirm the originals remain. No repository-method
+rewrite was required. Setup seeded catalogs, not favorites.
 
-If connectivity fails, distinguish configuration, authentication, certificate,
-and network access. The API does not fall back to another environment silently.
-Use the active-target label and sanitized error code; ask a helper to inspect
-credentials privately. Never fix an Azure certificate problem by disabling TLS.
+If switching fails, the API does not silently fall back. Check the active label,
+sanitized error, and helper guidance. Do not delete data to repair connectivity.
 
-## 5. Copy selected favorites
+## 5. Copy selected favorites and retry
 
-While connected to the development database, select favorite checkboxes in the
-side panel. Choose **Copy selected favorites**. Review the source, destination,
-and records in the confirmation dialog, then confirm.
+While **Site A** is active:
 
-Switch to Azure and see the copied favorites. Repeat the same copy once:
-the records should report **Already present**, not create duplicates.
+1. Select favorite checkboxes in the side panel.
+2. Choose **Copy selected favorites**.
+3. Verify the confirmation says **Site A → Site B**, inspect the selection, confirm.
+4. Switch to **Site B** and see the copied favorites.
+5. **Switch back to Site A**, select the same favorites, and repeat **Site A → Site B**.
+   Expect **Already present**, not new duplicates.
 
-The tool reports every selected record. If a copy is incomplete, review the
-failed or unattempted records. Retry only after resolving the cause; do not assume
-the entire request was rolled back.
+The source is always the active site; switching before copying changes direction.
+Read the confirmation instead of assuming the destination.
+
+Partial results are per record: copied, already present, invalid, failed, or
+unattempted. A failed batch is not automatically rolled back. Resolve the cause
+and retry safely; initial save timestamps and existing choices are preserved.
 
 ## 6. Bring one back
 
-Save another favorite while the cloud target is active. Select that favorite,
-review the copy back to the development target, and confirm.
+Switch to **Site B**. Save a different session. Select that new favorite and
+confirm **Site B → Site A**. Switch back to **Site A**: the original choices remain
+and the new one is added. Any resulting overlap is flagged.
 
-Switch back. Your original choices remain, and the new choice is added.
-Any new overlap is flagged.
+Removing a favorite from one site does not remove its copy at the other. This
+is explicit additive copying, not bidirectional synchronization or conflict
+resolution. The two containers simulate deployment boundaries; they do not prove
+multi-cloud networking or disaster recovery.
 
-Removing a favorite from one database does not remove it from the other. This is
-deliberate copying, not a complete bidirectional synchronization system.
+## 7. Watch the real hybrid capstone
 
-## 7. Make changes repeatable
+The presenter repeats the same mechanics on their screen using an actual
+laptop-local DocumentDB and an existing managed Azure DocumentDB instance.
+You do **not** enter Azure credentials or follow cloud commands.
 
-The instructor will demonstrate the same commands against each authorized target:
+Predict what should happen before the presenter switches or copies. The lesson
+is the same: **same code, separate data**. Azure supplies a managed environment;
+application-level favorite copying is not database replication.
+
+If cloud networking is unavailable, the presenter uses a rehearsed recording.
+Your planner and remaining exercises still work. Codespaces itself still needs
+internet access. A presenter using Codespaces rather than a laptop must describe
+that as self-hosted-to-managed, not on-prem-to-cloud.
+
+## 8. Make changes repeatable
+
+If time permits, follow the instructor against Site A:
 
 ```sh
-docker compose exec app npm run indexes -- --target local
-docker compose exec app npm run migrate -- --target local
-docker compose exec app npm run check -- --target local
+docker compose -f compose.yaml exec app npm run indexes -- --target local
+docker compose -f compose.yaml exec app npm run migrate -- --target local
+docker compose -f compose.yaml exec app npm run check -- --target local
 ```
 
-The index exercise makes an index definition repeatable; it does not prove that
-a particular engine will use it for sorting. The migration adds `attendanceMode` to
-version-1 documents. Run it again: it should report zero newly migrated records.
-Apply the corresponding command to `cloud` only when that target is approved.
+Run the migration again: expect **zero newly migrated records**. It adds
+`attendanceMode` to version-1 documents. Re-seeding does not undo it. Use
+`--target site-b` for the same operations on Site B.
 
-Compare index names and document versions rather than claiming a tiny dataset
-must exhibit a visible speedup. Re-seeding does not undo the migration.
+The index exercise makes the definition repeatable; it does not guarantee an
+engine uses it for sorting or that a tiny dataset visibly speeds up. Compare
+index names and document versions. Skip this extension before sacrificing the
+return trip, calendar export, or cleanup.
 
-## 8. Take your selections with you
+## 9. Take your selections with you
 
-Choose **Download calendar (.ics)** and import the downloaded snapshot manually
-into your calendar. Conflicting selections are exported too: warnings inform you,
-not silently choose which sessions you attend.
+On the site containing your final choices, choose **Download calendar (.ics)**.
+Import the snapshot manually into your calendar. Conflicting selections are
+exported too; warnings inform you rather than silently choosing for you.
 
-The file uses real session titles and dates from the captured schedule, not
-practice labels. Check the official schedule for subsequent changes and for the
-sequence of talks inside shared program blocks.
+The export contains real titles/dates from the captured schedule. Check the
+[official schedule](https://2026.allthingsopen.org/schedule) for changes and
+within-block talk ordering. The file is independent of Codespaces and Azure.
 
-Export before the end of temporary Azure access or Codespaces retention. Your
-downloaded calendar is independent of both services. Preserve code changes before
-deleting a Codespace; its development database is not permanent hosting. Follow
-the stop instructions in the
-[README](../README.md#stop-without-losing-your-planner); do not delete volumes as
-part of normal stopping.
+Export and preserve code before stopping/deleting the Codespace. Follow
+[stop instructions](../README.md#stop-without-losing-your-planner). Do not delete
+volumes or `.env` as normal cleanup; retention expiry still removes hosted data.

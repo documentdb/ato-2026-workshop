@@ -92,10 +92,10 @@ export async function readCatalog() {
 
 export async function requireCatalog(db) {
   const catalog = await db.collection("workshop_meta").findOne({ _id: "catalog" });
-  if (!catalog) {
+  if (!catalog || catalog.ready === false) {
     throw new WorkshopError(409, "CATALOG_NOT_SEEDED", "The selected database has no session catalog. Run the explicit seed command for this target.");
   }
-  const { _id, ...metadata } = catalog;
+  const { _id, ready, ...metadata } = catalog;
   return metadata;
 }
 
@@ -104,19 +104,34 @@ export async function seedCatalog(db, catalog) {
   if (metadata && metadata.fingerprint !== catalog.fingerprint) {
     throw new WorkshopError(409, "CATALOG_MISMATCH", "This database has a different catalog. Review the schedule change instead of overwriting it with seed.");
   }
-  for (const session of catalog.sessions) {
-    const { id, ...fields } = session;
+  // Reject an interrupted legacy seed before claiming this database's catalog.
+  // This also detects drift instead of silently hiding old-fingerprint documents.
+  const incompatible = await db.collection("sessions").findOne({ catalogVersion: { $ne: catalog.fingerprint } });
+  if (incompatible) {
+    throw new WorkshopError(409, "CATALOG_MISMATCH", "Existing sessions belong to another catalog, possibly from an interrupted seed. Preserve this database and choose a fresh database name or review a migration.");
+  }
+  const { sessions, ...fields } = catalog;
+  // Claim ownership BEFORE rows: concurrent or interrupted seeds cannot mix catalogs.
+  await db.collection("workshop_meta").updateOne(
+    { _id: "catalog" },
+    { $setOnInsert: { ...fields, ready: false } },
+    { upsert: true },
+  );
+  const owner = await db.collection("workshop_meta").findOne({ _id: "catalog" });
+  if (owner.fingerprint !== catalog.fingerprint) {
+    throw new WorkshopError(409, "CATALOG_MISMATCH", "Another seed claimed a different catalog. No session rows were changed by this seed.");
+  }
+  for (const session of sessions) {
+    const { id, ...document } = session;
     await db.collection("sessions").updateOne(
       { _id: id },
-      { $setOnInsert: { ...fields, catalogVersion: catalog.fingerprint, schemaVersion: 1 } },
+      { $setOnInsert: { ...document, catalogVersion: catalog.fingerprint, schemaVersion: 1 } },
       { upsert: true },
     );
   }
-  const { sessions, ...fields } = catalog;
   await db.collection("workshop_meta").updateOne(
-    { _id: "catalog" },
-    { $setOnInsert: fields },
-    { upsert: true },
+    { _id: "catalog", fingerprint: catalog.fingerprint },
+    { $set: { ready: true } },
   );
   return { sessions: sessions.length, kind: catalog.kind, version: catalog.version };
 }

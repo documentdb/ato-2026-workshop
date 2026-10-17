@@ -145,7 +145,7 @@
       </div>
       <div class="intro">
         <h1>Build your conference day.</h1>
-        <p class="muted">Pick the sessions you want to attend. Keep your favorites, spot overlaps, and discover what really moves between your development database and managed Azure DocumentDB.</p>
+        <p class="muted">Pick the sessions you want to attend. Keep your favorites, spot overlaps, and discover why switching database connections does not move your data.</p>
       </div>
     </header>
 
@@ -200,7 +200,7 @@
           <h3>Copy, don't synchronize</h3>
           <p class="muted">Select favorites above to copy to the other database. Existing choices are kept; removals are not propagated.</p>
           <button id="copy" type="button" disabled>Copy selected favorites</button>
-          <small id="copy-help">Cloud access has not been configured.</small>
+          <small id="copy-help">Checking the other database target.</small>
           <ul class="results" id="copy-results" aria-live="polite"></ul>
         </div>
       </aside>
@@ -208,7 +208,7 @@
 
     <footer class="footer stack">
       <p id="catalog-source">Loading the catalog's source and snapshot date.</p>
-      <p>Restarting the app restores the target from ACTIVE_TARGET. A connection switch does not copy data.</p>
+      <p>Restarting the attendee app returns to Site A. A connection switch does not copy data.</p>
       <p><a href="https://2026.allthingsopen.org/schedule" target="_blank" rel="noopener noreferrer">Official conference schedule</a> / <a href="https://documentdb.io/" target="_blank" rel="noopener noreferrer">DocumentDB project</a></p>
     </footer>
   </main>
@@ -245,8 +245,8 @@
       if (className) element.className = className;
       return element;
     };
-    const label = (target) => config.targets.find((item) => item.id === target)?.label || "Cloud (not configured)";
-    const destination = () => config.target === "local" ? "cloud" : "local";
+    const label = (target) => config.targets.find((item) => item.id === target)?.label || "Other target (not configured)";
+    const destination = () => config.targets.find((item) => item.id !== config.target)?.id;
     const dayKey = (session) => new Intl.DateTimeFormat("en-CA", {
       timeZone: state.catalog.timeZone, year: "numeric", month: "2-digit", day: "2-digit",
     }).format(new Date(session.startsAt));
@@ -308,7 +308,7 @@
       $("target-name").textContent = label(config.target);
       $("mode").textContent = `${config.mode === "starter" ? "TODO starter" : "Complete reference"} / Same application data layer`;
       $("target-select").replaceChildren();
-      for (const target of ["local", "cloud"]) {
+      for (const { id: target } of config.targets) {
         const option = node("option", label(target));
         option.value = target;
         option.disabled = !config.targets.some((item) => item.id === target);
@@ -317,10 +317,10 @@
       }
       $("copy-help").textContent = config.targets.some((target) => target.id === destination())
         ? `Destination: ${label(destination())}. Select up to 100 favorites.`
-        : "Managed Azure access is not configured. Development planning and calendar export still work.";
-      notice("location-notice", config.location === "codespaces"
-        ? "Codespaces development environment: Docker and DocumentDB run here, not on your laptop. You only need a browser and connectivity. Azure DocumentDB is a separate managed target."
-        : "");
+        : "The presenter cloud target is not configured. Local planning and calendar export still work.";
+      notice("location-notice", config.scenario === "attendee"
+        ? `Two independent self-hosted databases ${config.location === "codespaces" ? "inside this Codespace, not on your laptop" : "on this laptop"}. Site A / Site B simulate two sites; this is not live hybrid cloud, replication or automatic failover. No Azure account is needed.`
+        : `Presenter demonstration: ${config.location === "codespaces" ? "the development database is in Codespaces, not on-premises" : "the development database is on this laptop"}. Azure is a separate managed database; copying favorites is an explicit application operation, not replication.`);
     }
 
     function render() {

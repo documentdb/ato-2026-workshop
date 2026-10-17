@@ -39,8 +39,9 @@ export async function createApp({ config, connections, repository, logger = cons
     target: activeTarget,
     initialTarget: config.activeTarget,
     mode: config.mode,
+    scenario: config.scenario || "attendee",
     location: config.location,
-    targets: Object.keys(config.targets).map((id) => ({ id, label: targetLabel(id, config.location) })),
+    targets: Object.keys(config.targets).map((id) => ({ id, label: targetLabel(id, config.location, config.scenario) })),
     csrfToken,
   });
   function assertTarget(target) {
@@ -116,8 +117,8 @@ export async function createApp({ config, connections, repository, logger = cons
         const data = await readJson(request);
         assertTarget(data.target);
         if (request.method === "POST" && url.pathname === "/api/target") {
-          if (!["local", "cloud"].includes(data.nextTarget)) {
-            throw new WorkshopError(400, "INVALID_TARGET", "Choose the development or cloud target.");
+          if (!["local", "site-b", "cloud"].includes(data.nextTarget)) {
+            throw new WorkshopError(400, "INVALID_TARGET", "Choose one of the configured database targets.");
           }
           await connections.db(data.nextTarget).command({ ping: 1 });
           assertTarget(data.target);
@@ -138,7 +139,7 @@ export async function createApp({ config, connections, repository, logger = cons
           return;
         }
         if (request.method === "POST" && url.pathname === "/api/transfer") {
-          if (data.source !== target || !["local", "cloud"].includes(data.destination) || data.source === data.destination) {
+          if (data.source !== target || !["local", "site-b", "cloud"].includes(data.destination) || data.source === data.destination) {
             throw new WorkshopError(400, "INVALID_TRANSFER", "Copy from the active target to the other configured target.");
           }
           const result = await copyFavorites(connections.db(data.source), connections.db(data.destination), data.sessionIds);

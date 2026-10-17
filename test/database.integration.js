@@ -12,19 +12,31 @@ import { createApp } from "../src/server.js";
 import { WorkshopError } from "../src/errors.js";
 import { readPracticeCatalog } from "./fixtures/catalog.js";
 
-test("real local DocumentDB: independent data, retry-safe round trip, partial outcomes, migration, API", async (t) => {
+test("two real independent DocumentDB servers: independent data, retry-safe round trip, partial outcomes, migration, API", async (t) => {
   const runId = randomUUID().replaceAll("-", "");
   const localEnv = {
     ...process.env,
     ACTIVE_TARGET: "local",
+    WORKSHOP_SCENARIO: "attendee",
     CLOUD_DOCUMENTDB_URI: "",
     CLOUD_DATABASE_NAME: "",
   };
   const config = readConfig({ ...localEnv, LOCAL_DATABASE_NAME: `verify_source_${runId}` });
   const sourceConnections = createConnections(config);
-  const destinationConnections = createConnections(readConfig({ ...localEnv, LOCAL_DATABASE_NAME: `verify_destination_${runId}` }));
+  const destinationConnections = createConnections(readConfig({ ...localEnv, SITE_B_DATABASE_NAME: `verify_destination_${runId}` }));
   const source = sourceConnections.db("local");
-  const destination = destinationConnections.db("local");
+  const destination = destinationConnections.db("site-b");
+  assert.notEqual(config.targets.local.uri.split("@")[1], config.targets["site-b"].uri.split("@")[1], "integration requires two distinct server endpoints");
+  // Site A's credentials must not authenticate to Site B (or vice versa).
+  for (const [from, to] of [["local", "site-b"], ["site-b", "local"]]) {
+    const foreign = createConnections({ targets: { local: {
+      ...config.targets[from],
+      uri: `${config.targets[from].uri.split("@")[0]}@${config.targets[to].uri.split("@")[1]}`,
+    } } });
+    try {
+      await assert.rejects(foreign.db("local").command({ ping: 1 }), { code: 18 });
+    } finally { await foreign.close(); }
+  }
   let sourceOwned = false;
   let destinationOwned = false;
   t.after(async () => {
@@ -48,6 +60,7 @@ test("real local DocumentDB: independent data, retry-safe round trip, partial ou
   const ids = catalog.sessions.map((session) => session.id);
   await repository.saveFavorite(source, ids[0]);
   await repository.saveFavorite(source, ids[1]);
+  const originalSavedAt = (await source.collection("favorites").findOne({ _id: ids[0] })).savedAt;
   await repository.saveFavorite(destination, ids[2]);
   await seedCatalog(source, catalog);
   assert.equal((await readPlanner(source, repository)).favorites.length, 2);
@@ -74,6 +87,7 @@ test("real local DocumentDB: independent data, retry-safe round trip, partial ou
   assert.equal(retry.complete, true);
   assert.deepEqual(retry.results.map((item) => item.status), ["already_present", "copied"]);
   const repeated = await copyFavorites(source, destination, [ids[0], ids[1]]);
+  assert.equal((await destination.collection("favorites").findOne({ _id: ids[0] })).savedAt, originalSavedAt);
   assert.ok(repeated.results.every((item) => item.status === "already_present"));
   await copyFavorites(destination, source, [ids[2]]);
   assert.deepEqual(new Set((await readPlanner(source, repository)).favorites), new Set(ids.slice(0, 3)));
@@ -104,7 +118,11 @@ test("real local DocumentDB: independent data, retry-safe round trip, partial ou
 
   const app = await createApp({
     config: { ...config, mode: "complete" },
-    connections: { db: () => source, close: async () => {} },
+    connections: { db: (target) => {
+      if (target === "local") return source;
+      if (target === "site-b") return destination;
+      throw new WorkshopError(409, "TARGET_NOT_CONFIGURED", "No cloud access in this test.");
+    }, close: async () => {} },
     repository,
     logger: { error() {} },
   });
@@ -126,6 +144,23 @@ test("real local DocumentDB: independent data, retry-safe round trip, partial ou
     });
     assert.equal(saved.status, 200);
     assert.equal((await saved.json()).status, "saved");
+    const post = (path, body) => fetch(`${origin}/api/${path}`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "X-Workshop-Token": details.csrfToken },
+      body: JSON.stringify(body),
+    });
+    assert.equal((await post("target", { target: "local", nextTarget: "cloud" })).status, 409);
+    assert.equal((await post("target", { target: "local", nextTarget: "site-b" })).status, 200);
+    const siteBState = await (await fetch(`${origin}/api/state`)).json();
+    assert.equal(siteBState.target, "site-b");
+    assert.equal(siteBState.favorites.includes(ids[3]), false, "switching must not copy");
+    assert.equal((await post("target", { target: "local", nextTarget: "site-b" })).status, 409, "stale requests fail closed");
+    assert.equal((await post("target", { target: "site-b", nextTarget: "local" })).status, 200);
+    const copied = await post("transfer", { target: "local", source: "local", destination: "site-b", sessionIds: [ids[3]] });
+    assert.equal(copied.status, 200);
+    assert.equal((await copied.json()).results[0].status, "copied");
+    await source.collection("favorites").deleteOne({ _id: ids[3] });
+    assert.ok(await destination.collection("favorites").findOne({ _id: ids[3] }), "removal is not synchronized");
   } finally {
     await app.close();
   }

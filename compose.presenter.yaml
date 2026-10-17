@@ -1,0 +1,9 @@
+# Opt-in presenter data plane only. Does not provision, seed, or authenticate to Azure.
+# Attendee default is compose.yaml; this override keeps Site B out of the UI.
+services:
+  app:
+    environment:
+      WORKSHOP_SCENARIO: presenter
+      ACTIVE_TARGET: ${ACTIVE_TARGET:-local}
+      CLOUD_DOCUMENTDB_URI: ${CLOUD_DOCUMENTDB_URI:-}
+      CLOUD_DATABASE_NAME: ${CLOUD_DATABASE_NAME:-}
