@@ -50,9 +50,51 @@ checks first-use failure, the original waiting CLI process, concurrent clients,
 a healthy-client outage control, unchanged favorite digests, and the **same app
 PID** across recovery. A test added to source is not an executed live result.
 
-**Fresh acceptance of this new HEAD is pending.** Do not carry the earlier 4m47s,
-34/34, or Azure/calendar receipts forward as proof of this patch. Record a new
-receipt only after running it.
+## Executed reconnect / attendee-polish acceptance
+
+Recorded October 17, 2026. The same attendee Codespace was restarted and rebuilt
+from `8993fac38709a5d6cdece1f8170ffe9392111d14`, then fast-forwarded to
+`a3f9c5aeb16f8350b3ece7ca74887987ddc94824` for the harness-only cleanup update.
+That update changed no application/UI code; the final record update is docs-only.
+Earlier notebooks, credentials, volumes and solved exercises were preserved with
+private backups and separate fresh notebook database names.
+
+- Final repository-root tests in Codespaces: **47/47 passed**, no skips;
+  **46 local documentation links** checked.
+- Actual two-server database integration: **2/2 passed**, including the optional
+  official-catalog aggregation.
+- Browser flow: blue Exercise 1, edit the first TODO, 216 entries, blue Exercise 2,
+  save overlapping favorites, persistence, initially empty Site B, two records
+  copied, repeat Already present, and a third favorite copied back. Complete-
+  reference switching preserved both solved files and notebook timestamps.
+- **Main-app cold-connection regression:** Site B was stopped before that app
+  process ever acquired it. The browser switch failed with a genuine 503 and
+  stayed on Site A. After starting only Site B, the same browser retry succeeded
+  with the **same server PID, start time, container and request-token hash**.
+  No app restart or code edit was needed to recover.
+- The isolated live harness independently proved recovery of the **original
+  waiting CLI process**, concurrent first acquisitions and a previously healthy
+  client. All scoped cleanup receipts passed.
+- Interruption regressions: **2/2 passed** in Codespaces, including repeated
+  SIGINT/SIGTERM during cleanup and independent empty resource inventories.
+- Actual document inspection showed the same session change from version 1 with
+  no attendanceMode to version 2/in-person. Migration changed **216 then 0**;
+  the favorite timestamp was unchanged. The optional solved database aggregation
+  returned **17 groups / 74 Monday entries**, matching the reference.
+- Actual browser calendar download contained **three events**, validated against
+  the real state. This revision did not repeat the earlier Google Calendar import
+  or managed Azure test; calendar serialization and transfer semantics are unchanged.
+- Resume to first SSH was about **39 seconds**; the explicit revised-code
+  build/start/seed took **27 seconds**, measured separately. Neither is a fresh
+  cold-creation measurement or a promised attendee timing.
+- The exact Codespace was stopped and its **Shutdown** state verified; notebooks
+  and solved work remain retained. No new Azure resources were used in this retest.
+
+Application actions and dialogs used a real browser; code edits used the
+Codespaces CLI after locating the editable files. This is expert-assisted
+acceptance, not a novice or timed classroom study. During premerge testing,
+canonical main guide links still served the previous guide, so the trusted
+branch guide was used; the docs and app are published together.
 
 ## How to verify the revision
 
@@ -130,7 +172,8 @@ Offline UI mocks are not a rendered-browser acceptance test.
 
 ## Still unverified delivery gates
 
-- This patch's fresh/restarted attendee Codespace and live outage acceptance.
+- A brand-new cold Codespace on this revision (the executed polish test restarted
+  the existing Codespace; the earlier 4m47s cold result remains scoped above).
 - Fresh Organizer-profile acceptance (not required for attendees).
 - Representative attendee accounts, quotas, resource needs, and conference
   laptop/Wi-Fi networking; one two-core Codespace measurement is not capacity proof.

@@ -71,7 +71,10 @@ Executed on preceding main source (see [dated acceptance](../docs/acceptance.md)
 
 Still requiring environment-specific acceptance (not replaced by those receipts):
 
-- [ ] This reconnect/onboarding revision's fresh/restarted attendee Codespace and live failure recovery.
+- [x] Reconnect/onboarding revision: restarted attendee Codespace, 47/47 root tests,
+  2/2 live integration, same-app cold recovery and original-wait-process recovery;
+  interruption cleanup 2/2. See the dated acceptance record for exact source scope.
+- [ ] New cold Codespace creation on this revision (the polish retest reused the existing one).
 - [ ] Fresh Organizer profile and representative account/machine capacity checks.
 - [ ] Presenter existing-resource rehearsal on the conference laptop/network.
 - [ ] Verified backup recording; Apple Calendar UI and repeat-import handling.

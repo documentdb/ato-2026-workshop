@@ -67,6 +67,7 @@ catalog ownership, bounded two-site startup, and real two-server data flows in C
 The preceding source has fresh two-core Codespaces (4m47s; 34/34 plus integration),
 Google Calendar (3/3), and actual local Mac mini → managed Azure data-plane proof;
 the temporary Azure resource was cleaned up. See the [acceptance record](acceptance.md)
-for limitations and the reconnect defect found. New-HEAD acceptance, human timing,
-and conference-laptop/network proof remain pending. See also the
+for the restarted-Codespace polish retest and verified same-process reconnect fix.
+Human timing, new cold creation on this revision, and conference-laptop/network
+proof remain pending. See also the
 [delivery plan](../.azure/deployment-plan.md).

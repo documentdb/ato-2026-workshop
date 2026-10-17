@@ -23,9 +23,10 @@ On the preceding main source, a fresh **two-core attendee Codespace** reached bo
 sites in **4m47s**, actual Site A/B checks passed **34/34 plus integration**, Google
 Calendar imported **3/3 events**, and a real **local Mac mini → managed Azure**
 round trip passed (temporary cloud resource cleaned up). See the
-[acceptance record](docs/acceptance.md) for scope and the first-connection bug found
-along the way. **This reconnect/onboarding revision still needs its own fresh
-acceptance.** Timed human classroom delivery and conference-laptop networking are
+[acceptance record](docs/acceptance.md) for scope. **This reconnect/onboarding
+revision also passed a restarted-Codespace attendee run: 47/47 tests, actual
+browser exercises, and cold first-connection recovery in the same app process.**
+Timed human classroom delivery and conference-laptop networking are
 not verified; automated checks are not substitutes.
 
 The web schedule is primary; October 9 Monday/Tuesday PDFs were cross-checked,
