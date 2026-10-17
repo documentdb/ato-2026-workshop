@@ -13,6 +13,19 @@ import { setup } from "./setup.mjs";
 
 const root = fileURLToPath(new URL("../", import.meta.url));
 const project = `ato-reconnect-${randomUUID().replaceAll("-", "")}`;
+// Install handlers before the first asynchronous work, including private setup.
+const interrupted = new AbortController();
+let receivedSignal;
+const children = new Set();
+const onSignal = (signal) => {
+  receivedSignal ||= signal;
+  interrupted.abort(new Error("Harness interrupted"));
+  // Cleanup commands are deliberately immune to repeated signals. Their own
+  // deadlines still apply; killing cleanup would recreate the original leak.
+  for (const running of children) if (!running.cleanup) running.cancel();
+};
+process.on("SIGINT", onSignal);
+process.on("SIGTERM", onSignal);
 const directory = await mkdtemp(join(tmpdir(), "ato-reconnect-"));
 const override = join(directory, "compose.reconnect.yaml");
 // Preserve only ordinary runtime environment; explicitly override interpolation
@@ -27,36 +40,50 @@ Object.assign(env, { COMPOSE_PROJECT_NAME: project, WORKSHOP_PORT: "3000",
 const base = ["compose", "--project-name", project, "--project-directory", root,
   "--env-file", join(directory, ".env"), "-f", join(root, "compose.yaml"),
   "-f", join(root, "compose.complete.yaml"), "-f", override];
-const children = new Set();
-function command(args, { timeout = 300000, input = "ignore" } = {}) {
+function command(args, { timeout = 300000, input = "ignore", cleanup = false } = {}) {
+  if (!cleanup) interrupted.signal.throwIfAborted();
   const child = spawn("docker", args, { cwd: root, env, stdio: [input, "pipe", "pipe"] });
-  children.add(child);
   let stdout = "";
-  // Capture no stderr: compose/build/driver failures can contain private values.
-  child.stdout.on("data", (chunk) => { stdout += chunk; if (stdout.length > 2000000) child.kill(); });
-  child.stderr.resume();
   let forceTimer;
-  const timer = setTimeout(() => {
+  let cancelled = false;
+  const cancel = () => {
+    if (cancelled) return;
+    cancelled = true;
     child.kill("SIGTERM");
     forceTimer = setTimeout(() => child.kill("SIGKILL"), 5000);
-  }, timeout);
-  const result = new Promise((resolve) => {
-    child.once("error", () => resolve({ ok: false, stdout: "" }));
+  };
+  const running = { child, cleanup, cancel };
+  children.add(running);
+  // Capture no stderr: compose/build/driver failures can contain private values.
+  child.stdout.on("data", (chunk) => { stdout += chunk; if (stdout.length > 2000000) cancel(); });
+  child.stderr.resume();
+  // Closing a cancelled interactive pipe can race a probe's next write.
+  child.stdin?.on("error", () => cancel());
+  const timer = setTimeout(cancel, timeout);
+  running.result = new Promise((resolve) => {
+    // A spawn error is followed by close; wait for close before cleanup so a
+    // cancelled Compose process cannot still create resources after down.
+    child.once("error", () => { cancelled = true; });
     child.once("close", (code) => {
-      clearTimeout(timer); clearTimeout(forceTimer); children.delete(child);
-      resolve({ ok: code === 0, stdout });
+      clearTimeout(timer); clearTimeout(forceTimer); children.delete(running);
+      resolve({ ok: code === 0 && !cancelled, stdout });
     });
   });
-  return { child, result };
+  return running;
 }
+const request = (url, options = {}) => fetch(url, {
+  ...options, signal: AbortSignal.any([interrupted.signal, AbortSignal.timeout(20000)]),
+});
 async function run(args, options) {
   const result = await command([...base, ...args], options).result;
+  interrupted.signal.throwIfAborted();
   assert.ok(result.ok, "Scoped Compose command failed (raw output suppressed)");
   return result.stdout.trim();
 }
 const exec = (...args) => run(["exec", "-T", "app", ...args]);
 const receipt = (check, details = {}) => console.log(JSON.stringify({ check, passed: true, ...details }));
 let owned = false;
+let cleanupPromise;
 let probe;
 let failure = false;
 let phase = "ownership-and-startup";
@@ -71,6 +98,7 @@ try {
   await writeFile(override, `services:\n  app:\n    init: false\n    command: ["node", "src/server.js"]\n    ports: !override\n      - "127.0.0.1::3000"\n`, { mode: 0o600 });
   owned = true;
   await run(["up", "--build", "-d", "--wait", "--wait-timeout", "240"], { timeout: 600000 });
+  receipt("owned-ephemeral-project-ready", { project, privateDirectory: directory });
   for (const target of ["local", "site-b"]) {
     await exec("npm", "run", "wait:database", "--", "--target", target);
     await exec("npm", "run", "seed", "--", "--target", target);
@@ -79,7 +107,7 @@ try {
   assert.match(address, /^127\.0\.0\.1:\d+$/);
   const origin = `http://${address}`;
   const get = async (path) => {
-    const response = await fetch(`${origin}${path}`, { signal: AbortSignal.timeout(20000) });
+    const response = await request(`${origin}${path}`);
     assert.equal(response.status, 200);
     return response.json();
   };
@@ -91,8 +119,8 @@ try {
     return result.stdout.trim();
   };
   const identity = await appIdentity(); // init:false + direct node => actual app PID
-  const post = (path, body) => fetch(`${origin}/api/${path}`, {
-    method: "POST", signal: AbortSignal.timeout(20000),
+  const post = (path, body) => request(`${origin}/api/${path}`, {
+    method: "POST",
     headers: { "Content-Type": "application/json", "X-Workshop-Token": initial.csrfToken },
     body: JSON.stringify(body),
   });
@@ -108,17 +136,27 @@ try {
   const lines = createInterface({ input: probe.child.stdout })[Symbol.asyncIterator]();
   const nextLine = async () => {
     let timer;
+    let abort;
     try {
+      interrupted.signal.throwIfAborted();
       const value = await Promise.race([
-        lines.next(), new Promise((_, reject) => { timer = setTimeout(() => reject(new Error("Probe timeout")), 25000); }),
+        lines.next(), new Promise((_, reject) => {
+          abort = () => reject(interrupted.signal.reason);
+          interrupted.signal.addEventListener("abort", abort, { once: true });
+          timer = setTimeout(() => reject(new Error("Probe timeout")), 25000);
+        }),
       ]);
       assert.equal(value.done, false);
       return JSON.parse(value.value);
-    } finally { clearTimeout(timer); }
+    } finally {
+      clearTimeout(timer);
+      if (abort) interrupted.signal.removeEventListener("abort", abort);
+    }
   };
   const probeReady = await nextLine();
   assert.equal(probeReady.ready, true);
   const acquire = async (expected) => {
+    interrupted.signal.throwIfAborted();
     probe.child.stdin.write(JSON.stringify({ expected }) + "\n");
     const result = await nextLine();
     assert.equal(result.pid, probeReady.pid);
@@ -154,7 +192,7 @@ try {
   phase = "healthy-client-outage";
   // Control: an already healthy client also recovers without target fallback.
   await run(["stop", "documentdb-site-b"]);
-  assert.equal((await fetch(`${origin}/api/health`, { signal: AbortSignal.timeout(20000) })).status, 503);
+  assert.equal((await request(`${origin}/api/health`)).status, 503);
   assert.equal((await get("/api/config")).target, "site-b");
   await acquire("unavailable");
   await run(["start", "documentdb-site-b"]);
@@ -170,19 +208,42 @@ try {
   receipt("concurrent-acquisitions-close-cleanly");
 } catch {
   failure = true;
-  console.error(JSON.stringify({ error: "RECONNECT_REGRESSION_FAILED", phase, message: "A bounded regression check failed; raw command output was suppressed to protect private settings." }));
+  console.error(JSON.stringify({ error: receivedSignal ? "RECONNECT_REGRESSION_INTERRUPTED" : "RECONNECT_REGRESSION_FAILED",
+    signal: receivedSignal, phase, message: "A bounded regression check stopped; raw command output was suppressed to protect private settings." }));
 } finally {
-  for (const child of children) child.kill("SIGTERM");
-  if (owned) {
-    const cleanup = await command([...base, "down", "--volumes", "--remove-orphans"], { timeout: 120000 }).result;
-    const remaining = await command(["ps", "-aq", "--filter", `label=com.docker.compose.project=${project}`]).result;
-    if (!cleanup.ok || !remaining.ok || remaining.stdout.trim()) {
+  await cleanupOwned();
+  process.removeListener("SIGINT", onSignal);
+  process.removeListener("SIGTERM", onSignal);
+}
+if (failure || receivedSignal) process.exitCode = receivedSignal === "SIGINT" ? 130 : receivedSignal === "SIGTERM" ? 143 : 1;
+
+// One path for success, failed assertions, SIGINT and SIGTERM. Keep private
+// configuration for manual recovery if down OR ANY inventory verification fails.
+function cleanupOwned() {
+  return cleanupPromise ||= (async () => {
+    try {
+      console.log(JSON.stringify({ event: "owned-cleanup-started", project }));
+      const pending = [...children];
+      for (const running of pending) running.cancel();
+      await Promise.all(pending.map(({ result }) => result));
+      if (owned) {
+        const cleanup = await command([...base, "down", "--volumes", "--remove-orphans"], { timeout: 120000, cleanup: true }).result;
+        let empty = true;
+        for (const list of [["ps", "-aq"], ["volume", "ls", "-q"], ["network", "ls", "-q"]]) {
+          const remaining = await command([...list, "--filter", `label=com.docker.compose.project=${project}`], { timeout: 15000, cleanup: true }).result;
+          if (!remaining.ok || remaining.stdout.trim()) empty = false;
+        }
+        assert.ok(cleanup.ok && empty, "Owned cleanup could not be verified");
+      }
+      await rm(directory, { recursive: true });
+      if (owned) {
+        receipt("only-owned-ephemeral-project-cleaned", { project, containers: 0, volumes: 0, networks: 0, privateDirectoryRemoved: true });
+      } else {
+        console.log(JSON.stringify({ event: "private-setup-removed", project, privateDirectoryRemoved: true }));
+      }
+    } catch {
       failure = true;
       console.error(JSON.stringify({ error: "OWN_PROJECT_CLEANUP_FAILED", project, privateDirectory: directory }));
-    } else {
-      await rm(directory, { recursive: true });
-      receipt("only-owned-ephemeral-project-cleaned");
     }
-  } else { await rm(directory, { recursive: true }); }
+  })();
 }
-if (failure) process.exitCode = 1;

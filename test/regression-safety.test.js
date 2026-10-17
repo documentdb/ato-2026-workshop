@@ -19,6 +19,24 @@ test("live reconnect harness owns a fresh project and never targets an attendee 
   assert.match(source, /assert\.deepEqual\(await snapshot\(\), before\)/);
 });
 
+test("interruptions share cancellable work and verified, signal-resistant owned cleanup", async () => {
+  const source = await readFile(new URL("../scripts/test-reconnect.mjs", import.meta.url), "utf8");
+  assert.match(source, /process\.on\("SIGINT", onSignal\)/);
+  assert.match(source, /process\.on\("SIGTERM", onSignal\)/);
+  assert.match(source, /AbortSignal\.any\(\[interrupted\.signal, AbortSignal\.timeout\(20000\)\]\)/);
+  assert.match(source, /return cleanupPromise \|\|=/);
+  assert.match(source, /if \(!running\.cleanup\) running\.cancel\(\)/);
+  assert.match(source, /child\.kill\("SIGKILL"\), 5000/);
+  assert.match(source, /await Promise\.all\(pending\.map/);
+  assert.match(source, /assert\.ok\(cleanup\.ok && empty/);
+  const cleanup = source.slice(source.indexOf("function cleanupOwned()"));
+  for (const command of ['["ps", "-aq"]', '["volume", "ls", "-q"]', '["network", "ls", "-q"]']) {
+    assert.ok(cleanup.includes(command));
+  }
+  assert.ok(cleanup.indexOf("cleanup.ok && empty") < cleanup.indexOf("await rm(directory"));
+  assert.match(cleanup, /OWN_PROJECT_CLEANUP_FAILED/);
+});
+
 test("runtime image includes all live harness fixtures and optional exercises", async () => {
   const dockerfile = await readFile(new URL("../Dockerfile", import.meta.url), "utf8");
   for (const directory of ["src", "scripts", "test", "examples", "exercises", "data"]) {

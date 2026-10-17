@@ -88,11 +88,40 @@ Requires Docker Compose **2.24.4+** for its port override. It creates a fresh ra
 random **loopback-only** app port. It ignores ambient workshop credentials and
 never adopts an existing project. It stops/starts only its Site B, captures
 sanitized pass/fail receipts, and removes **only its own ephemeral project and
-volumes** in `finally`. Normal notebooks and `.env` are untouched. If its own
-cleanup fails, it prints its generated project name/private directory for manual
-review; it does not run a global prune. CI runs it as a separate ephemeral job.
-The application runs directly without file watching in this harness so PID
-identity really establishes no app restart.
+volumes** through a single idempotent cleanup path. **SIGINT / SIGTERM** abort
+in-flight HTTP requests and probe waits, cancel child commands (with a five-second
+force-termination grace), and enter that same cleanup path with a nonzero exit.
+Repeated signals do not cancel cleanup. Its Compose deadline is 120 seconds;
+each resource-inventory check has a 15-second deadline (plus termination grace).
+The private directory is removed only after successful `down` and independent
+empty inventories for the project's **containers, volumes and networks**.
+
+Normal notebooks and `.env` are untouched. If cleanup or verification fails,
+the process exits nonzero and retains its private configuration, printing only
+the generated project name/private directory for manual review; it does not run
+a global prune or claim success. SIGKILL, machine loss, or an unreachable Docker
+daemon cannot guarantee cleanup. CI runs the normal regression as a separate
+ephemeral job. The application runs directly without file watching in this
+harness so checking its PID really establishes no app restart.
+
+Opt-in interruption regression (Docker host, separate from the offline suite):
+
+```sh
+node --test test/reconnect-interruption.integration.js
+```
+
+This creates two fresh owned projects sequentially, sends SIGTERM and SIGINT
+respectively after startup, repeats each signal during cleanup, and independently
+checks nonzero handled exits, absent containers/volumes/networks, and removal of
+only each run's private temporary directory. It does not stop an existing stack.
+
+**Harness-only proof, October 17:** after adding handled-signal cleanup, the
+normal live reconnect regression passed all five recovery/cleanup checks. The
+real interruption test passed both SIGTERM (exit 143) and SIGINT (exit 130),
+including repeated signals during cleanup. Independent filtered inventories
+confirmed zero owned containers, volumes and networks and absent private
+configuration directories for all three runs. These harness results do not
+constitute another Codespace, browser, calendar or Azure acceptance run.
 
 Then reopen/restart the actual attendee Codespace and follow [the lab](lab.md):
 verify the friendly first screen, edit TODO 1, save TODO 2, inspect before/after,
