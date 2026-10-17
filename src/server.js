@@ -88,18 +88,18 @@ export async function createApp({ config, connections, repository, logger = cons
       }
       const target = activeTarget;
       if (request.method === "GET" && url.pathname === "/api/health") {
-        await connections.db(target).command({ ping: 1 });
+        await (await connections.db(target)).command({ ping: 1 });
         json(200, { ready: true, target, mode: config.mode, location: config.location });
         return;
       }
       if (request.method === "GET" && url.pathname === "/api/state") {
-        const state = await readPlanner(connections.db(target), repository);
+        const state = await readPlanner(await connections.db(target), repository);
         json(200, { target, ...state });
         return;
       }
       if (request.method === "GET" && url.pathname === "/api/calendar") {
         assertTarget(url.searchParams.get("target"));
-        const state = await readPlanner(connections.db(target), repository);
+        const state = await readPlanner(await connections.db(target), repository);
         if (state.orphanedFavorites.length) {
           throw new WorkshopError(409, "CATALOG_DRIFT", "Some favorites have no matching session. Resolve the catalog drift before exporting.");
         }
@@ -120,14 +120,14 @@ export async function createApp({ config, connections, repository, logger = cons
           if (!["local", "site-b", "cloud"].includes(data.nextTarget)) {
             throw new WorkshopError(400, "INVALID_TARGET", "Choose one of the configured database targets.");
           }
-          await connections.db(data.nextTarget).command({ ping: 1 });
+          await (await connections.db(data.nextTarget)).command({ ping: 1 });
           assertTarget(data.target);
           activeTarget = data.nextTarget;
           json(200, details());
           return;
         }
         if (url.pathname === "/api/favorites") {
-          const db = connections.db(target);
+          const db = await connections.db(target);
           await requireSession(db, data.sessionId);
           if (request.method === "POST") {
             const result = await repository.saveFavorite(db, data.sessionId);
@@ -142,7 +142,7 @@ export async function createApp({ config, connections, repository, logger = cons
           if (data.source !== target || !["local", "site-b", "cloud"].includes(data.destination) || data.source === data.destination) {
             throw new WorkshopError(400, "INVALID_TRANSFER", "Copy from the active target to the other configured target.");
           }
-          const result = await copyFavorites(connections.db(data.source), connections.db(data.destination), data.sessionIds);
+          const result = await copyFavorites(await connections.db(data.source), await connections.db(data.destination), data.sessionIds);
           if (!result.complete) {
             logger.error(JSON.stringify({ event: "copy_incomplete", statuses: result.results.map((item) => item.status) }));
           }

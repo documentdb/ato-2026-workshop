@@ -19,8 +19,12 @@
     "indexes": "node scripts/database.mjs indexes",
     "migrate": "node scripts/database.mjs migrate",
     "check": "node scripts/database.mjs check",
+    "inspect": "node scripts/database.mjs inspect",
+    "challenge": "node scripts/program-counts.mjs",
+    "test:reconnect": "node scripts/test-reconnect.mjs",
     "import:schedule": "node scripts/import-schedule.mjs",
     "test": "node --test test/*.test.js",
+    "test:docs": "node scripts/check-doc-links.mjs",
     "test:database": "node --test test/database.integration.js",
     "wait:database": "node scripts/database.mjs wait"
   },

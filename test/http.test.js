@@ -8,7 +8,7 @@ test("HTTP target changes are explicit; errors are sanitized and writes require 
   const calls = [];
   const config = { activeTarget: "local", mode: "complete", location: "laptop", targets: { local: {} } };
   const connections = {
-    db(target) {
+    async db(target) {
       calls.push(target);
       if (target !== "local") throw new WorkshopError(409, "TARGET_NOT_CONFIGURED", "No cloud target.");
       return { command: async () => ({ ok: 1 }) };
@@ -55,7 +55,7 @@ test("unavailable Site B does not switch the active target or fall back after a 
   const app = await createApp({
     config, repository: {}, logger: { error() {} },
     connections: {
-      db(target) {
+      async db(target) {
         calls.push(target);
         return { async command() {
           if (target === "site-b" && unavailable) {

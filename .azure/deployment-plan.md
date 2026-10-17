@@ -3,7 +3,8 @@
 **Direction: subscription-free attendee lab; existing-resource presenter capstone.**
 No new Azure deployment is required for the selected workshop. The organizer has
 an existing Azure DocumentDB instance available for a presenter-only demonstration.
-Availability is not a claim that the application round trip has been rehearsed.
+A previous local Mac mini → managed Azure round trip passed; this does not
+prove the delivery revision on the conference laptop/network.
 
 ## Mandatory attendee path
 
@@ -62,14 +63,22 @@ Automated gates in this revision:
 - Complete-reference recovery and expected 216-entry catalog.
 - No cloud endpoint used by attendee startup or database integration tests.
 
-Still requiring environment-specific acceptance (not replaced by local/CI checks):
+Executed on preceding main source (see [dated acceptance](../docs/acceptance.md)):
 
-- [ ] Fresh revised attendee/organizer Codespaces builds and cold startup timing.
-- [ ] Measured two-site resource needs on representative accounts/machines.
-- [ ] Presenter actual laptop → approved managed Azure seed, copy-out, retry, copy-back.
-- [ ] Approved real-network access and private credential delivery to the presenter.
-- [ ] Verified backup recording and calendar-application import.
-- [ ] Full 105-minute timed rehearsal, pairing fallback, export and safe stopping.
+- [x] Fresh two-core attendee Codespace, 4m47s cold, actual Site A/B 34/34 plus integration.
+- [x] Actual Google Calendar UI import, 3/3 events.
+- [x] Local Mac mini → managed Azure round trip; temporary resource cleaned up.
+
+Still requiring environment-specific acceptance (not replaced by those receipts):
+
+- [x] Reconnect/onboarding revision: restarted attendee Codespace, 47/47 root tests,
+  2/2 live integration, same-app cold recovery and original-wait-process recovery;
+  interruption cleanup 2/2. See the dated acceptance record for exact source scope.
+- [ ] New cold Codespace creation on this revision (the polish retest reused the existing one).
+- [ ] Fresh Organizer profile and representative account/machine capacity checks.
+- [ ] Presenter existing-resource rehearsal on the conference laptop/network.
+- [ ] Verified backup recording; Apple Calendar UI and repeat-import handling.
+- [ ] Full 105-minute human rehearsal, pairing fallback, export and safe stopping.
 
 No unattended cleanup worker, cloud IAM grants, Kubernetes dependency, background
 sync, Azure app hosting or new cloud resources are introduced by this plan.
