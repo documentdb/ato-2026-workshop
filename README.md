@@ -19,10 +19,14 @@ usage; it is not a promise of free or offline hosting.
 
 The app includes the [official ATO schedule](https://2026.allthingsopen.org/schedule)
 snapshot captured October 12, 2026: **216 distinct scheduled entries, October 18–20**.
-The earlier single-development-database app/API was rehearsed in Codespaces.
-The revised two-site cold Codespaces startup, timed classroom delivery, calendar-app
-import, and presenter Azure round trip still require their own acceptance rehearsal.
-Automated local/CI checks are not proof of those environments.
+On the preceding main source, a fresh **two-core attendee Codespace** reached both
+sites in **4m47s**, actual Site A/B checks passed **34/34 plus integration**, Google
+Calendar imported **3/3 events**, and a real **local Mac mini → managed Azure**
+round trip passed (temporary cloud resource cleaned up). See the
+[acceptance record](docs/acceptance.md) for scope and the first-connection bug found
+along the way. **This reconnect/onboarding revision still needs its own fresh
+acceptance.** Timed human classroom delivery and conference-laptop networking are
+not verified; automated checks are not substitutes.
 
 The web schedule is primary; October 9 Monday/Tuesday PDFs were cross-checked,
 not silently merged. See [source notes](docs/instructor.md#schedule-data) for
@@ -36,9 +40,13 @@ cross-listings, unresolved disagreements, and the excluded invalid break time.
    private development credentials, starts both databases and the app, waits for
    each database, and seeds the same catalog in both. It does not copy favorites.
 3. When the terminal says **Site A and Site B are ready and both catalogs are
-   seeded**, open port **3000** in the **Ports** tab. Keep visibility **Private**.
-4. Follow the [attendee guide](docs/lab.md). `TODO_LIST_SESSIONS` is intentional
-   until you finish the first exercise; it is not a database connection failure.
+   seeded**, select **Ports** beside Terminal in the editor's bottom panel. Find
+   row **3000** and use **Open in Browser** (globe). Keep visibility **Private**.
+4. Follow the [attendee guide](docs/lab.md), also linked persistently in the planner.
+   The blue **Exercise 1** checkpoint is intentional, not a broken database.
+5. Edit in Codespaces: **Explorer → exercises → starter → repository.js**, or
+   **Ctrl/Cmd+P**, then type `exercises/starter/repository.js`. A GitHub file link
+   is a read-only source view, not the editable file in your running Codespace.
 
 Every workshop terminal command runs **inside Codespaces**, unless explicitly
 following the optional [laptop-local appendix](docs/local.md).
@@ -163,7 +171,9 @@ The [captured source](data/schedule-source.json) and
 [audit report](data/schedule-import-report.json) preserve provenance. A replacement
 snapshot requires reviewed migration or fresh databases.
 
-Calendar export is a snapshot, not a subscription. Published blocks may contain
+Calendar export is a snapshot, not a subscription. Follow the
+[Google Calendar / Apple Calendar import steps](docs/lab.md#9-take-your-selections-with-you).
+Published blocks may contain
 sequential keynotes/lightning talks; no per-talk timing is invented. Overlap
 warnings need interpretation. Favorites neither reserve seats nor grant entry to
 separately registered events.
@@ -205,6 +215,7 @@ With Node.js 24.13 or newer (already available inside Codespaces):
 ```sh
 npm ci --ignore-scripts
 npm test
+npm run test:docs
 ```
 
 With the two-site Compose stack running:
@@ -217,8 +228,11 @@ Integration checks use uniquely named temporary databases on **two different
 local server services**, never the configured cloud endpoint. They remove only
 their own temporary databases. Checks cover independent favorites, additive
 round trips, timestamp/duplicate preservation, partial results, indexes,
-migrations, and HTTP target switching. CI runs these checks on Linux; this is
-not a live Azure or fresh Codespaces claim.
+migrations with real before/after inspection, the optional read-only aggregation,
+and HTTP target switching. For first-use failure/concurrent/wait-process recovery
+on a **new isolated stack**, run `npm run test:reconnect` from the Docker host;
+see [scope and cleanup](docs/acceptance.md#how-to-verify-the-revision). CI runs
+these checks on Linux; this is not a fresh Codespaces or live Azure claim.
 
 See the [lab](docs/lab.md), [instructor guide](docs/instructor.md),
 [presenter runbook](docs/presenter.md), and [delivery plan](.azure/deployment-plan.md).

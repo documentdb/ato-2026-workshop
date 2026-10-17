@@ -20,7 +20,7 @@ docker compose -f compose.yaml exec app npm run seed -- --target site-b
 Stop at any failing command, diagnose it, then retry; do not skip readiness or
 pretend the second site is available. These commands access only local sites.
 
-Open **http://localhost:3000**. The starter reports `TODO_LIST_SESSIONS` until
+Open **http://localhost:3000**. The starter shows a blue **Exercise 1** checkpoint until
 the first exercise is complete. Follow the [lab](lab.md); here both independent
 sites run on your physical laptop rather than inside Codespaces. It is still a
 two-site simulation, not two physical sites or cloud providers.

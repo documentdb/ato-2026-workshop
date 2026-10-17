@@ -60,13 +60,20 @@ Optional GitHub CLI/SSH diagnostics are helper tools, not attendee prerequisites
 
 ## Observable checkpoints
 
-- Both sites ready and seeded; the intentional TODO explains the empty planner.
+- Both sites ready and seeded; a blue Exercise 1 checkpoint explains the empty
+  planner, points to the editable file, and links to progressively revealed hints.
+  The persistent implementation label describes the chosen file, not completion.
 - TODO 1: 216 entries. TODO 2: save two favorites and retain them across app restart.
 - Switch A → B: same catalog, no automatic favorite movement; A remains intact.
 - Copy A → B; switch back to A before repeating that same direction; Already present.
 - New favorite at B; copy B → A; original A choices survive.
 - Removal is local to its site, not propagated to copies.
-- Export from the intended site, preserve code, stop without deleting volumes.
+- Inspect an actual session before/after migration and an unchanged favorite
+  timestamp; explain zero migrated on rerun as idempotency. Index definition is
+  visible, not a performance claim. Optional advanced aggregation: 17 Monday
+  track groups / 74 published program entries, not attendee counts.
+- Export from the intended site, follow calendar-specific import instructions,
+  preserve code, stop without deleting volumes.
 
 ## Schedule data
 
@@ -151,8 +158,10 @@ Use an approved dedicated demo database; no generic deletion of shared resources
 Use actual laptop-local DocumentDB for the live hybrid story. A Codespaces source
 must instead be labeled self-hosted-to-managed. Rehearse the same catalog, local
 favorites, empty managed favorites, explicit copy/retry, and return trip before
-class. The repo's earlier managed round trip remains unverified until that proof
-is recorded. Have a checked recording; if live connectivity fails, switch to it
+class. A local Mac mini → managed Azure round trip has now passed on the preceding
+source, with its temporary resource cleaned up; see the [acceptance record](acceptance.md).
+That is not proof of this revision on the conference laptop/network. Have a
+checked recording; if live connectivity fails, switch to it
 rather than spend attendee time debugging access.
 
 Validated cloud TLS stays enabled. Observe current source IP/DNS and use approved
@@ -190,11 +199,17 @@ retain Site A's existing volume.
 
 ## Rehearsal checklist
 
+See the [dated acceptance record](acceptance.md) for what actually ran on the
+preceding source and what still needs proof on this revision.
+
 - Fresh attendee Codespace with both instances and measured resource/startup cost.
 - Setup upgrade from a legacy `.env` without changing old credentials/data.
 - Starter/reference switching and restart persistence at both sites.
 - Same catalog, independent favorites before copying, safe repeat/return trip.
 - Second-site outage: clear error, no fallback; recovery retains both notebooks.
+  Include B unavailable on its **first** use, then restored with the **same app
+  PID**. `npm run test:reconnect` performs that only in its own disposable project;
+  never run manual outage drills on attendees' existing notebooks.
 - Usable calendar import, honest simulation labels, private forwarded port.
 - Actual presenter laptop/Azure round trip, narrow access, validated TLS, recording.
 - Safe stopping, code/data retention explanation, existing-resource cleanup owner.

@@ -93,6 +93,7 @@
     .stack { display: grid; gap: 12px; }
     .status { font-size: 0.875rem; color: var(--cp-text-muted); }
     .notice { border-left: 4px solid var(--cp-warning); padding: 12px 16px; background: var(--cp-surface); border-radius: 0.625rem; margin: 16px 0; }
+    .notice.info { border-left-color: var(--cp-link); }
     .notice.error { border-left-color: var(--cp-danger); }
     .notice.success { border-left-color: var(--cp-success); }
     .metrics { display: flex; gap: 32px; margin: 24px 0; }
@@ -141,7 +142,10 @@
     <header>
       <div class="topline">
         <p class="eyebrow">All Things Open 2026 / Hands-on workshop</p>
-        <button id="refresh" type="button">Refresh</button>
+        <div class="row">
+          <a href="https://github.com/documentdb/ato-2026-workshop/blob/main/docs/lab.md" target="_blank" rel="noopener noreferrer">Attendee guide (opens new tab)</a>
+          <button id="refresh" type="button">Refresh</button>
+        </div>
       </div>
       <div class="intro">
         <h1>Build your conference day.</h1>
@@ -166,6 +170,12 @@
 
     <div class="notice" id="location-notice" hidden></div>
     <div class="notice" id="catalog-notice" hidden></div>
+    <section class="notice info stack" id="exercise" role="status" aria-labelledby="exercise-title" hidden>
+      <h2 id="exercise-title"></h2>
+      <p id="exercise-help"></p>
+      <p>Edit <code>exercises/starter/repository.js</code> in your editor, save, then refresh this planner.</p>
+      <a id="exercise-guide" href="https://github.com/documentdb/ato-2026-workshop/blob/main/docs/lab.md" target="_blank" rel="noopener noreferrer">Open the exercise steps and progressive hints</a>
+    </section>
     <div class="notice error" id="error" role="alert" hidden></div>
     <div class="notice success" id="message" role="status" hidden></div>
 
@@ -195,7 +205,9 @@
         <ul class="favorites" id="favorites"></ul>
         <p class="empty" id="favorites-empty">Save a session to start your day.</p>
         <button id="export" class="primary" type="button" disabled>Download calendar (.ics)</button>
-        <small>Your downloaded calendar works without this app. It is a snapshot, not a live subscription.</small>
+        <small>Your downloaded calendar works without this app. It is a snapshot, not a live subscription.
+          <a href="https://github.com/documentdb/ato-2026-workshop/blob/main/docs/lab.md#9-take-your-selections-with-you" target="_blank" rel="noopener noreferrer">Google Calendar / Apple Calendar import steps</a>
+        </small>
         <div class="divider stack">
           <h3>Copy, don't synchronize</h3>
           <p class="muted">Select favorites above to copy to the other database. Existing choices are kept; removals are not propagated.</p>
@@ -269,7 +281,11 @@
         },
       });
       const data = await response.json();
-      if (!response.ok) throw new Error(`${data.error.code}: ${data.error.message}`);
+      if (!response.ok) {
+        const error = new Error(`${data.error.code}: ${data.error.message}`);
+        error.code = data.error.code;
+        throw error;
+      }
       return data;
     }
 
@@ -277,6 +293,36 @@
       $(id).textContent = text;
       $(id).hidden = !text;
       if (id === "message") $(id).className = `notice ${error ? "error" : "success"}`;
+    }
+
+    function showFailure(error) {
+      const step = config?.mode === "starter"
+        ? (error.code === "TODO_LIST_SESSIONS" ? 1 : error.code === "TODO_SAVE_FAVORITE" ? 2 : undefined)
+        : undefined;
+      if (step) {
+        $("exercise").hidden = false;
+        $("exercise-title").textContent = step === 1
+          ? "Exercise 1 — Read the catalog" : "Exercise 2 — Save your first favorite";
+        $("exercise-help").textContent = step === 1
+          ? "Your database is reachable. Implement listSessions to make its catalog appear; this is an expected exercise checkpoint, not a system failure."
+          : "The catalog is working. Implement saveFavorite, then try Save favorite again. Your existing favorites have not been reset.";
+        $("exercise-guide").href = `https://github.com/documentdb/ato-2026-workshop/blob/main/docs/lab.md#${step === 1 ? "2-read-the-catalog" : "3-save-favorites-and-prove-persistence"}`;
+      } else {
+        $("exercise").hidden = true;
+        notice("error", error.message);
+      }
+      if (!state) {
+        $("catalog-empty").hidden = false;
+        $("catalog-empty").textContent = step === 1
+          ? "Next: complete Exercise 1 in exercises/starter/repository.js, save, and refresh."
+          : "The catalog could not be loaded. Resolve the error above, then refresh.";
+        $("catalog-source").textContent = step === 1
+          ? "Catalog source and snapshot details will appear after Exercise 1. The attendee guide explains the included schedule."
+          : "Catalog source details are unavailable until this database can be read.";
+        $("status").textContent = step === 1
+          ? "Database reachable. Ready for Exercise 1."
+          : "This request did not complete. Check the error above; no fallback target was used.";
+      }
     }
 
     async function perform(action) {
@@ -287,7 +333,7 @@
       try {
         await action();
       } catch (error) {
-        notice("error", error.message);
+        showFailure(error);
       } finally {
         busy = false;
         controls();
@@ -306,7 +352,7 @@
 
     function renderConfiguration() {
       $("target-name").textContent = label(config.target);
-      $("mode").textContent = `${config.mode === "starter" ? "TODO starter" : "Complete reference"} / Same application data layer`;
+      $("mode").textContent = `${config.mode === "starter" ? "Exercise implementation (your editable code)" : "Complete reference"} / Same application data layer`;
       $("target-select").replaceChildren();
       for (const { id: target } of config.targets) {
         const option = node("option", label(target));
@@ -362,6 +408,7 @@
               body: JSON.stringify({ target: config.target, sessionId: session.id }),
             });
             await loadState();
+            $("exercise").hidden = true;
             notice("message", saved ? "Removed from the active database only." : "Favorite saved in the active database.");
           });
         });
@@ -422,6 +469,9 @@
     async function refresh() {
       state = undefined;
       selected.clear();
+      $("exercise").hidden = true;
+      $("catalog-source").textContent = "Checking this catalog's source and snapshot date...";
+      $("favorites-empty").hidden = false;
       $("sessions").replaceChildren();
       $("favorites").replaceChildren();
       $("copy-results").replaceChildren();
@@ -466,7 +516,7 @@
       link.download = `${state.catalog.kind === "practice" ? "practice-" : ""}conference-favorites.ics`;
       link.click();
       setTimeout(() => URL.revokeObjectURL(url), 1000);
-      notice("message", "Calendar export requested. Save the .ics file if your browser prompts, then import it manually; this is not a live subscription.");
+      notice("message", "Calendar export requested. Save the .ics file if prompted, then follow the Google Calendar / Apple Calendar import steps below the download button. This is a snapshot, not a live subscription.");
     }));
     $("copy").addEventListener("click", () => {
       $("copy-route").textContent = `${label(config.target)} -> ${label(destination())}`;

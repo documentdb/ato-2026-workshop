@@ -10,7 +10,8 @@ The presenter uses one existing, authorized Azure instance for an optional capst
 1. Confirm GitHub/Codespaces account access, available usage, machine capacity,
    conference connectivity, storage retention and the pairing/follow-along plan.
 2. Measure a fresh **ATO 2026 - Attendee** Codespace with both database services.
-   A previous warm single-database rehearsal is not a two-site cold-start result.
+   The preceding main source measured 4m47s on a fresh two-core attendee Codespace;
+   repeat on the delivery revision and representative accounts/network.
 3. Rehearse TODOs/reference recovery, app restart persistence, both copy directions,
    duplicate-safe retry, second-site failure/recovery and a real calendar-app import.
 4. Follow the [presenter runbook](presenter.md) on the actual presenter laptop,
@@ -63,6 +64,9 @@ merely to deliver the current attendee lab or existing-instance presenter demo.
 
 Automated tests cover configuration/scenario separation, legacy `.env` preservation,
 catalog ownership, bounded two-site startup, and real two-server data flows in CI.
-They do not replace fresh Codespaces, conference network, live Azure, calendar-app,
-or timed-classroom rehearsal. Record those results only after executing them.
-See the [delivery plan](../.azure/deployment-plan.md).
+The preceding source has fresh two-core Codespaces (4m47s; 34/34 plus integration),
+Google Calendar (3/3), and actual local Mac mini → managed Azure data-plane proof;
+the temporary Azure resource was cleaned up. See the [acceptance record](acceptance.md)
+for limitations and the reconnect defect found. New-HEAD acceptance, human timing,
+and conference-laptop/network proof remain pending. See also the
+[delivery plan](../.azure/deployment-plan.md).

@@ -1,0 +1,115 @@
+# Acceptance record and remaining gates
+
+## Executed evidence before the reconnect / attendee-polish revision
+
+Recorded October 17, 2026 against the preceding main source
+`e6eae569f0879ea59656c847db6c13a1dee0b7d1` (or tree-identical rehearsal source):
+
+- **Fresh two-core attendee Codespace:** cold creation to both Site A/B catalogs
+  ready took **4 minutes 47 seconds** in that run. The actual Site A/B acceptance
+  checklist passed **34/34**, plus the live database integration test. This is
+  one measured environment, not a promised startup time for every account/network.
+- **Attendee revisit:** the same Codespace was stopped/restarted and the two
+  starter exercises were completed again with new notebook database names.
+  Browsing, favorites, restart persistence, connection-only switching, selected
+  copying in both directions, safe repeat, migration and calendar download worked.
+  Editor focus required terminal assistance for the code replacements: not a
+  novice usability study or an entirely mouse-and-keyboard editing rehearsal.
+- **Google Calendar web:** an actual downloaded calendar was imported through the
+  UI, **3/3 events**, with titles, timezones, UIDs, locations and Unicode checked.
+  No claim of Apple Calendar UI acceptance or universal repeat-import behavior.
+- **Managed Azure data plane:** actual local **Mac mini workstation → managed
+  Azure DocumentDB** seed/switch/copy/retry/copy-back passed. The temporary cloud
+  resource used for that authorized test was cleaned up. This is real local-to-
+  managed evidence, not a conference-laptop/network rehearsal or an instruction
+  to provision attendee resources. Normal delivery still uses an approved
+  existing presenter resource and narrow access.
+
+No account emails, private Codespace identifiers, subscription IDs, connection
+strings or credentials are needed in this public record.
+
+## Defect found during acceptance, and this revision's scope
+
+The preceding source had a confirmed first-connection recovery defect with the
+pinned MongoDB Node.js driver 7.1.0: if a cached client's first lazy connection
+failed, later lazy commands could see a closed topology even after the database
+was healthy. A previously connected client recovered from an ordinary outage.
+The prior success record must **not** be read as proof of first-failure recovery;
+restarting the app was then a workaround.
+
+This revision explicitly awaits the driver's public `connect()` on every async
+connection acquisition. The readiness CLI reacquires **inside** its retry loop.
+It does not replay writes, change TLS policy, silently fall back to another site,
+or replace credentials/volumes. Shutdown rejects new/racing acquisitions and
+closes pools after pending connects settle.
+
+New offline tests cover connection lifecycles, concurrent acquisition, bounded
+wait retries, exercise guidance, bounded document inspection and the optional
+query's snapshot-derived expected result. The live regression command below
+checks first-use failure, the original waiting CLI process, concurrent clients,
+a healthy-client outage control, unchanged favorite digests, and the **same app
+PID** across recovery. A test added to source is not an executed live result.
+
+**Fresh acceptance of this new HEAD is pending.** Do not carry the earlier 4m47s,
+34/34, or Azure/calendar receipts forward as proof of this patch. Record a new
+receipt only after running it.
+
+## How to verify the revision
+
+Offline, from the repository root with Node 24.13+:
+
+```sh
+npm ci --ignore-scripts
+npm test
+npm run test:docs
+```
+
+On an already authorized attendee stack rebuilt from this source:
+
+```sh
+docker compose -f compose.yaml exec -T app npm run test:database
+```
+
+The integration test creates/drops only uniquely named owned temporary databases
+on the two self-hosted servers; it does not select cloud. Rebuild the app image
+when scripts/tests/package metadata change; source bind mounts alone do not
+update those copied image files.
+
+For the destructive-outage regression, **do not stop an attendee's databases**.
+Run this from the repository root on a Docker host (including a disposable
+Codespace terminal), not inside the app container:
+
+```sh
+npm run test:reconnect
+```
+
+Requires Docker Compose **2.24.4+** for its port override. It creates a fresh random
+`ato-reconnect-*` project, private temporary `.env`, independent volumes and a
+random **loopback-only** app port. It ignores ambient workshop credentials and
+never adopts an existing project. It stops/starts only its Site B, captures
+sanitized pass/fail receipts, and removes **only its own ephemeral project and
+volumes** in `finally`. Normal notebooks and `.env` are untouched. If its own
+cleanup fails, it prints its generated project name/private directory for manual
+review; it does not run a global prune. CI runs it as a separate ephemeral job.
+The application runs directly without file watching in this harness so PID
+identity really establishes no app restart.
+
+Then reopen/restart the actual attendee Codespace and follow [the lab](lab.md):
+verify the friendly first screen, edit TODO 1, save TODO 2, inspect before/after,
+optional query, Site A/B copying and calendar helper links in a real browser.
+Offline UI mocks are not a rendered-browser acceptance test.
+
+## Still unverified delivery gates
+
+- This patch's fresh/restarted attendee Codespace and live outage acceptance.
+- Fresh Organizer-profile acceptance (not required for attendees).
+- Representative attendee accounts, quotas, resource needs, and conference
+  laptop/Wi-Fi networking; one two-core Codespace measurement is not capacity proof.
+- Full **105-minute human classroom rehearsal**, including pairing fallback,
+  editing fluency, export and safe stopping.
+- Approved existing-resource presenter rehearsal on the actual conference laptop
+  and network, and a verified backup recording.
+- Apple Calendar GUI import and client-specific repeated-import handling.
+
+The default attendee path remains Site A/B only. It never requires Azure,
+Kubernetes, a laptop Docker installation, or automatic calendar API access.

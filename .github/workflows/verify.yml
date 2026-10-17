@@ -19,6 +19,7 @@ jobs:
           cache: npm
       - run: npm ci --ignore-scripts --no-audit --no-fund
       - run: npm test
+      - run: npm run test:docs
       - name: Start and seed only the two self-hosted sites
         run: npm run workspace:start
       - name: Exercise two independent database servers
@@ -31,3 +32,16 @@ jobs:
       - name: Stop this ephemeral CI project only
         if: always()
         run: docker compose -f compose.yaml down --volumes
+
+  reconnect-regression:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+      - run: npm ci --ignore-scripts --no-audit --no-fund
+      - name: First-use failure, original wait process, concurrent recovery, healthy outage
+        run: npm run test:reconnect

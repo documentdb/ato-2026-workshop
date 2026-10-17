@@ -1,0 +1,188 @@
+// Host-side, opt-in live regression. NEVER points at an existing workshop stack.
+// Requires Docker Compose >=2.24.4 (!override). Generates its own private .env,
+// project name, random loopback port and volumes; cleanup selects that project.
+import assert from "node:assert/strict";
+import { spawn } from "node:child_process";
+import { randomUUID } from "node:crypto";
+import { mkdtemp, writeFile, rm } from "node:fs/promises";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
+import { fileURLToPath } from "node:url";
+import { createInterface } from "node:readline";
+import { setup } from "./setup.mjs";
+
+const root = fileURLToPath(new URL("../", import.meta.url));
+const project = `ato-reconnect-${randomUUID().replaceAll("-", "")}`;
+const directory = await mkdtemp(join(tmpdir(), "ato-reconnect-"));
+const override = join(directory, "compose.reconnect.yaml");
+// Preserve only ordinary runtime environment; explicitly override interpolation
+// inputs that could otherwise choose a host port, mode or private forwarding host.
+const env = { ...process.env };
+for (const key of Object.keys(env)) {
+  if (/^(COMPOSE_|WORKSHOP_|DOCUMENTDB_|SITE_B_|LOCAL_|CLOUD_)/.test(key) || key === "ACTIVE_TARGET") delete env[key];
+}
+Object.assign(env, { COMPOSE_PROJECT_NAME: project, WORKSHOP_PORT: "3000",
+  WORKSHOP_MODE: "complete", WORKSHOP_SCENARIO: "attendee", WORKSHOP_PUBLIC_HOST: "",
+  LOCAL_DATABASE_NAME: "reconnect_a", SITE_B_DATABASE_NAME: "reconnect_b" });
+const base = ["compose", "--project-name", project, "--project-directory", root,
+  "--env-file", join(directory, ".env"), "-f", join(root, "compose.yaml"),
+  "-f", join(root, "compose.complete.yaml"), "-f", override];
+const children = new Set();
+function command(args, { timeout = 300000, input = "ignore" } = {}) {
+  const child = spawn("docker", args, { cwd: root, env, stdio: [input, "pipe", "pipe"] });
+  children.add(child);
+  let stdout = "";
+  // Capture no stderr: compose/build/driver failures can contain private values.
+  child.stdout.on("data", (chunk) => { stdout += chunk; if (stdout.length > 2000000) child.kill(); });
+  child.stderr.resume();
+  let forceTimer;
+  const timer = setTimeout(() => {
+    child.kill("SIGTERM");
+    forceTimer = setTimeout(() => child.kill("SIGKILL"), 5000);
+  }, timeout);
+  const result = new Promise((resolve) => {
+    child.once("error", () => resolve({ ok: false, stdout: "" }));
+    child.once("close", (code) => {
+      clearTimeout(timer); clearTimeout(forceTimer); children.delete(child);
+      resolve({ ok: code === 0, stdout });
+    });
+  });
+  return { child, result };
+}
+async function run(args, options) {
+  const result = await command([...base, ...args], options).result;
+  assert.ok(result.ok, "Scoped Compose command failed (raw output suppressed)");
+  return result.stdout.trim();
+}
+const exec = (...args) => run(["exec", "-T", "app", ...args]);
+const receipt = (check, details = {}) => console.log(JSON.stringify({ check, passed: true, ...details }));
+let owned = false;
+let probe;
+let failure = false;
+let phase = "ownership-and-startup";
+try {
+  // An existing project, however unlikely, must never be adopted or cleaned up.
+  for (const list of [["ps", "-aq"], ["volume", "ls", "-q"], ["network", "ls", "-q"]]) {
+    const inventory = await command([...list, "--filter", `label=com.docker.compose.project=${project}`]).result;
+    assert.ok(inventory.ok && !inventory.stdout.trim(), "Project ownership preflight failed");
+  }
+  // setup ignores ambient credentials and generates independent private values.
+  await setup(directory, {}, () => {});
+  await writeFile(override, `services:\n  app:\n    init: false\n    command: ["node", "src/server.js"]\n    ports: !override\n      - "127.0.0.1::3000"\n`, { mode: 0o600 });
+  owned = true;
+  await run(["up", "--build", "-d", "--wait", "--wait-timeout", "240"], { timeout: 600000 });
+  for (const target of ["local", "site-b"]) {
+    await exec("npm", "run", "wait:database", "--", "--target", target);
+    await exec("npm", "run", "seed", "--", "--target", target);
+  }
+  const address = await run(["port", "app", "3000"]);
+  assert.match(address, /^127\.0\.0\.1:\d+$/);
+  const origin = `http://${address}`;
+  const get = async (path) => {
+    const response = await fetch(`${origin}${path}`, { signal: AbortSignal.timeout(20000) });
+    assert.equal(response.status, 200);
+    return response.json();
+  };
+  const initial = await get("/api/config");
+  const appId = await run(["ps", "-q", "app"]);
+  const appIdentity = async () => {
+    const result = await command(["inspect", "--format", "{{.State.Pid}} {{.State.StartedAt}} {{.RestartCount}}", appId]).result;
+    assert.ok(result.ok);
+    return result.stdout.trim();
+  };
+  const identity = await appIdentity(); // init:false + direct node => actual app PID
+  const post = (path, body) => fetch(`${origin}/api/${path}`, {
+    method: "POST", signal: AbortSignal.timeout(20000),
+    headers: { "Content-Type": "application/json", "X-Workshop-Token": initial.csrfToken },
+    body: JSON.stringify(body),
+  });
+  const state = await get("/api/state");
+  assert.equal(state.sessions.length, 216);
+  assert.equal((await post("favorites", { target: "local", sessionId: state.sessions[0].id })).status, 200);
+  const snapshot = async () => JSON.parse(await exec("node", "test/reconnect.probe.mjs", "snapshot"));
+  const before = await snapshot();
+  assert.equal(before.local.favorites, 1);
+  assert.equal(before["site-b"].favorites, 0);
+
+  probe = command([...base, "exec", "-T", "app", "node", "test/reconnect.probe.mjs"], { input: "pipe", timeout: 360000 });
+  const lines = createInterface({ input: probe.child.stdout })[Symbol.asyncIterator]();
+  const nextLine = async () => {
+    let timer;
+    try {
+      const value = await Promise.race([
+        lines.next(), new Promise((_, reject) => { timer = setTimeout(() => reject(new Error("Probe timeout")), 25000); }),
+      ]);
+      assert.equal(value.done, false);
+      return JSON.parse(value.value);
+    } finally { clearTimeout(timer); }
+  };
+  const probeReady = await nextLine();
+  assert.equal(probeReady.ready, true);
+  const acquire = async (expected) => {
+    probe.child.stdin.write(JSON.stringify({ expected }) + "\n");
+    const result = await nextLine();
+    assert.equal(result.pid, probeReady.pid);
+    assert.equal(result.expected, expected);
+    assert.equal(result.passed, true);
+  };
+
+  phase = "first-connection-outage";
+  await run(["stop", "documentdb-site-b"]);
+  // Original wait process must span the outage, including its first failure.
+  const waiter = command([...base, "exec", "-T", "app", "npm", "run", "wait:database", "--", "--target", "site-b"], { timeout: 270000 });
+  let waiterFinished = false;
+  waiter.result.then(() => { waiterFinished = true; });
+  assert.equal((await post("target", { target: "local", nextTarget: "site-b" })).status, 503);
+  assert.equal((await get("/api/config")).target, "local");
+  assert.equal((await get("/api/state")).favorites.length, 1);
+  await acquire("unavailable"); // three first acquisitions, same persistent manager
+  assert.equal(waiterFinished, false);
+  await run(["start", "documentdb-site-b"]);
+  // Separate fresh client proves actual readiness before retrying the old ones.
+  await exec("npm", "run", "wait:database", "--", "--target", "site-b");
+  const waited = await waiter.result;
+  assert.ok(waited.ok && /"target":"site-b","ready":true/.test(waited.stdout));
+  receipt("original-wait-process-recovers-after-first-connection-failure");
+  await acquire("ready");
+  assert.equal((await post("target", { target: "local", nextTarget: "site-b" })).status, 200);
+  assert.equal((await get("/api/state")).sessions.length, 216);
+  assert.equal((await get("/api/state")).favorites.length, 0);
+  assert.equal(await appIdentity(), identity);
+  assert.equal((await get("/api/config")).csrfToken, initial.csrfToken);
+  receipt("first-unavailable-site-b-recovers-same-app-pid-and-concurrent-client");
+
+  phase = "healthy-client-outage";
+  // Control: an already healthy client also recovers without target fallback.
+  await run(["stop", "documentdb-site-b"]);
+  assert.equal((await fetch(`${origin}/api/health`, { signal: AbortSignal.timeout(20000) })).status, 503);
+  assert.equal((await get("/api/config")).target, "site-b");
+  await acquire("unavailable");
+  await run(["start", "documentdb-site-b"]);
+  await exec("npm", "run", "wait:database", "--", "--target", "site-b");
+  await acquire("ready");
+  await get("/api/health");
+  assert.equal(await appIdentity(), identity);
+  assert.equal((await get("/api/config")).csrfToken, initial.csrfToken);
+  assert.deepEqual(await snapshot(), before);
+  receipt("healthy-client-outage-recovers-same-pid-no-fallback-notebooks-unchanged");
+  probe.child.stdin.end();
+  assert.ok((await probe.result).ok);
+  receipt("concurrent-acquisitions-close-cleanly");
+} catch {
+  failure = true;
+  console.error(JSON.stringify({ error: "RECONNECT_REGRESSION_FAILED", phase, message: "A bounded regression check failed; raw command output was suppressed to protect private settings." }));
+} finally {
+  for (const child of children) child.kill("SIGTERM");
+  if (owned) {
+    const cleanup = await command([...base, "down", "--volumes", "--remove-orphans"], { timeout: 120000 }).result;
+    const remaining = await command(["ps", "-aq", "--filter", `label=com.docker.compose.project=${project}`]).result;
+    if (!cleanup.ok || !remaining.ok || remaining.stdout.trim()) {
+      failure = true;
+      console.error(JSON.stringify({ error: "OWN_PROJECT_CLEANUP_FAILED", project, privateDirectory: directory }));
+    } else {
+      await rm(directory, { recursive: true });
+      receipt("only-owned-ephemeral-project-cleaned");
+    }
+  } else { await rm(directory, { recursive: true }); }
+}
+if (failure) process.exitCode = 1;

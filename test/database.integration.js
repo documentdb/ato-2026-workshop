@@ -1,3 +1,6 @@
+import { inspectDatabase } from "../src/inspection.js";
+import { programCounts } from "../scripts/program-counts.mjs";
+import { programCountsPipeline } from "../examples/complete/program-counts.js";
 import test from "node:test";
 import assert from "node:assert/strict";
 import { randomUUID } from "node:crypto";
@@ -24,21 +27,11 @@ test("two real independent DocumentDB servers: independent data, retry-safe roun
   const config = readConfig({ ...localEnv, LOCAL_DATABASE_NAME: `verify_source_${runId}` });
   const sourceConnections = createConnections(config);
   const destinationConnections = createConnections(readConfig({ ...localEnv, SITE_B_DATABASE_NAME: `verify_destination_${runId}` }));
-  const source = sourceConnections.db("local");
-  const destination = destinationConnections.db("site-b");
-  assert.notEqual(config.targets.local.uri.split("@")[1], config.targets["site-b"].uri.split("@")[1], "integration requires two distinct server endpoints");
-  // Site A's credentials must not authenticate to Site B (or vice versa).
-  for (const [from, to] of [["local", "site-b"], ["site-b", "local"]]) {
-    const foreign = createConnections({ targets: { local: {
-      ...config.targets[from],
-      uri: `${config.targets[from].uri.split("@")[0]}@${config.targets[to].uri.split("@")[1]}`,
-    } } });
-    try {
-      await assert.rejects(foreign.db("local").command({ ping: 1 }), { code: 18 });
-    } finally { await foreign.close(); }
-  }
+  let source;
+  let destination;
   let sourceOwned = false;
   let destinationOwned = false;
+  // Register ownership-aware cleanup before the first asynchronous acquisition.
   t.after(async () => {
     try {
       if (sourceOwned) await source.dropDatabase();
@@ -50,6 +43,19 @@ test("two real independent DocumentDB servers: independent data, retry-safe roun
       }
     }
   });
+  source = await sourceConnections.db("local");
+  destination = await destinationConnections.db("site-b");
+  assert.notEqual(config.targets.local.uri.split("@")[1], config.targets["site-b"].uri.split("@")[1], "integration requires two distinct server endpoints");
+  // Site A's credentials must not authenticate to Site B (or vice versa).
+  for (const [from, to] of [["local", "site-b"], ["site-b", "local"]]) {
+    const foreign = createConnections({ targets: { local: {
+      ...config.targets[from],
+      uri: `${config.targets[from].uri.split("@")[0]}@${config.targets[to].uri.split("@")[1]}`,
+    } } });
+    try {
+      await assert.rejects(async () => (await foreign.db("local")).command({ ping: 1 }), { code: 18 });
+    } finally { await foreign.close(); }
+  }
   await source.createCollection("verification_ownership");
   sourceOwned = true;
   await destination.createCollection("verification_ownership");
@@ -105,6 +111,10 @@ test("two real independent DocumentDB servers: independent data, retry-safe roun
   assert.match(drift.results[0].message, /details differ/);
   await destination.collection("sessions").updateOne({ _id: ids[0] }, { $set: { room: originalSession.room } });
 
+  const beforeMigration = await inspectDatabase(source);
+  assert.equal(beforeMigration.session.schemaVersion, 1);
+  assert.equal(Object.hasOwn(beforeMigration.session, "attendanceMode"), false);
+  assert.ok(beforeMigration.favorite.savedAt);
   await source.collection("sessions").createIndex({ startsAt: 1, _id: 1 }, { name: "schedule_order" });
   const migrate = () => source.collection("sessions").updateMany(
     { catalogVersion: catalog.fingerprint, schemaVersion: 1, attendanceMode: { $exists: false } },
@@ -112,6 +122,12 @@ test("two real independent DocumentDB servers: independent data, retry-safe roun
   );
   assert.equal((await migrate()).modifiedCount, catalog.sessions.length);
   assert.equal((await migrate()).modifiedCount, 0);
+  const afterMigration = await inspectDatabase(source);
+  assert.equal(afterMigration.session._id, beforeMigration.session._id);
+  assert.equal(afterMigration.session.schemaVersion, 2);
+  assert.equal(afterMigration.session.attendanceMode, "in-person");
+  assert.equal(afterMigration.favorite.savedAt, beforeMigration.favorite.savedAt);
+  assert.ok(afterMigration.indexes.some(({ name }) => name === "schedule_order"));
   await seedCatalog(source, catalog);
   assert.equal(await source.collection("sessions").countDocuments({ schemaVersion: 2 }), catalog.sessions.length);
   const state = await readPlanner(source, repository);
@@ -120,7 +136,7 @@ test("two real independent DocumentDB servers: independent data, retry-safe roun
 
   const app = await createApp({
     config: { ...config, mode: "complete" },
-    connections: { db: (target) => {
+    connections: { db: async (target) => {
       if (target === "local") return source;
       if (target === "site-b") return destination;
       throw new WorkshopError(409, "TARGET_NOT_CONFIGURED", "No cloud access in this test.");
@@ -166,4 +182,35 @@ test("two real independent DocumentDB servers: independent data, retry-safe roun
   } finally {
     await app.close();
   }
+});
+
+test("optional aggregation queries the actual official snapshot on an owned local test database", async (t) => {
+  const connections = createConnections(readConfig({
+    ...process.env, ACTIVE_TARGET: "local", WORKSHOP_SCENARIO: "attendee",
+    LOCAL_DATABASE_NAME: `verify_query_${randomUUID().replaceAll("-", "")}`,
+  }));
+  let db;
+  let owned = false;
+  t.after(async () => {
+    try { if (owned) await db.dropDatabase(); }
+    finally { await connections.close(); }
+  });
+  db = await connections.db("local");
+  await db.createCollection("verification_ownership");
+  owned = true;
+  const catalog = await readCatalog();
+  await seedCatalog(db, catalog);
+  const result = await programCounts(db, programCountsPipeline);
+  // Independent calculation: conference timezone rather than pipeline bounds.
+  const expected = new Map();
+  for (const session of catalog.sessions) {
+    const day = new Intl.DateTimeFormat("en-CA", { timeZone: catalog.timeZone }).format(new Date(session.startsAt));
+    if (day === "2026-10-19") expected.set(session.track, (expected.get(session.track) || 0) + 1);
+  }
+  assert.deepEqual(result.rows, [...expected].map(([_id, entries]) => ({ _id, entries }))
+    .sort((a, b) => b.entries - a.entries || a._id.localeCompare(b._id)));
+  assert.equal(result.rows.length, 17);
+  assert.equal(result.rows.reduce((sum, row) => sum + row.entries, 0), 74);
+  assert.equal(await db.collection("sessions").countDocuments(), 216);
+  assert.equal(await db.collection("favorites").countDocuments(), 0);
 });
