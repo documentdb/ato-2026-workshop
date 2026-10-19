@@ -49,6 +49,11 @@ cross-listings, unresolved disagreements, and the excluded invalid break time.
    **Ctrl/Cmd+P**, then type `exercises/starter/repository.js`. A GitHub file link
    is a read-only source view, not the editable file in your running Codespace.
 
+Both Codespaces profiles include the official
+[DocumentDB for VS Code extension](https://marketplace.visualstudio.com/items?itemName=ms-azuretools.vscode-documentdb)
+(`ms-azuretools.vscode-documentdb`). It does not connect to or provision a database
+automatically; the workshop's Compose setup still owns Site A and Site B.
+
 Every workshop terminal command runs **inside Codespaces**, unless explicitly
 following the optional [laptop-local appendix](docs/local.md).
 

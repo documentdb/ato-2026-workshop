@@ -12,7 +12,9 @@
   "containerEnv": {
     "WORKSHOP_ROLE": "organizer"
   },
-  "forwardPorts": [3000],
+  "forwardPorts": [
+    3000
+  ],
   "portsAttributes": {
     "3000": {
       "label": "Organizer development planner",
@@ -22,5 +24,12 @@
   },
   "onCreateCommand": "npm ci --ignore-scripts --no-audit --no-fund",
   "postCreateCommand": "npm run setup && npm run organizer:check",
-  "postStartCommand": "npm run workspace:start"
+  "postStartCommand": "npm run workspace:start",
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "ms-azuretools.vscode-documentdb"
+      ]
+    }
+  }
 }
