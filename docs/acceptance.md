@@ -30,10 +30,18 @@ not-paused, not-restarting states. Uncertain inventory produces the same nonzero
   automatically, core work can continue while loading, and the manual command is
   for retry/laptop setup. This is copy-only: no polling or query/UI behavior change.
 
-**This follow-up has not been tested in Codespaces.** Earlier `b33a61e` lifecycle
-proof does not prove this new preflight guard; the parent review/release run owns
-that remaining gate. The live case above used the same local arm64 Docker project
-and cached image/model volumes, not a new model download or fresh Codespace.
+**The follow-up was also tested in the owned Codespace at
+`92bc4a900deedb3c1e90f682520ecb83a895c59b`.** An actual running downloader was
+rejected before any inference startup, cache access or registry fetch; app,
+database and model state/timestamps stayed unchanged. Explicit scoped recovery
+verified the downloader stopped; subsequent cached preparation succeeded with
+**0 host fetches**, unchanged downloader timestamps and both stores reused.
+The search phase took **10.03 seconds**. A separate complete automatic startup
+with host `fetch` forbidden also succeeded with **0 fetches**. Environment and
+both exercise-file hashes were unchanged. Codespace tests: **195/195 passed**,
+**75 documentation links** passed. The updated automatic-start wording and an
+actual five-result browser search were verified after recovery. These were
+targeted cached checks, not a repeat of the full cold lifecycle below.
 
 ## Automatic Codespaces search startup — October 18, 2026
 
@@ -95,11 +103,44 @@ Existing search/bundle/UI regression tests remain unchanged. These signal tests
 use fake Docker/registry services, not a live-container interruption claim for
 this revision. Documentation links are checked offline.
 
-**Still pending:** actual new/rebuilt Attendee and Organizer Codespace lifecycle
-proof on this revision, a cold runtime-image download on representative networks,
-and human classroom timing. Local timings and historical GUI/search acceptance
-do not replace those gates. See the [automatic startup/recovery guide](semantic-search.md)
-for old-checkout updates, environment opt-out, cache receipts and scoped cleanup.
+### Actual fresh Attendee Codespace and real resume
+
+A fresh two-core / 8 GiB Attendee Codespace executed the configured
+`postStartCommand: npm run codespace:start` at `b33a61e35af294855a5c09717d77bd699d6d6c4b`.
+No manual startup, search preparation or Git pull was used to reach readiness.
+
+- Core HTTP 200 was observed about **4m30s after creation**; automatic
+  **SEARCH READY at 6m39s**, including runtime-image pulls and the first query-model
+  download. Both sites imported 216 checked-in vectors with **zero document
+  embedding calls**. GitHub host-level image caching cannot be characterized;
+  these are observations, not startup-time guarantees.
+- The real browser showed the untouched Exercise 1 checkpoint while core was
+  ready, then semantic readiness and an actual AI-local search with the expected
+  **0.747 / 0.724** top scores. No manual search setup command was required.
+- After an actual stop, verified Shutdown, and restart of that same Codespace,
+  automatic cached search preparation took **12.951 seconds**. Total restart
+  request through VM/core/search readiness was **83.792 seconds**, not 13 seconds.
+  The downloader ID and start/finish timestamps were unchanged.
+- Supplemental instrumented automatic startup with host global `fetch` throwing
+  succeeded with **0 calls**, `cached:true`, and both search collections reused.
+  This instrumentation supplements rather than replaces the real resume.
+- A controlled cache-miss/registry-failure injection left core HTTP 200 and search
+  unavailable, exited 0, and did not start a downloader or modify the cache.
+  Opt-out and subsequent cached recovery also passed. This was injected failure,
+  not a claimed real internet outage.
+- Initial Codespace tests: **182/182**, 75 doc links, real database integration
+  **2/2**, and search integration **1/1**. Environment, exercise files, canonical
+  data, vectors, model pin and one test favorite remained unchanged across resume.
+- Only app port **3000 / Private** was forwarded. The model stayed internal and
+  unpublished. Only the owned test Codespace was used; its data was retained and
+  its **Shutdown** state verified after testing. No Azure or billing changes.
+
+The targeted `92bc4a9` follow-up guard and updated-copy tests are recorded above.
+Final evidence publication changes documentation only. Organizer was not separately
+created; both profile hooks have configuration/test coverage. Representative
+account quotas/networks and human classroom timing remain unverified. See the
+[automatic startup/recovery guide](semantic-search.md) for one-time old-checkout
+updates, opt-out, cache receipts and scoped cleanup.
 
 ## Extension-integrated revision — live GUI acceptance
 

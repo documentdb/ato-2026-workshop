@@ -558,3 +558,20 @@ inspector checks used the real browser. This was not a timed novice classroom
 study, a new Azure test, or proof of full cold model-download timing. No Azure
 resources, paid inference services, private corpus, or model binaries were added
 to this repository.
+
+
+### Automatic Codespaces startup acceptance
+
+A fresh two-core Attendee Codespace automatically reached core HTTP readiness at
+about **4m30s** and search readiness at **6m39s**, including first model download.
+No manual preparation or Git pull ran. Real stop/restart reused the cache without
+restarting the downloader: **12.951s search phase**, **83.792s total VM/core/search
+resume**. The final downloader-preflight correction was then tested in that same
+Codespace: an unsafe running downloader was refused before model/fetch/index work;
+scoped recovery and cache-only retry passed. Final root tests: **195/195**.
+
+These are measured observations, not universal timings. The initial lifecycle and
+targeted guard checks used different documented revisions; see the full
+[acceptance record](acceptance.md#actual-fresh-attendee-codespace-and-real-resume).
+Organizer-profile creation, representative classroom accounts and networks, and
+a timed human rehearsal were not separately exercised.
