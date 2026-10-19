@@ -37,33 +37,50 @@ const deferred = () => {
 };
 const pinnedTags = (changes = {}) => ({ models: [{ name: SEARCH_MODEL.name, digest: SEARCH_MODEL.digest, size: 274_000_000, ...changes }] });
 const jsonResponse = (body, status = 200) => new Response(JSON.stringify(body), { status, headers: { "Content-Type": "application/json" } });
-const markerFor = (changes = {}) => ({
-  _id: SEARCH_OWNER, owner: SEARCH_OWNER, fingerprint: catalog.fingerprint,
+const bundleInfo = Object.freeze({
+  version: "ato-session-embeddings-v1", digest: "b".repeat(64), dataDigest: "c".repeat(64),
+});
+// This loader is deliberately synthetic and used only by offline contract tests.
+// Integration tests use readSearchBundle and the shipped real catalog vectors.
+const bundleFor = (source = catalog) => ({
+  ...bundleInfo,
+  rows: new Map(source.sessions.map((session) => {
+    const { sourceHash, textHash } = searchFields(session, source);
+    const embedding = unitVector();
+    return [session.id, { id: session.id, sourceHash, textHash, embedding, vectorHash: hash(embedding) }];
+  })),
+  manifest: { version: bundleInfo.version, catalogFingerprint: source.fingerprint, count: source.sessions.length, dataDigest: bundleInfo.dataDigest },
+});
+const fakeBundleLoader = async (source) => bundleFor(source);
+const storeFor = (db, source = catalog, bundleLoader = fakeBundleLoader) => new SearchStore(db, source, { bundleLoader });
+const markerFor = (changes = {}, source = catalog) => ({
+  _id: SEARCH_OWNER, owner: SEARCH_OWNER, fingerprint: source.fingerprint,
   modelDigest: SEARCH_MODEL.digest, dimensions: 768, schemaVersion: 1,
-  textVersion: TEXT_VERSION, count: catalog.sessions.length, ready: true,
+  textVersion: TEXT_VERSION, count: source.sessions.length, ready: true,
+  bundleVersion: bundleInfo.version, bundleDigest: bundleInfo.digest,
   readyAt: "2026-10-18T00:00:00.000Z", ...changes,
 });
-const rowFor = (session, n = 0) => {
-  const { id, ...fields } = searchFields(session, catalog);
-  const embedding = unitVector(n);
-  return { _id: id, ...fields, embedding, vectorHash: hash(embedding) };
+const rowFor = (session, source = catalog) => {
+  const { id, ...fields } = searchFields(session, source);
+  const embedding = unitVector();
+  return { _id: id, ...fields, embedding, vectorHash: hash(embedding), bundleVersion: bundleInfo.version, bundleDigest: bundleInfo.digest };
 };
 
-function fakeDatabase({ prepared = true } = {}) {
-  const { sessions, ...metadata } = catalog;
+function fakeDatabase({ prepared = true, source = catalog } = {}) {
+  const { sessions, ...metadata } = source;
   const state = {
     collections: new Map([
       ["workshop_meta", [{ _id: "catalog", ...metadata, ready: true }]],
-      ["sessions", sessions.map(({ id, ...fields }) => ({ _id: id, ...fields, catalogVersion: catalog.fingerprint, schemaVersion: 1 }))],
+      ["sessions", sessions.map(({ id, ...fields }) => ({ _id: id, ...fields, catalogVersion: source.fingerprint, schemaVersion: 1 }))],
       ["favorites", [{ _id: sessions[0].id, savedAt: "2026-10-18T00:00:00.000Z" }]],
     ]),
     indexes: prepared ? [clone(SEARCH_INDEX)] : [], writes: [], aggregates: [], reads: [],
     scores: new Map(sessions.map((session, n) => [session.id, [0.95, 0.7, SIMILARITY_CUTOFF, SIMILARITY_CUTOFF - 0.001, -0.2, 0.7][n]])),
-    aggregateHook: undefined, readError: undefined,
+    aggregateHook: undefined, bulkWriteHook: undefined, readError: undefined,
   };
   if (prepared) {
-    state.collections.set(SEARCH_META, [markerFor()]);
-    state.collections.set(SEARCH_COLLECTION, sessions.map(rowFor));
+    state.collections.set(SEARCH_META, [markerFor({}, source)]);
+    state.collections.set(SEARCH_COLLECTION, sessions.map((session) => rowFor(session, source)));
   }
   const matches = (row, filter) => Object.entries(filter).every(([key, value]) => {
     if (value && typeof value === "object" && "$lt" in value) return row[key] < value.$lt;
@@ -128,6 +145,7 @@ function fakeDatabase({ prepared = true } = {}) {
         },
         async bulkWrite(operations, options) {
           recordWrite(name, "bulkWrite", { operations, options });
+          if (state.bulkWriteHook) await state.bulkWriteHook(operations, options);
           for (const { updateOne: operation } of operations) {
             assert.deepEqual(Object.keys(operation.update), ["$setOnInsert"]);
             assert.equal(operation.upsert, true);
@@ -155,7 +173,7 @@ function fakeDatabase({ prepared = true } = {}) {
   return { db, state };
 }
 
-function searchFixture({ enabled = true, model, database = fakeDatabase(), catalogLoader = async () => catalog } = {}) {
+function searchFixture({ enabled = true, model, database = fakeDatabase(), catalogLoader = async () => catalog, bundleLoader = fakeBundleLoader } = {}) {
   const targets = [];
   const calls = { verify: 0, embed: [] };
   const defaultModel = {
@@ -165,7 +183,7 @@ function searchFixture({ enabled = true, model, database = fakeDatabase(), catal
   const search = createSearch({
     config: { searchEnabled: enabled, targets: { local: { database: "offline_a" }, "site-b": { database: "offline_b" } } },
     connections: { async db(target) { targets.push(target); return database.db; } },
-    model: model || defaultModel, catalogLoader,
+    model: model || defaultModel, catalogLoader, bundleLoader,
   });
   return { search, targets, calls, ...database };
 }
@@ -338,25 +356,31 @@ test("document text is title/track metadata only and the real pipeline encodes f
 });
 
 test("ownership markers reject foreign owners, snapshots, model pins, dimensions, counts, and schemas", () => {
-  assert.equal(validateMarker(markerFor(), catalog).owner, SEARCH_OWNER);
-  assert.throws(() => validateMarker(null, catalog), code("SEARCH_NOT_PREPARED"));
+  assert.equal(validateMarker(markerFor(), catalog, bundleFor()).owner, SEARCH_OWNER);
+  assert.throws(() => validateMarker(null, catalog, bundleFor()), code("SEARCH_NOT_PREPARED"));
   for (const changes of [
     { owner: "another-owner" }, { fingerprint: "different" }, { modelDigest: "different" },
     { dimensions: 1536 }, { textVersion: TEXT_VERSION + 1 }, { schemaVersion: 2 }, { count: 5 },
-  ]) assert.throws(() => validateMarker(markerFor(changes), catalog), code("SEARCH_SNAPSHOT_MISMATCH"));
+    { bundleVersion: undefined }, { bundleDigest: undefined }, { bundleVersion: "different" }, { bundleDigest: "d".repeat(64) },
+  ]) assert.throws(() => validateMarker(markerFor(changes), catalog, bundleFor()), code("SEARCH_SNAPSHOT_MISMATCH"));
 });
 
 test("stored metadata, source/text/vector hashes, model identity, and index definition must agree", () => {
   const session = catalog.sessions[0];
   const row = rowFor(session);
+  const store = storeFor(fakeDatabase().db);
+  const bundle = bundleFor();
   assert.doesNotThrow(() => validateRow(row, session, catalog, true));
+  assert.doesNotThrow(() => store.validateBundledRow(row, bundle, true));
   for (const changes of [
     { title: "Changed" }, { room: "Changed" }, { url: "https://example.invalid/changed" }, { sourceHash: "wrong" },
     { textHash: "wrong" }, { modelDigest: "wrong" }, { textVersion: 2 }, { schemaVersion: 2 },
     { day: "2026-10-21" }, { vectorHash: "wrong" }, { embedding: unitVector(1) },
-  ]) assert.throws(() => validateRow({ ...row, ...changes }, session, catalog, true), code("SEARCH_SNAPSHOT_MISMATCH"));
+    { bundleVersion: undefined }, { bundleDigest: undefined }, { bundleVersion: "different" }, { bundleDigest: "d".repeat(64) },
+    { embedding: unitVector(1), vectorHash: hash(unitVector(1)) },
+  ]) assert.throws(() => store.validateBundledRow({ ...row, ...changes }, bundle, true), code("SEARCH_SNAPSHOT_MISMATCH"));
   assert.throws(() => validateRow(row, undefined, catalog, true), code("SEARCH_SNAPSHOT_MISMATCH"));
-  assert.throws(() => validateRow({ ...row, embedding: Array(768).fill(0) }, session, catalog, true), code("SEARCH_VECTOR_INVALID"));
+  assert.throws(() => store.validateBundledRow({ ...row, embedding: Array(768).fill(0) }, bundle, true), code("SEARCH_VECTOR_INVALID"));
   assert.doesNotThrow(() => validateIndex(clone(SEARCH_INDEX)));
   for (const index of [
     null, { ...SEARCH_INDEX, key: { other: "cosmosSearch" } }, { ...SEARCH_INDEX, key: { embedding: 1 } },
@@ -371,18 +395,20 @@ test("readiness rejects missing, duplicate, extra, corrupted, or wrong-catalog r
     (state) => { state.collections.get(SEARCH_COLLECTION)[1] = rowFor(catalog.sessions[0]); },
     (state) => { state.collections.get(SEARCH_COLLECTION)[0].sourceHash = "changed"; },
     (state) => { state.collections.get(SEARCH_COLLECTION)[0].vectorHash = "changed"; },
+    (state) => { delete state.collections.get(SEARCH_COLLECTION)[0].bundleVersion; },
+    (state) => { state.collections.get(SEARCH_COLLECTION)[0].bundleDigest = "d".repeat(64); },
     (state) => { state.collections.get("workshop_meta")[0].fingerprint = "different-canonical-catalog"; },
   ];
   for (const mutate of cases) {
     const { db, state } = fakeDatabase(); mutate(state);
-    await assert.rejects(new SearchStore(db, catalog).ready({ full: true }), code("SEARCH_SNAPSHOT_MISMATCH"));
+    await assert.rejects(storeFor(db).ready({ full: true }), code("SEARCH_SNAPSHOT_MISMATCH"));
     assert.equal(state.writes.length, 0);
   }
   const { db, state } = fakeDatabase(); state.indexes = [];
-  await assert.rejects(new SearchStore(db, catalog).ready(), code("SEARCH_INDEX_MISMATCH"));
+  await assert.rejects(storeFor(db).ready(), code("SEARCH_INDEX_MISMATCH"));
   assert.equal(state.writes.length, 0);
   state.indexes = [clone(SEARCH_INDEX), { ...clone(SEARCH_INDEX), name: "ambiguous_second_vector_index" }];
-  await assert.rejects(new SearchStore(db, catalog).ready(), code("SEARCH_INDEX_MISMATCH"));
+  await assert.rejects(storeFor(db).ready(), code("SEARCH_INDEX_MISMATCH"));
   assert.equal(state.writes.length, 0);
 });
 
@@ -392,7 +418,7 @@ test("preparation refuses unowned search namespaces and incompatible ownership w
     const { db, state } = fakeDatabase({ prepared: false });
     state.collections.set(existing, []);
     const before = clone([...state.collections]);
-    await assert.rejects(new SearchStore(db, catalog).prepare(model, () => {}), code("SEARCH_UNOWNED"));
+    await assert.rejects(storeFor(db).prepare(model, () => {}), code("SEARCH_UNOWNED"));
     assert.deepEqual([...state.collections], before);
     assert.equal(state.writes.length, 0);
   }
@@ -400,38 +426,159 @@ test("preparation refuses unowned search namespaces and incompatible ownership w
     const { db, state } = fakeDatabase();
     Object.assign(state.collections.get(SEARCH_META)[0], changes);
     const before = clone([...state.collections]);
-    await assert.rejects(new SearchStore(db, catalog).prepare(model, () => {}), code("SEARCH_SNAPSHOT_MISMATCH"));
+    await assert.rejects(storeFor(db).prepare(model, () => {}), code("SEARCH_SNAPSHOT_MISMATCH"));
     assert.deepEqual([...state.collections], before);
     assert.equal(state.writes.length, 0);
   }
 });
 
-test("explicit preparation batches prefixed metadata, checks stored vectors/index/probe, and never changes canonical collections", async () => {
+test("explicit preparation imports the authoritative bundle, checks stored vectors/index/probe, and never embeds documents", async () => {
   const { db, state } = fakeDatabase({ prepared: false });
   const before = canonicalSnapshot(state);
-  const inputs = [];
+  const calls = { verify: 0, embed: 0, bundle: 0 };
+  const bundle = bundleFor();
   state.scores.set(catalog.sessions[0].id, 1); // Synthetic self-score; no engine calculation.
-  const model = { verify: async () => SEARCH_MODEL, async embed(texts) { inputs.push(clone(texts)); return texts.map(() => unitVector()); } };
-  const store = new SearchStore(db, catalog);
+  const model = {
+    async verify() { calls.verify += 1; return SEARCH_MODEL; },
+    async embed() { calls.embed += 1; assert.fail("preparation must import vectors, never embed documents or the self-probe"); },
+  };
+  const store = storeFor(db, catalog, async (source) => { calls.bundle += 1; assert.equal(source, catalog); return bundle; });
   const result = await store.prepare(model, () => {});
-  assert.deepEqual(result, { count: 6, reused: false, model: SEARCH_MODEL });
-  assert.deepEqual(inputs.flat(), catalog.sessions.map(documentText));
-  assert.deepEqual(inputs.map((batch) => batch.length), [4, 2]);
+  assert.deepEqual(result, { count: 6, reused: false, model: SEARCH_MODEL, bundle: bundleInfo, documentEmbeddingCalls: 0 });
+  assert.ok(calls.bundle > 0);
+  assert.equal(calls.verify, 1);
+  assert.equal(calls.embed, 0);
+  assert.deepEqual(state.writes.filter(({ operation }) => operation === "bulkWrite").map(({ value }) => value.operations.length), [6]);
   assert.deepEqual(canonicalSnapshot(state), before);
   assert.ok(state.writes.every(({ name }) => [SEARCH_META, SEARCH_COLLECTION].includes(name)));
   assert.deepEqual(state.indexes, [SEARCH_INDEX]);
-  assert.equal(state.collections.get(SEARCH_META)[0].ready, true);
-  assert.equal(state.collections.get(SEARCH_META)[0].leaseId, undefined);
+  const marker = state.collections.get(SEARCH_META)[0];
+  assert.equal(marker.ready, true);
+  assert.equal(marker.leaseId, undefined);
+  assert.equal(marker.bundleVersion, bundleInfo.version);
+  assert.equal(marker.bundleDigest, bundleInfo.digest);
   for (const row of state.collections.get(SEARCH_COLLECTION)) {
-    validateRow(row, catalog.sessions.find((session) => session.id === row._id), catalog, true);
-    assert.equal(row.embedding.length, 768);
+    store.validateBundledRow(row, bundle, true);
+    assert.deepEqual(row.embedding, bundle.rows.get(row._id).embedding);
+    assert.equal(row.vectorHash, bundle.rows.get(row._id).vectorHash);
+    assert.equal(row.bundleVersion, bundleInfo.version);
+    assert.equal(row.bundleDigest, bundleInfo.digest);
   }
   const writes = state.writes.length;
-  assert.deepEqual(await store.prepare(model, () => {}), { count: 6, reused: true, model: SEARCH_MODEL });
-  assert.equal(inputs.length, 2, "ready snapshots are verified and reused, not re-embedded");
+  assert.deepEqual(await store.prepare(model, () => {}), { count: 6, reused: true, model: SEARCH_MODEL, bundle: bundleInfo, documentEmbeddingCalls: 0 });
+  assert.equal(calls.verify, 2);
+  assert.equal(calls.embed, 0, "ready snapshots and self-probes must not invoke document embedding");
   assert.equal(state.writes.length, writes);
   assert.equal(state.aggregates.length, 2);
   assert.ok(state.aggregates.every(({ pipeline }) => pipeline[0].$search.cosmosSearch.k === catalog.sessions.length));
+  assert.ok(state.aggregates.every(({ pipeline }) => hash(pipeline[0].$search.cosmosSearch.vector) === bundle.rows.get(catalog.sessions[0].id).vectorHash));
+});
+
+test("bundle import uses batches of at most 32 and resumes an interrupted partial import without overwriting rows", async () => {
+  const source = validateCatalog({ ...catalog, sessions: Array.from({ length: 70 }, (_, n) => ({
+    ...catalog.sessions[n % catalog.sessions.length], id: `batch-${String(n + 1).padStart(3, "0")}`, title: `Synthetic batch entry ${n + 1}`,
+  })) });
+  const { db, state } = fakeDatabase({ prepared: false, source });
+  const before = canonicalSnapshot(state);
+  state.scores = new Map(source.sessions.map((session) => [session.id, 1]));
+  let embeddings = 0;
+  const model = { verify: async () => SEARCH_MODEL, async embed() { embeddings += 1; assert.fail("import must not embed documents"); } };
+  const interrupted = new Error("simulated interrupted bundle import");
+  let batches = 0;
+  state.bulkWriteHook = async () => { if (++batches === 2) throw interrupted; };
+  await assert.rejects(storeFor(db, source).prepare(model, () => {}), (error) => error === interrupted);
+  const present = clone(state.collections.get(SEARCH_COLLECTION));
+  assert.equal(present.length, 32);
+  assert.equal(state.collections.get(SEARCH_META)[0].ready, false);
+  assert.equal(state.collections.get(SEARCH_META)[0].leaseId, undefined, "failed import releases its lease for explicit retry");
+  assert.equal(state.indexes.length, 0);
+  assert.deepEqual(canonicalSnapshot(state), before);
+  state.bulkWriteHook = undefined;
+  const writes = state.writes.length;
+  const result = await storeFor(db, source).prepare(model, () => {});
+  assert.deepEqual(result, { count: 70, reused: false, model: SEARCH_MODEL, bundle: bundleInfo, documentEmbeddingCalls: 0 });
+  const resumed = state.writes.slice(writes).filter(({ operation }) => operation === "bulkWrite");
+  assert.deepEqual(resumed.map(({ value }) => value.operations.length), [32, 6]);
+  const preservedIds = new Set(present.map((row) => row._id));
+  assert.ok(resumed.every(({ value }) => value.operations.every(({ updateOne }) => !preservedIds.has(updateOne.filter._id))));
+  assert.deepEqual(state.collections.get(SEARCH_COLLECTION).filter((row) => preservedIds.has(row._id)), present);
+  assert.equal(state.collections.get(SEARCH_COLLECTION).length, 70);
+  assert.equal(state.collections.get(SEARCH_META)[0].ready, true);
+  assert.equal(embeddings, 0);
+  assert.deepEqual(canonicalSnapshot(state), before);
+});
+
+test("a failed bundle validation prevents preparation writes and model calls, then permits an explicit retry", async () => {
+  const { db, state } = fakeDatabase({ prepared: false });
+  state.scores.set(catalog.sessions[0].id, 1);
+  const before = clone([...state.collections]);
+  let valid = false;
+  let loads = 0;
+  let verifies = 0;
+  const invalid = new WorkshopError(409, "SEARCH_BUNDLE_INVALID", "The checked-in bundle is invalid.");
+  const store = storeFor(db, catalog, async (source) => {
+    loads += 1;
+    if (!valid) throw invalid;
+    return bundleFor(source);
+  });
+  const model = {
+    async verify() { verifies += 1; return SEARCH_MODEL; },
+    embed: async () => assert.fail("a missing or invalid bundle must not fall back to generating documents"),
+  };
+  await assert.rejects(store.prepare(model, () => {}), code("SEARCH_BUNDLE_INVALID"));
+  assert.deepEqual([...state.collections], before);
+  assert.equal(state.writes.length, 0);
+  assert.equal(verifies, 0);
+  valid = true;
+  assert.equal((await store.prepare(model, () => {})).documentEmbeddingCalls, 0);
+  assert.equal(loads, 2, "failed bundle validation is not cached");
+  assert.equal(verifies, 1);
+});
+
+test("legacy or different-bundle snapshots are rejected, never adopted, regenerated, or deleted", async () => {
+  for (const mutate of [
+    (marker) => { delete marker.bundleVersion; delete marker.bundleDigest; },
+    (marker) => { marker.bundleVersion = "legacy-generated-vectors"; },
+    (marker) => { marker.bundleDigest = "d".repeat(64); },
+  ]) {
+    for (const ready of [true, false]) {
+      const { db, state } = fakeDatabase();
+      const marker = state.collections.get(SEARCH_META)[0];
+      marker.ready = ready;
+      marker.leaseUntil = new Date(0);
+      mutate(marker);
+      const before = clone([...state.collections]);
+      const model = { verify: async () => SEARCH_MODEL, embed: async () => assert.fail("mismatches must not regenerate embeddings") };
+      await assert.rejects(storeFor(db).ready({ full: true }), code("SEARCH_SNAPSHOT_MISMATCH"));
+      await assert.rejects(storeFor(db).prepare(model, () => {}), code("SEARCH_SNAPSHOT_MISMATCH"));
+      assert.deepEqual([...state.collections], before);
+      assert.equal(state.writes.length, 0);
+    }
+  }
+});
+
+test("readiness and partial-import resume reject self-consistent vectors not present in the authoritative bundle", async () => {
+  for (const ready of [true, false]) {
+    const { db, state } = fakeDatabase();
+    const marker = state.collections.get(SEARCH_META)[0];
+    marker.ready = ready;
+    marker.leaseUntil = new Date(0);
+    if (!ready) state.collections.get(SEARCH_COLLECTION).splice(2);
+    const row = state.collections.get(SEARCH_COLLECTION)[0];
+    row.embedding = unitVector(1);
+    row.vectorHash = hash(row.embedding); // Internally valid, but not the shipped vector.
+    const before = clone(state.collections.get(SEARCH_COLLECTION));
+    const canonical = canonicalSnapshot(state);
+    if (ready) {
+      await assert.rejects(storeFor(db).ready({ full: true }), code("SEARCH_SNAPSHOT_MISMATCH"));
+      assert.equal(state.writes.length, 0);
+    }
+    const model = { verify: async () => SEARCH_MODEL, embed: async () => assert.fail("bundle mismatch must not be re-embedded") };
+    await assert.rejects(storeFor(db).prepare(model, () => {}), code("SEARCH_SNAPSHOT_MISMATCH"));
+    assert.deepEqual(state.collections.get(SEARCH_COLLECTION), before);
+    assert.deepEqual(canonicalSnapshot(state), canonical);
+    assert.equal(state.writes.filter(({ name }) => name === SEARCH_COLLECTION).length, 0);
+  }
 });
 
 test("preparation never repairs drift by overwriting canonical content, vectors, or a conflicting index", async () => {
@@ -443,7 +590,7 @@ test("preparation never repairs drift by overwriting canonical content, vectors,
     const { db, state } = fakeDatabase(); mutate(state);
     const before = clone([...state.collections]); const indexes = clone(state.indexes);
     const model = { verify: async () => SEARCH_MODEL, embed: async () => assert.fail("must not re-embed drift") };
-    await assert.rejects(new SearchStore(db, catalog).prepare(model, () => {}), code(expected));
+    await assert.rejects(storeFor(db).prepare(model, () => {}), code(expected));
     assert.deepEqual([...state.collections], before);
     assert.deepEqual(state.indexes, indexes);
     assert.equal(state.writes.length, 0);
@@ -452,7 +599,7 @@ test("preparation never repairs drift by overwriting canonical content, vectors,
 
 test("disabled status/query need no catalog, database, or model and report explicit unavailability", async () => {
   const never = async () => assert.fail("disabled semantic search must not touch dependencies");
-  const search = createSearch({ config: { searchEnabled: false, targets: {} }, connections: { db: never }, model: { verify: never, embed: never }, catalogLoader: never });
+  const search = createSearch({ config: { searchEnabled: false, targets: {} }, connections: { db: never }, model: { verify: never, embed: never }, catalogLoader: never, bundleLoader: never });
   const status = await search.status("local");
   assert.equal(status.enabled, false);
   assert.equal(status.ready, false);
@@ -488,6 +635,24 @@ test("a failed catalog load is retried rather than retained as a rejected promis
   assert.doesNotMatch(JSON.stringify(failure), /private catalog path/);
   assert.equal((await fixture.search.status("local")).ready, true);
   assert.equal(loads, 2);
+});
+
+test("query service retries bundle load failure without embedding, querying, or falling back", async () => {
+  let loads = 0;
+  const fixture = searchFixture({ bundleLoader: async (source) => {
+    loads += 1;
+    if (loads === 1) throw new WorkshopError(409, "SEARCH_BUNDLE_INVALID", "The checked-in bundle is invalid.");
+    return bundleFor(source);
+  } });
+  const before = canonicalSnapshot(fixture.state);
+  await assert.rejects(fixture.search.query("local", { query: "topic" }), code("SEARCH_BUNDLE_INVALID"));
+  assert.deepEqual(fixture.calls.embed, []);
+  assert.equal(fixture.state.aggregates.length, 0);
+  assert.equal(fixture.state.writes.length, 0);
+  assert.ok((await fixture.search.query("local", { query: "topic" })).results.length);
+  assert.equal(loads, 2);
+  assert.deepEqual(fixture.calls.embed, [["search_query: topic"]]);
+  assert.deepEqual(canonicalSnapshot(fixture.state), before);
 });
 
 test("search ranks numeric scores with a cutoff/limit, returns source evidence, and shows the executed DocumentDB contract", async () => {
@@ -623,6 +788,8 @@ test("partial, duplicated, drifted, or nonnumeric engine results are rejected in
     [(rows) => rows.slice(1), "SEARCH_SNAPSHOT_MISMATCH"],
     [(rows) => rows.map((row, n) => n === 1 ? rows[0] : row), "SEARCH_SNAPSHOT_MISMATCH"],
     [(rows) => rows.map((row, n) => n ? row : { ...row, sourceHash: "drift" }), "SEARCH_SNAPSHOT_MISMATCH"],
+    [(rows) => rows.map((row, n) => n ? row : { ...row, vectorHash: hash(unitVector(1)) }), "SEARCH_SNAPSHOT_MISMATCH"],
+    [(rows) => rows.map((row, n) => n ? row : { ...row, bundleDigest: "d".repeat(64) }), "SEARCH_SNAPSHOT_MISMATCH"],
     ...[undefined, null, "0.9", NaN, Infinity, 2, -2].map((similarity) => [(rows) => rows.map((row, n) => n ? row : { ...row, similarity }), "SEARCH_SCORE_INVALID"]),
   ]) {
     const fixture = searchFixture();

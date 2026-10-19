@@ -32,9 +32,12 @@ export function validateSearchInput(data, catalog) {
   return { query: data.query.trim(), limit, filters };
 }
 
-export function createSearch({ config, connections, model = new SearchModel(), catalogLoader = readCatalog }) {
+export function createSearch({ config, connections, model = new SearchModel(), catalogLoader = readCatalog, bundleLoader }) {
   let busy = false;
   let catalogPromise;
+  let bundlePromise;
+  const loadBundle = (source) => bundlePromise ||= (bundleLoader ? bundleLoader(source) : import("./search-bundle.js").then(({ readSearchBundle }) => readSearchBundle(source)))
+    .catch((error) => { bundlePromise = undefined; throw error; });
   const verified = new Map(); // Bounded by the configured targets; never contains queries/results.
   const catalog = () => catalogPromise ||= catalogLoader().catch((error) => { catalogPromise = undefined; throw error; });
   const assertEnabled = () => {
@@ -42,7 +45,7 @@ export function createSearch({ config, connections, model = new SearchModel(), c
   };
   async function storeFor(target) {
     if (!Object.hasOwn(config.targets, target)) throw new WorkshopError(409, "TARGET_NOT_CONFIGURED", "This search target is not configured.");
-    return new SearchStore(await connections.db(target), await catalog());
+    return new SearchStore(await connections.db(target), await catalog(), { bundleLoader: loadBundle });
   }
   async function verify(store, target) {
     const last = verified.get(target);
@@ -100,6 +103,7 @@ export function createSearch({ config, connections, model = new SearchModel(), c
           inspector: {
             status: "executed", target, database: config.targets[target].database,
             collection: SEARCH_COLLECTION, index: SEARCH_INDEX, model: SEARCH_MODEL,
+            bundle: { version: (await store.bundle()).version, digest: (await store.bundle()).digest },
             dialect: "DocumentDB $search.cosmosSearch / $meta: searchScore (not Atlas syntax)",
             filters, filterStrategy: FILTER_STRATEGY, pipeline: displayPipeline,
             embeddingMs, databaseMs, totalMs: Math.round(performance.now() - started),

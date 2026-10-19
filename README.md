@@ -138,8 +138,11 @@ Outside the 105-minute lab, after both sites are seeded, explicitly enable it:
 npm run search:prepare -- --local-sites
 ```
 
-This downloads a pinned ~274 MB embedding model, starts an internal-only CPU
-service, and prepares separate search collections on both existing local sites.
+This downloads a pinned ~274 MB embedding model once for arbitrary live queries,
+starts an internal-only CPU service, and **imports the same checked-in ~716 KiB
+session-vector bundle** into both existing local sites before building each real
+DocumentDB vector index. Attendee preparation makes **zero document-embedding
+calls**; these are precomputed embeddings, not canned search results.
 It does not change catalog documents or favorites, provision Azure, or replace
 your TODO code. See [optional search setup, limits, model/runtime tradeoffs and
 verification](docs/semantic-search.md) before enabling it on a classroom machine.

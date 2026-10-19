@@ -31,9 +31,19 @@ This uses the current Compose project and its existing credentials/volumes. It:
    project's downloader, and verifies the container state before continuing.
 3. Starts the internal-only CPU embedding service and enables the app's optional
    search configuration with `compose.search.yaml`.
-4. Prepares and live-probes a separate search collection in **both** local sites.
-   A target is only marked ready after all vectors, hashes, index options and an
-   actual full-corpus DocumentDB cosine query pass verification.
+4. Imports the **same checked-in 216-session embedding bundle** into a separate
+   search collection in **both** local sites, builds each native vector index,
+   and live-probes it. There are **zero document-embedding calls during ordinary
+   preparation**. A target is only marked ready after the reviewed bundle, stored
+   vectors/hashes, index options and actual full-corpus cosine query pass checks.
+
+The ~716 KiB bundle is **precomputed document embeddings, not precomputed search
+results**. Arbitrary user queries still need the pinned ~274 MB local model;
+each query is embedded at runtime and retrieved from the selected DocumentDB.
+The first preparation downloads/caches that model once for both sites, not once
+per session or site. It does not generate the 216 document vectors on an attendee
+machine. Missing, corrupted or stale bundle files fail closed, never fall back
+to generating them.
 
 Refresh the planner, or click **Check search readiness**. The showcase works
 independently of TODO 1, but **Save favorite** uses the same TODO 2 implementation
@@ -142,8 +152,8 @@ attendance relevance, or a guarantee that a talk covers a requested technique**.
 
 `session_search` contains derived vectors and metadata; `search_meta` records
 ownership, catalog fingerprint, model digest, text/schema version, count and
-readiness. The canonical `sessions`, `workshop_meta` and `favorites` are not
-changed by preparation. Vectors are finite, 768-dimensional and unit-normalized;
+readiness, plus the **bundle version and manifest digest**. The canonical
+`sessions`, `workshop_meta` and `favorites` are not changed by preparation. Vectors are finite, 768-dimensional and unit-normalized;
 source/text/vector hashes are verified during preparation and periodically on
 successful reads. Requests also check ownership, count, index options and returned
 metadata. Mismatched or unowned collections are rejected, not adopted or dropped.
@@ -198,6 +208,67 @@ latencies. It only shows a pipeline after successful execution. Queries create n
 indexes and persist no query histories. Query text is kept transiently in memory,
 not in a server-side result cache. Internal errors are reported by safe codes.
 
+## Checked-in bundle and maintainer regeneration
+
+The [bundle manifest and provenance](../data/search/README.md) describe these
+fixed artifacts:
+
+- `data/search/session-embeddings.f32`: **663,552 bytes**, 216 × 768 float32
+  little-endian coordinates in ascending session-ID order.
+- `data/search/session-embeddings.manifest.json`: **69,657 bytes**. Catalog
+  fingerprint, model/digest, text and normalization version, encoding, per-session
+  ID/source/text/vector hashes, data SHA-256 and actual generation provenance.
+- `src/search-bundle-pin.js`: separately reviewed manifest/data SHA-256 and size
+  pins. A changed manifest cannot authorize its own changed coordinates.
+
+Combined embedding/manifest payload: **733,209 bytes**. These are freshly generated
+vectors over the public snapshot, not model weights, canned query results or a
+portable physical database index. DocumentDB still builds its index on each target.
+The bundle was generated once with Nomic v1.5, Linux arm64 and the observed CPU
+backend; its full provenance and model's Apache-2.0 attribution/license are included.
+The shared adapter normalizes model output in float64 and the bundle encodes it as
+float32. Import validates finite coordinates, unit norm tolerance and every hash.
+
+**Maintainers only, outside the lab:** after starting the pinned search service and
+app in your own local Compose project, deliberately regenerate with:
+
+```sh
+# Only needed to build/start the current app and cached embedding service:
+docker compose -f compose.yaml -f compose.search.yaml --profile search up --build -d --wait --wait-timeout 240 app search-model
+npm run search:bundle:generate -- --write
+npm test
+```
+
+The generator computes all 216 embeddings with the fixed model, verifies the actual
+CPU runner, writes the two fixed assets, and updates the source pin last. It writes
+**no database**, does not scrape a new catalog or download a different model, and is
+never invoked by ordinary startup/preparation. A missing cached model requires the
+explicit model preparation workflow first. Review and commit all three generated
+files together; restore them together if publication is interrupted. Ordering and
+encoding are reproducible, but different CPU backends can produce slightly different
+floating-point coordinates. New checksums must be reviewed, not described as
+bit-identical cross-platform output. Update the artifact byte/hash documentation
+when approving a regenerated bundle. Rebuild/restart the app after approving a
+changed bundle so its source pin and cached decoded bundle are reloaded, then run
+the real `test:search` suite against its separately owned fresh test database.
+Publication holds an exclusive `data/search/.publication.lock` guard through all
+three final-file writes and read-back verification. A concurrent publisher fails
+without touching the winning publisher's files. If a maintainer process is killed
+while publishing, confirm that no generator is running, review/restore the three
+artifacts together, then remove **only the stale** `.publication.lock` file before
+retrying. Never remove a live publisher's guard. A stale guard is not used as
+permission to overwrite data or silently regenerate on attendee startup.
+
+**Existing pre-bundle or differently bundled search targets are intentionally not
+adopted or overwritten.** They return `SEARCH_SNAPSHOT_MISMATCH`; their catalog,
+favorites and old vectors remain intact. For branch-testing recovery, select fresh
+explicit `LOCAL_DATABASE_NAME` / `SITE_B_DATABASE_NAME` values in the existing private
+`.env`, preserving credentials and all other settings; recreate the app, explicitly
+seed those new databases, and prepare search. The [older-catalog recovery instructions](../README.md#existing-notebook-or-older-practice-version)
+show that same non-destructive workflow. Changing a name selects another notebook;
+it does not migrate favorites. Otherwise arrange a separately reviewed search-only
+migration—there is no automatic deletion/force-overwrite command.
+
 ## Model, runtime and resource budget
 
 - Model: [`nomic-embed-text:v1.5`](https://ollama.com/library/nomic-embed-text:v1.5),
@@ -207,14 +278,17 @@ not in a server-side result cache. Internal errors are reported by safe codes.
   `0a109f422b47e3a30ba2b10eca18548e944e8a23073ee3f3e947efcf3c45e59f`.
   Assets total **274,302,450 bytes** (~262 MiB), including model/license/config.
   Ollama verifies blob hashes; the app verifies the pinned manifest digest on
-  every embedding batch. Model assets stay in the Compose volume, never Git.
+  every embedding batch. Model weights stay in the Compose volume, never Git;
+  only derived session vectors and model-license attribution are checked in.
 - Runtime: official [`ollama/ollama:0.1.48`](https://github.com/ollama/ollama/releases/tag/v0.1.48),
   pinned multi-platform image digest
   `4a3c5b5261f325580d7f4f6440e5094d807784f0513439dcabfda9c2bdf4191e`.
   Both Linux amd64 and arm64 manifests were checked before selection. Compressed
   image layers are approximately **455 MB amd64 / 410 MB arm64**. The older runtime
   uses the single-prompt `/api/embeddings` endpoint; the app normalizes its output
-  and batches preparation as four sequential bounded requests.
+  for each live query. Only the explicit maintainer regeneration tool makes
+  four-at-a-time batches of sequential document calls; attendee preparation imports
+  the already-reviewed vectors without calling document inference.
 - **Deliberate size tradeoff:** a newer GPU-bundled runtime considered for this
   feature was an amd64-only digest with **3.78 GB of compressed layers**. It was
   not downloaded. This small older pinned runtime avoids that download and a new
@@ -262,9 +336,9 @@ images automatically.
   ordinary startup. The search panel is separate from core workshop readiness.
 - **Model missing/digest mismatch:** preparation checks the fixed manifest and
   repulls the pinned public model; a different model is never substituted.
-- **Interrupted matching preparation:** rerun it; validated existing vectors are
-  reused and only missing rows are embedded. A crashed writer's lease expires in
-  three minutes. Ready is published only after the final real query probe.
+- **Interrupted matching preparation:** rerun it; validated bundle-bound existing
+  vectors are reused and only missing rows are imported from the checked-in bundle.
+  A crashed writer's lease expires in three minutes. Ready is published only after the final real query probe.
 - **Changed catalog/model/index or unowned namespace:** preserve the database and
   investigate, or select a fresh explicit database name, seed it and prepare it.
   There is intentionally no “force overwrite” or automatic deletion command.
@@ -300,9 +374,10 @@ After explicit preparation, run the opt-in real model/database suite:
 docker compose -f compose.yaml -f compose.search.yaml exec -T app npm run test:search
 ```
 
-It creates a uniquely named owned test database, embeds the actual public catalog,
-executes native vector queries, checks sampled unrelated queries, validates
-non-destructive re-preparation and intentional mismatch rejection, and removes
+It creates a uniquely named owned test database, imports the genuine checked-in
+catalog embeddings with an inference-throwing preparation adapter, then executes
+real model query embeddings and native vector queries. It checks sampled unrelated
+queries and validates non-destructive re-preparation and intentional mismatch rejection, and removes
 **only its owned temporary test database**. It does not change workshop favorites.
 The ordinary two-site integration and reconnect tests remain separate. A manual
 **Optional semantic search showcase** Actions workflow runs the real-model suite;
@@ -313,10 +388,25 @@ it is intentionally not added to every normal push/PR or attendee startup.
 On an isolated arm64 Docker Linux VM with **2 CPUs / 4 GB RAM**, shared with other
 running applications:
 
-- Both existing sites prepared **216 real 768-dimensional vectors** each, using
-  the pinned model and DocumentDB image. Fresh indexing took **40.9 s / 40.4 s**
-  after the model was cached. A complete idempotent `search:prepare -- --local-sites`
-  rerun took **9.8 s**. These are not full cold Codespaces startup measurements.
+- **Current bundled preparation:** importing the reviewed 216 vectors, building the
+  IVF index and performing full integrity/query probes on fresh canonical databases
+  took **1.302 s on Site A / 1.281 s on Site B**. The entire one-command preparation
+  with cached model/image took **10.775 s** (including model-manifest check, downloader
+  shutdown verification and app readiness). These are local—not Codespaces—timings.
+- An actual model adapter that throws if document inference is requested observed
+  **zero document embedding calls** for both initial and repeat preparation. Real
+  user queries still performed one model embedding each. All 216 stored vectors
+  matched the reviewed bundle; canonical catalog/favorite byte hashes were unchanged.
+- Comparing all bundled vectors with the previously validated same-runtime vectors
+  gave minimum cosine **0.9999999999999979**, maximum coordinate change
+  **7.45e-9** (float32 encoding). This is not a cross-CPU bit-identity claim. Old
+  unbound search markers were rejected without changing rows or favorites.
+- **Historical per-document preparation, before the checked-in bundle:** both
+  sites generated 216 real vectors each, taking **40.9 s / 40.4 s** locally after
+  model caching. A cached reuse run took 9.8 s. These arm64 timings did not predict
+  a two-core amd64 Codespace running a generic CPU backend: that earlier path took
+  several minutes per site. The default path now imports precomputed vectors;
+  those old generation timings are **not current preparation claims**.
 - The real-model integration suite passed, including exact index options,
   full-corpus query, explicit track filtering, source/vector hashes, read-only
   canonical catalog/favorites, repeat preparation, unseeded status and intentional

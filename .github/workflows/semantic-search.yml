@@ -21,9 +21,9 @@ jobs:
       - run: npm run test:docs
       - name: Start ordinary model-free workshop
         run: npm run workspace:start
-      - name: Explicitly download the pinned embedding model and prepare both sites
+      - name: Cache pinned query model and import the reviewed document vectors into both sites
         run: npm run search:prepare -- --local-sites
-      - name: Real model, native vector queries, metadata integrity and unrelated-query checks
+      - name: Zero document inference, live query embeddings, native vector queries and integrity checks
         run: docker compose -f compose.yaml -f compose.search.yaml exec -T app npm run test:search
       - name: Confirm ordinary two-site workflow is unchanged
         run: docker compose -f compose.yaml -f compose.search.yaml exec -T app npm run test:database

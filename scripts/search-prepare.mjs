@@ -85,7 +85,7 @@ export async function prepareSearch(args, { run = runCommand, fetchImpl = fetch,
   }
   checkCancelled();
   const bytes = checkManifest(Buffer.concat(chunks).toString("utf8"));
-  log(`Optional embedding-only showcase: pinned model assets ${bytes} bytes (Apache-2.0); no generation model or paid API. Targets: ${targets.join(", ")}.`);
+  log(`Optional embedding-only showcase: pinned query-model assets ${bytes} bytes (Apache-2.0); document vectors are imported from the checked-in bundle, not generated here. No answer model or paid API. Targets: ${targets.join(", ")}.`);
   const execute = async (args, options = {}) => {
     if (!options.cleanup) checkCancelled();
     const result = await run("docker", args, { signal: options.cleanup ? undefined : signal, timeout: 900000, ...options });
