@@ -443,6 +443,50 @@ running applications:
   trial produced unrelated suggestions and was rejected. No universal relevance
   claim follows from these few probes.
 
-Browser rendering and a fresh two-core Codespaces run require separate proof;
-DOM-unit tests and this local API evidence are not substitutes. No Azure resources,
-paid inference services, private corpus, or model binaries were added to this repo.
+### Codespace and browser acceptance (October 18, 2026)
+
+The bundled source `d4c10d6c7b2f2722e9f672045cd80841d520885c` was tested in an
+existing owned **two-core / 8 GiB Codespace**, using fresh canonical database
+names on both sites. Earlier notebooks, solved files, credentials and model cache
+were preserved. This final evidence update changes documentation only.
+
+- Complete `search:prepare -- --local-sites` with cached image/model assets took
+  **17.07 seconds**, including service readiness and verified downloader shutdown.
+  Site A import/index/integrity/probes took **1.756 seconds**; Site B also took
+  **1.756 seconds**. Both imported all 216 vectors. This is **not a first model
+  download or cold Codespace creation measurement**.
+- **Zero document embedding calls** were independently observed: the real model
+  request count stayed unchanged during the complete preparation. An adapter
+  that throws on preparation inference also passed initial/repeat import. Every
+  stored coordinate and ID/source/text/vector-hash tuple matched the bundle.
+- Each browser search still made **one genuine query-embedding request**. The
+  first query after model restart, “running AI locally,” returned the expected
+  0.747 / 0.724 top scores in **1.732 seconds** total. A later Site B query returned
+  the same five ranked results in **248 ms**. These are individual observations,
+  not a latency guarantee.
+- Actual private browser controls passed unfiltered search, unrelated bread
+  query with zero accepted results, combined day/track filtering, target switching,
+  native pipeline/model/bundle inspector, and saving a search result through the
+  existing favorite route. The favorite remained in ordinary browsing after refresh.
+- Codespace root tests: **152/152 passed**, no skips; **67 documentation links**
+  checked. Real bundle/model/DocumentDB integration: **1/1 passed in 8.55 seconds**.
+- Earlier browser acceptance of the same query/UI implementation at `75547c2`
+  also exercised all three chips, cancellation/retry, query-edit and target races,
+  model outage with explicit errors while keyword browsing/copy remained usable,
+  model-only recovery, and the required TODO 2 gate. Those simulations were not
+  repeated for the bundle-only preparation change.
+- The CPU backend comparison sampled three prompts on generic CPU versus detected
+  AVX2: roughly **10–11× faster warm query embeddings**, vector cosine agreement
+  above **0.9999994**, and identical accepted result IDs/order. This does not promise
+  bit-identical coordinates across architectures or universal search quality.
+- Legacy collection hashes, including previous search vectors/markers and favorite
+  timestamps, were unchanged. Only fresh selected notebook names received imports.
+  Only app port 3000 was privately forwarded; database/model ports were not forwarded.
+- The owned test Codespace was stopped and authoritative **Shutdown** verified;
+  notebooks/cache were retained under its existing 24-hour retention setting.
+
+Code/setup operations used CLI assistance; searches, filters, result actions and
+inspector checks used the real browser. This was not a timed novice classroom
+study, a new Azure test, or proof of full cold model-download timing. No Azure
+resources, paid inference services, private corpus, or model binaries were added
+to this repository.

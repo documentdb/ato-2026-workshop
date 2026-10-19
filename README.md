@@ -143,6 +143,10 @@ starts an internal-only CPU service, and **imports the same checked-in ~716 KiB
 session-vector bundle** into both existing local sites before building each real
 DocumentDB vector index. Attendee preparation makes **zero document-embedding
 calls**; these are precomputed embeddings, not canned search results.
+In the tested two-core Codespace, full optional preparation with the model/image
+already cached took **17 seconds**, including about **1.8 seconds per site** for
+import/index/verification. First-time model downloads add time; see the
+[measured acceptance and limits](docs/semantic-search.md#codespace-and-browser-acceptance-october-18-2026).
 It does not change catalog documents or favorites, provision Azure, or replace
 your TODO code. See [optional search setup, limits, model/runtime tradeoffs and
 verification](docs/semantic-search.md) before enabling it on a classroom machine.
