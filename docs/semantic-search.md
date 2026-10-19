@@ -26,7 +26,9 @@ This uses the current Compose project and its existing credentials/volumes. It:
 
 1. Checks the pinned public embedding manifest and its download size.
 2. Starts an **unpublished, temporary download service**, downloads only the
-   embedding model, then stops that service even on failure.
+   embedding model, then stops that service on success, failure, **SIGINT or
+   SIGTERM**. It waits for cancelled subprocesses to close, stops only this
+   project's downloader, and verifies the container state before continuing.
 3. Starts the internal-only CPU embedding service and enables the app's optional
    search configuration with `compose.search.yaml`.
 4. Prepares and live-probes a separate search collection in **both** local sites.
@@ -78,6 +80,42 @@ docker compose -f compose.yaml -f compose.search.yaml stop search-model search-d
 does not remove the optional cached model or stop a previously running sidecar;
 use the explicit `stop` command above to release its memory. Do not use volume
 pruning or `down --volumes` as a troubleshooting step.
+
+### Interruptions and emergency downloader recovery
+
+Use Ctrl+C once to cancel preparation and **wait for the
+`search-download-stopped` / `verified: true` receipt**. The helper handles SIGINT
+and SIGTERM during the manifest fetch, readiness and model pull. Cleanup is
+independent of the cancelled operation; a second SIGINT/SIGTERM does not interrupt
+it. No later app-start or indexing step begins after cancellation. The helper
+freezes the resolved Docker context/project before starting the downloader and
+uses only those selectors during bounded cleanup. A failed stop or unverifiable
+container state produces **`SEARCH_DOWNLOAD_CLEANUP_FAILED`**, a nonzero exit,
+and the safe context/project names—not a success claim. Catalogs, favorites,
+model caches and volumes are never deleted by cleanup.
+
+**SIGKILL, a killed terminal/container, a host crash or an unavailable Docker
+daemon cannot be reliably cleaned up by process signal handlers.** If the receipt
+is missing, or cleanup reports failure, inspect and stop the downloader manually.
+Use the context/project reported by the helper, in the same workshop checkout:
+
+```sh
+# Replace these two placeholders with the exact names from the receipt/error.
+docker --context YOUR_CONTEXT compose --project-name YOUR_PROJECT -f compose.yaml -f compose.search.yaml stop --timeout 10 search-download
+docker --context YOUR_CONTEXT compose --project-name YOUR_PROJECT -f compose.yaml -f compose.search.yaml ps --all search-download
+```
+
+The downloader must show **Exited**, or no container. If it is still running,
+restore Docker access and repeat the scoped stop before retrying preparation.
+Never substitute a different project, delete volumes, or run a system-wide prune.
+If termination happened before the helper printed project/context names, use
+`docker context show` and `docker compose -f compose.yaml -f compose.search.yaml
+config --format json` locally to establish the original selection; the latter
+contains private credentials and must **not** be pasted into chat or a public log.
+Do not run concurrent preparation commands for the same Compose project. If your
+terminal overrides `DOCKER_HOST` without selecting `DOCKER_CONTEXT`, preparation
+refuses to guess a daemon: select the matching explicit Docker context first.
+It must be the same daemon that already owns your workshop volumes.
 
 ## What is actually searched?
 
@@ -181,8 +219,13 @@ not in a server-side result cache. Internal errors are reported by safe codes.
   feature was an amd64-only digest with **3.78 GB of compressed layers**. It was
   not downloaded. This small older pinned runtime avoids that download and a new
   Python runtime, but it is **not a recommendation for public or production
-  inference hosting**. Keep it isolated; upgrading it requires re-proving the
-  embedding contract and resource use. Its unused bundled GPU runner is extracted
+  inference hosting**. This choice is not a vulnerability audit or security
+  certification. Keep it isolated; upgrading it requires re-proving the
+  embedding contract and resource use. The large bundled image does **not** prove
+  that every current CPU-only build is unsuitable: evaluating a supported current
+  CPU-only distribution/custom image is future maintenance, not a completed
+  comparison. A smaller final image may still require large build-time downloads.
+  Its unused bundled GPU runner is extracted
   to an owned disk-backed cache (~555 MiB observed on arm64), never used for inference.
 - CPU only, **2 threads**, **1 GiB service memory limit**, one loaded model and one
   inference at a time. No GPU pass-through or generation model. The app permits
@@ -192,8 +235,13 @@ not in a server-side result cache. Internal errors are reported by safe codes.
 - Inference runs on a Docker **internal-only network**, with no published ports
   and read-only model/runner volumes. Only the temporary download service has an
   outbound route. There are no user-configurable inference URLs, HTTP redirects,
-  remote embedding APIs or query-time model downloads. The host preparation
-  command contacts the public model registry; queries do not.
+  remote embedding APIs or query-time model downloads. **The app adapter invokes
+  only model-tag verification and embeddings; Ollama itself still has a broader
+  model-management/generation API.** Network isolation and read-only inference
+  volumes reduce exposure; they do not remove that API or patch runtime defects.
+  The temporary downloader is writable and internet-connected, which is why its
+  verified shutdown matters. The host preparation command contacts the public
+  model registry; queries do not.
 
 Reserve roughly **2 GB of extra disk** beyond the normal workshop and enough RAM
 for the extra 1 GiB-limited sidecar. Codespaces compute/storage usage still applies;
@@ -229,7 +277,10 @@ public catalog, not a copied conference corpus or an additional required exercis
 ## Verification
 
 Offline tests include model shape/digest checks, explicit input and target guards,
-UI cancel/switch races and honest unavailable states. They use labeled mocks and
+UI cancel/switch races and honest unavailable states. Separate subprocess tests
+send real SIGINT/SIGTERM during mocked manifest reads, startup, readiness and pull;
+verify second-signal-resistant cleanup; and check normal failure, stop failure
+and a still-running container are never reported as safe completion. They use labeled mocks and
 do **not** establish real vector-search compatibility:
 
 ```sh
@@ -265,6 +316,13 @@ running applications:
   canonical catalog/favorites, repeat preparation, unseeded status and intentional
   search marker/vector/index mismatch rejection. Ordinary two-site integration
   and both loopback extension authentication checks also passed.
+- The preparation cleanup fix was separately live-tested with **SIGINT and
+  SIGTERM delivered to the whole CLI process group**, followed by a second,
+  different signal during cleanup. Both runs started only the owned cached
+  downloader, verified it **Exited**, and returned **130 / 143** respectively.
+  The app and both databases stayed stopped; pre-existing unrelated services were
+  unchanged. No indexing started. Offline subprocess tests also cover blocked
+  manifest/readiness/pull calls, ordinary success/failure and cleanup failure.
 - A changed on-disk **model manifest digest** was rejected by both readiness and
   query endpoints. Restoring the original manifest restored readiness. Stopping
   the actual model service returned explicit failures while ordinary catalog

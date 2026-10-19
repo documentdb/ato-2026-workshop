@@ -9,6 +9,16 @@ import { SEARCH_MODEL } from "../src/search-model.js";
 // Public registry manifest, no model weights or private source material.
 const manifest = '{"schemaVersion":2,"mediaType":"application/vnd.docker.distribution.manifest.v2+json","config":{"mediaType":"application/vnd.docker.container.image.v1+json","digest":"sha256:31df23ea7daa448f9ccdbbcecce6c14689c8552222b80defd3830707c0139d4f","size":420},"layers":[{"mediaType":"application/vnd.ollama.image.model","digest":"sha256:970aa74c0a90ef7482477cf803618e776e173c007bf957f635f1015bfcfef0e6","size":274290656},{"mediaType":"application/vnd.ollama.image.license","digest":"sha256:c71d239df91726fc519c6eb72d318ec65820627232b2f796219e87dcf35d0ab4","size":11357},{"mediaType":"application/vnd.ollama.image.params","digest":"sha256:ce4a164fc04605703b485251fe9f1a181688ba0eb6badb80cc6335c0de17ca0d","size":17}]}';
 
+function mockRun(commands, failPull = false) {
+  return async (command, args, options) => {
+    assert.equal(command, "docker");
+    assert.ok(options.timeout <= 900000);
+    commands.push(args);
+    return { status: failPull && args.includes("pull") ? 1 : 0,
+      stdout: args[0] === "context" ? "test-context\n" : args.includes("config") ? '{"name":"test-project"}' : "" };
+  };
+}
+
 test("preparation requires explicit local targets; missing, cloud and extra arguments do nothing", async () => {
   assert.deepEqual(preparationTargets(["--local-sites"]), ["local", "site-b"]);
   assert.deepEqual(preparationTargets(["--target", "local"]), ["local"]);
@@ -31,7 +41,7 @@ test("explicit helper downloads only the embedding pin, stops downloader, then i
   const commands = [];
   const requests = [];
   await prepareSearch(["--local-sites"], {
-    run(command, args, options) { assert.equal(command, "docker"); assert.ok(options.timeout <= 900000); commands.push(args); return { status: 0 }; },
+    run: mockRun(commands),
     fetchImpl: async (url, options) => { requests.push({ url, options }); return new Response(manifest); },
     log() {},
   });
@@ -50,10 +60,11 @@ test("explicit helper downloads only the embedding pin, stops downloader, then i
 test("a failed download still stops its service and never enables/indexes the app", async () => {
   const commands = [];
   await assert.rejects(prepareSearch(["--target", "local"], {
-    run(_command, args) { commands.push(args); return { status: args.includes("pull") ? 1 : 0 }; },
+    run: mockRun(commands, true),
     fetchImpl: async () => new Response(manifest), log() {},
-  }), /stopped at Docker exec/);
-  assert.ok(commands.at(-1).includes("stop"));
+  }), /bounded Docker operation failed/);
+  assert.ok(commands.some((args) => args.includes("stop")));
+  assert.ok(commands.at(-1).includes("ps"));
   assert.ok(commands.every((args) => !args.includes("scripts/search-index.mjs")));
 });
 
