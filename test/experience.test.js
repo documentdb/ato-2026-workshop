@@ -115,3 +115,21 @@ test("optional reference counts match the real fixed snapshot, not attendees or 
     assert.throws(() => validatePipeline([{ [stage]: "forbidden" }]), { code: "READ_ONLY_PIPELINE" });
   }
 });
+
+
+test("the removed location banner is absent without breaking configuration rendering", async () => {
+  const html = await readFile(new URL("../src/public/index.html", import.meta.url), "utf8");
+  assert.doesNotMatch(html, /location-notice|Two independent self-hosted databases/);
+  const { elements, run } = await browser();
+  run("renderConfiguration()");
+  assert.equal(elements.get("target-name").textContent, "Site A");
+  assert.equal(elements.has("location-notice"), false);
+  assert.match(html, /id="catalog-notice"/);
+});
+
+test("both Codespace profiles install the official DocumentDB extension", async () => {
+  for (const path of ["../.devcontainer/devcontainer.json", "../.devcontainer/organizer/devcontainer.json"]) {
+    const config = JSON.parse(await readFile(new URL(path, import.meta.url), "utf8"));
+    assert.ok(config.customizations.vscode.extensions.includes("ms-azuretools.vscode-documentdb"));
+  }
+});

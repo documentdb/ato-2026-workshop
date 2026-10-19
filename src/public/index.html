@@ -168,7 +168,6 @@
       </div>
     </section>
 
-    <div class="notice" id="location-notice" hidden></div>
     <div class="notice" id="catalog-notice" hidden></div>
     <section class="notice info stack" id="exercise" role="status" aria-labelledby="exercise-title" hidden>
       <h2 id="exercise-title"></h2>
@@ -364,9 +363,7 @@
       $("copy-help").textContent = config.targets.some((target) => target.id === destination())
         ? `Destination: ${label(destination())}. Select up to 100 favorites.`
         : "The presenter cloud target is not configured. Local planning and calendar export still work.";
-      notice("location-notice", config.scenario === "attendee"
-        ? `Two independent self-hosted databases ${config.location === "codespaces" ? "inside this Codespace, not on your laptop" : "on this laptop"}. Site A / Site B simulate two sites; this is not live hybrid cloud, replication or automatic failover. No Azure account is needed.`
-        : `Presenter demonstration: ${config.location === "codespaces" ? "the development database is in Codespaces, not on-premises" : "the development database is on this laptop"}. Azure is a separate managed database; copying favorites is an explicit application operation, not replication.`);
+
     }
 
     function render() {
