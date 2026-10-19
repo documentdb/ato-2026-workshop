@@ -105,7 +105,9 @@ export async function writeExtensionConnections(directory = process.cwd(), log =
   const content = [marker, "SECRET: open privately; never share, commit, screenshot, or paste into a terminal.",
     "Use DocumentDB: New Connection... > Connection String. No Azure sign-in or local setup wizard.",
     "Paste only the credential-free URI into the unmasked URI box; username/password go in separate native-auth prompts.",
-    "Select Allow invalid certificates for these loopback connections only: TLS stays enabled with the local self-signed certificate.", "",
+    "LOCAL TLS PROMPT (BOTH SITES): choose Allow invalid certificates, not Enable TLS (default). The default rejects the local self-signed certificate.",
+    "Keep tls=true: encryption stays on. In extension 1.0.0, the warning TLS/SSL Disabled is misleading for this configuration; only certificate validation is relaxed.",
+    "This exception is only for these 127.0.0.1 development connections. Never apply it to Azure, set tls=false, change global TLS settings, or rotate passwords to fix a certificate error.", "",
     ...connections.flatMap(({ label, port, database, uri, username, password }) => [label, `Loopback port: ${port}; database: ${database}`, `Connection string (no credentials): ${uri}`, `Username: ${username}`, `Password (paste only in masked prompt): ${password}`, ""]),
   ].join("\n");
   const temporary = join(privateDirectory, `.connections-${randomUUID()}.tmp`);

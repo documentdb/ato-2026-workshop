@@ -35,10 +35,22 @@ It exports **only local** settings, even if an old `.env` contains Azure setting
    into the URI input. That field is **not masked**. Never paste a password-bearing
    URI there. The generated URI points to `127.0.0.1`, selects your database, and
    specifies TLS, `SCRAM-SHA-256`, `authSource=admin` and `directConnection=true`.
-4. For this loopback connection only, choose **Allow invalid certificates** when
-   the TLS picker appears. TLS encryption stays **on**; this accepts the existing
-   local development server's self-signed certificate. It is not “disable TLS,”
-   not a global setting, and never applies to Azure or another remote service.
+4. **In the local TLS prompt, select “Allow invalid certificates” for BOTH
+   Workshop — Site A and Workshop — Site B. Do not leave “Enable TLS (default)”
+   selected for these workshop connections.** The default validates certificates
+   and rejects the development server's self-signed certificate with the error
+   **“self-signed certificate.”** Keep `tls=true` in the generated URI: encryption
+   stays **on**; only certificate validation is relaxed for these specific
+   `127.0.0.1` development connections. Never apply this exception to Azure or
+   another remote service.
+
+   > **DocumentDB for VS Code 1.0.0 label caveat:** after this choice, the tree or
+   > dashboard may display **“⚠ TLS/SSL Disabled.”** That wording is misleading
+   > for this exact workshop configuration: the supplied URI still has `tls=true`,
+   > and the extension applies `tlsAllowInvalidCertificates=true` rather than
+   > disabling encryption. Both local connections were exercised successfully
+   > with this choice in the attendee test. This is not an instruction to set
+   > `tls=false`, disable TLS globally, or change your database password.
 5. If asked for an authentication method, choose **Username and Password**
    (native authentication). Enter the section's username and paste its password only
    into the **masked password prompt**. Do not select Microsoft Entra/Azure login.

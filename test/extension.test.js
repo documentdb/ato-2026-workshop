@@ -66,6 +66,10 @@ test("private handoff is owner-only, atomically repeatable, excludes cloud and p
   assert.equal((await stat(output)).mode & 0o777, 0o600);
   const content = await readFile(output, "utf8");
   assert.match(content, /Password \(paste only in masked prompt\): site A: p@ss\/#\$literal/);
+  assert.match(content, /LOCAL TLS PROMPT \(BOTH SITES\): choose Allow invalid certificates, not Enable TLS \(default\)/);
+  assert.match(content, /Keep tls=true: encryption stays on/);
+  assert.match(content, /TLS\/SSL Disabled is misleading/);
+  assert.match(content, /Never apply it to Azure/);
   assert.doesNotMatch(content, /never-export|cloud\.invalid/);
   assert.doesNotMatch(logs.join("\n"), /mongodb:|p@ss|independent-secret|never-export/);
   assert.equal(await writeExtensionConnections(directory, () => {}), output);
@@ -206,4 +210,16 @@ test("read-only playground templates use the selected database/catalog, bounded 
   assert.equal(calls[0].filter.catalogVersion, catalog.fingerprint);
   assert.equal(calls[0].projection.catalogVersion, 1);
   assert.equal(calls[0].limit, 5);
+});
+
+
+test("attendee guides call out the local TLS choice and misleading v1.0 warning", async () => {
+  for (const name of ["../docs/extension.md", "../docs/lab.md"]) {
+    const text = await readFile(new URL(name, import.meta.url), "utf8");
+    assert.match(text, /Allow invalid certificates/);
+    assert.match(text, /self-signed/);
+    assert.match(text, /tls=true/);
+    assert.match(text, /TLS\/SSL Disabled/);
+    assert.match(text, /Azure/);
+  }
 });
