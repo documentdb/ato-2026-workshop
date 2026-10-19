@@ -49,6 +49,14 @@ Neither means managed Azure. Both sites have separate credentials and volumes.
 Run `npm run extension:connections` and follow the
 [private setup steps](extension.md#connect-the-two-existing-sites-privately). Save
 **Workshop — Site A** and **Workshop — Site B** in DocumentDB **Connections**.
+
+> **Local TLS prompt: choose “Allow invalid certificates” for both sites.**
+> The default certificate-validation choice rejects their self-signed development
+> certificates. Keep `tls=true`: encryption stays on. Extension 1.0.0 may label
+> this **“TLS/SSL Disabled”** even though only certificate validation is relaxed
+> for these loopback connections; see the [TLS explanation](extension.md#connect-the-two-existing-sites-privately).
+> Do not use this exception for Azure or change global TLS settings.
+
 Expand each to its actual workshop database. This is required lab tooling, not an
 Azure demo: no sign-in, no **Set Up Local** third database, no forwarded database
 ports. Keep the credential file out of screen sharing. If the editor is blocked,
