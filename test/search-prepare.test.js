@@ -82,6 +82,9 @@ test("model is optional, private, bounded and absent from core startup; optional
   assert.match(compose, /internal: true/);
   assert.match(compose, /mem_limit: 1g/);
   assert.match(compose, /cpus: 2/);
+  assert.doesNotMatch(compose, /OLLAMA_LLM_LIBRARY:/, "do not force generic CPU over detected AVX2/AVX");
+  const adapter = await readFile(new URL("../src/search-model.js", import.meta.url), "utf8");
+  assert.match(adapter, /num_gpu: 0/, "CPU backend autodetection must not enable GPU inference");
   assert.match(compose, /search-model-data:\/models:ro/);
   assert.doesNotMatch(compose, /^\s+ports:/m);
   for (const path of ["../compose.yaml", "../scripts/workspace-start.mjs", "../Dockerfile"]) {

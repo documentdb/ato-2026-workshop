@@ -227,6 +227,12 @@ not in a server-side result cache. Internal errors are reported by safe codes.
   comparison. A smaller final image may still require large build-time downloads.
   Its unused bundled GPU runner is extracted
   to an owned disk-backed cache (~555 MiB observed on arm64), never used for inference.
+- CPU backend is automatically selected (AVX2/AVX when available, otherwise the
+  portable backend); `OLLAMA_LLM_LIBRARY=cpu` is deliberately not forced because
+  it prevents those optimized CPU choices. Every embedding request retains
+  `num_gpu: 0`, and no GPU is passed through. Runtime/backend changes require
+  measured vector/ranking compatibility checks, not an assumption of identical
+  floating-point coordinates.
 - CPU only, **2 threads**, **1 GiB service memory limit**, one loaded model and one
   inference at a time. No GPU pass-through or generation model. The app permits
   one search at a time and bounds queries to 500 characters, result limits to

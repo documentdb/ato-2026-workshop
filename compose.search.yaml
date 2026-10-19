@@ -21,7 +21,8 @@ x-search-runtime: &search-runtime
     OLLAMA_MAX_QUEUE: "1"
     OLLAMA_KEEP_ALIVE: 2m
     OLLAMA_DEBUG: "false"
-    OLLAMA_LLM_LIBRARY: cpu
+    # Let Ollama select the available CPU backend (AVX2/AVX on amd64).
+    # Every embedding request sets num_gpu: 0; no GPU is passed through.
     CUDA_VISIBLE_DEVICES: "-1"
   volumes:
     - search-model-data:/models
