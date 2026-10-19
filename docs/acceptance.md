@@ -1,73 +1,78 @@
 # Acceptance record and remaining gates
 
-## Extension-integrated revision — pending live GUI acceptance
+## Extension-integrated revision — live GUI acceptance
 
-Implementation verification recorded October 18, 2026, based on canonical main
-`56e769c026cc709b857f28fc45bb3048dc53b675`. This revision integrates the official
-DocumentDB for VS Code **1.0.0** explorer into the existing 105-minute developer
-lab. The older counts and screenshots below **do not prove this extension path**.
+**Core fresh attendee GUI acceptance passed October 18, 2026.** A new two-core
+Codespace ran merged source `e294aa6e11286c669fe06fe5d07a9cecb6e73bff` with
+DocumentDB for VS Code **1.0.0** installed by the attendee profile. The concurrent
+TLS clarification in `fd4fab89c5bc9fd03b1719a61ed0839b8f06d28c` changed guide and
+private-handoff wording/tests, not connection URIs or application behavior; it
+was not pulled into the running test. This record update changes documentation only.
 
-Executed locally on macOS with Node 24:
+### Executed proof
 
-- `npm ci --ignore-scripts --no-audit --no-fund` completed.
-- Offline suite: **58 tests, 57 passed, one existing Linux-only organizer-file
-  test skipped**. New checks cover `.env` literal/quoted parsing, safe rejection
-  of duplicates/interpolation/partial credentials, credential-free URI handoff,
-  private file ownership/permissions and atomic repeatability, unchanged `.env`,
-  no cloud export, no secrets in console output, loopback/forwarding policy,
-  reconnect-project port isolation, and bounded read-only playground contracts.
-- Local Markdown links checked; no network requests in the docs check. Public
-  extension docs/source were separately read to verify the connection wizard,
-  local TLS choice, Collection View/Indexes controls and **prebound** playground
-  model. This is source review, not an executed GUI result.
-- No Docker stack, existing attendee Codespace, cloud resource, database notebook,
-  or shared extension storage was changed by this implementation check.
+- Untouched automatic cold creation/start/seed took **4m57s** in this one run.
+  Both independent catalogs contained **216** sessions. No manual startup or
+  reseed was used to conceal a lifecycle failure.
+- The private handoff used a `700` directory and `600` file, excluded from Git.
+  Existing generated credentials were entered only into the normal extension's
+  separate native-auth prompts, with the password prompt masked. No connection
+  storage injection, credential rotation, Azure sign-in or third-instance wizard.
+- Actual saved **Workshop — Site A** and **Workshop — Site B** connection trees
+  expanded to the database and collections. Both session JSON views were queried
+  by actual `_id`; Site A catalog metadata was also queried in the GUI.
+- **Allow invalid certificates** worked for both loopback connections. Extension
+  1.0.0 displayed the misleading **TLS/SSL Disabled** warning; the supplied URI
+  retained `tls=true` and the installed native-auth code applied the local
+  certificate-validation exception. See the [local TLS note](extension.md#connect-the-two-existing-sites-privately).
+- Sequential TODO completion produced the catalog, then saved two overlapping
+  Monday favorites. Actual extension JSON displayed their `_id` and `savedAt`.
+  Site B initially had the catalog but no favorites.
+- The **app's** selected copy produced **2 Copied**, then **2 Already present**.
+  Actual Site B JSON refresh showed unchanged destination timestamps on retry.
+  A new Tuesday favorite copied back; Site A's actual JSON showed **three**.
+- The same session's GUI JSON changed from **version 1 / no attendanceMode** to
+  **version 2 / in-person** after the explicit CLI migration; title and times were
+  unchanged. Favorites JSON was byte-identical before/after. Migration: **216 → 0**.
+- Actual **Indexes** view was refreshed and `schedule_order` expanded to show
+  **startsAt ascending, then _id ascending**, not just an index name.
+- Both database-created, **prebound** playgrounds executed the exact committed
+  templates through their Run controls: **5-document inspection** and **17 groups /
+  74 Monday entries**, leading counts **10 / 9 / 8**. Results came from actual
+  extension result panels, not replacement CLI queries.
+- Actual browser calendar download contained **three events** with verified
+  identifiers, titles and UTC times. App restart retained **216 / 3 / 1 overlap**.
+- Codespace Linux tests: **58/58 passed**; **61 documentation links** passed;
+  real database integration **2/2 passed**. Both published loopback TLS/auth reads
+  and counterpart credential-denial checks passed.
+- Both CLI and editor Ports UI showed only **3000 / Private** forwarded. Database
+  endpoints were loopback-bound on **10270 / 10271**, not web-forwarded.
+- Only the owned test Codespace was stopped; authoritative **Shutdown** was
+  verified. Its solved files, notebooks and saved connections were retained with
+  a 24-hour retention setting. The user's active Codespace was not modified.
 
-**Required live checks still pending for this revision:**
+### Experience and precision limits
 
-1. Create a **fresh** attendee Codespace from the final merged source. Record
-   cold-start timing, extension version/remote host and actual resource needs.
-   Verify only app port **3000 / Private** is forwarded, not database ports
-   **10270/10271** or custom database ports. Inspect actual loopback bindings.
-2. Run `npm run extension:connections`; check ignored private directory `700`
-   and file `600`, unchanged `.env`, and no secrets in terminal output. Run
-   `npm run extension:check` from the outer container: both authenticated local
-   reads and cross-site credential rejection must pass. This is only endpoint
-   proof, not the next GUI checkpoint.
-3. In the actual extension GUI, use **New Connection → Connection String**, the
-   credential-free URI, local **Allow invalid certificates** choice (TLS stays
-   on), and **Username and Password** prompts. Save/rename both **Workshop —
-   Site A** and **Workshop — Site B**. Show **both saved Connections tree nodes**
-   expanded to the actual database and `sessions`/`workshop_meta`. No Azure login
-   or third local instance. Do not require Compose containers to appear as
-   extension-managed Local instances. Close private files before screenshots.
-4. Browse Site A session JSON before TODO 1; show `_id`, `startsAt` and the real
-   `catalogVersion`. Complete both TODOs in the editor, save favorites in the app,
-   then show actual favorite `_id`/`savedAt` in the extension. Restart persistence
-   and the existing browser checkpoints must still work.
-5. Compare A/B favorite views before and after the **app's selected copy**. Retry
-   that direction and verify one destination document with unchanged destination
-   `savedAt`, then copy a new favorite back. No extension **Copy Collection**.
-6. Create the index via CLI and inspect actual `{ startsAt: 1, _id: 1 }` keys in
-   the extension's **Indexes** tab. Observe the **same session `_id`** before/after
-   CLI migration, version 1/no attendanceMode → version 2/in-person, with unchanged
-   favorite timestamp. Rerun migration: zero changed. Never reset an old notebook
-   to manufacture a before state.
-7. Optional prebound `.documentdb.js` templates: actual CodeLens Run from the
-   selected database, at most five sample sessions, and **17 groups / 74 Monday
-   entries** for the aggregation. Test a custom database name by creating a new
-   playground from that database node, not editing a hidden connection setting.
-8. Re-run real two-server integration, isolated reconnect/interruption regression
-   and calendar download on this source. The reconnect override must publish **no
-   database ports**, avoiding collisions with the main attendee stack or parallel
-   harnesses. Existing first-connection recovery must retain the same app process.
+Seeing an app save appear as actual favorite JSON, then comparing Site B before
+and after an explicit copy, made **same code, separate data** concrete. Connection
+setup was the most difficult part: repeated prompts, a certificate-validation
+choice that is wrong for this local setup by default, and contradictory warning
+wording afterward. The local TLS clarification addresses that observed friction.
+Collection tabs use short database/collection names, so open them from the correct
+site's tree. Verify the connection header when creating each playground.
 
-CI now includes the read-only host-side `extension:check` after startup, alongside
-existing database integration and reconnect jobs. Added CI steps are not claimed
-as executed here. If a GUI checkpoint is blocked, record the blocker and use
-`inspect` to continue the lab; **do not mark the extension accepted from CLI-only
-or offline tests**. Presenter Azure extension use remains optional and requires
-separate approved access with fully validated TLS; no attendee subscription.
+Application and extension actions used a real browser; code edits and documented
+commands used CLI assistance. Monaco focus/clipboard handling and clipped
+accessibility snapshots added automation overhead. This was not a novice timing
+study or a timed 105-minute class.
+
+Project/Sort form controls were not each tested separately (the actual inspection
+playground exercised projection/sort). Site B metadata's collection was expanded,
+but its metadata JSON was not separately reopened. Custom-database-name playground
+GUI behavior, every manual connection-update variation, and Apple Calendar import
+were not tested here. The isolated reconnect harness was **not rerun in this fresh
+GUI session**; separate local and CI reconnect checks passed on this implementation.
+No new Azure or calendar-import test is claimed from this run.
 
 ## Executed evidence before the reconnect / attendee-polish revision
 
