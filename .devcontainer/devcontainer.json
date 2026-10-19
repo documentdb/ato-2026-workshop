@@ -16,6 +16,14 @@
       "label": "Workshop planner (development environment in Codespaces)",
       "onAutoForward": "notify",
       "visibility": "private"
+    },
+    "10270": {
+      "label": "DocumentDB Site A \u2014 do not forward",
+      "onAutoForward": "ignore"
+    },
+    "10271": {
+      "label": "DocumentDB Site B \u2014 do not forward",
+      "onAutoForward": "ignore"
     }
   },
   "onCreateCommand": "npm ci --ignore-scripts --no-audit --no-fund",
@@ -27,5 +35,8 @@
         "ms-azuretools.vscode-documentdb"
       ]
     }
+  },
+  "otherPortsAttributes": {
+    "onAutoForward": "ignore"
   }
 }

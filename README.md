@@ -23,9 +23,11 @@ On the preceding main source, a fresh **two-core attendee Codespace** reached bo
 sites in **4m47s**, actual Site A/B checks passed **34/34 plus integration**, Google
 Calendar imported **3/3 events**, and a real **local Mac mini → managed Azure**
 round trip passed (temporary cloud resource cleaned up). See the
-[acceptance record](docs/acceptance.md) for scope. **This reconnect/onboarding
-revision also passed a restarted-Codespace attendee run: 47/47 tests, actual
-browser exercises, and cold first-connection recovery in the same app process.**
+[acceptance record](docs/acceptance.md) for scope. **The preceding reconnect/onboarding revision also passed a restarted-Codespace
+attendee run: 47/47 tests, actual browser exercises, and cold first-connection
+recovery in the same app process. This extension-integrated revision still needs
+a fresh Codespace and actual extension GUI acceptance; those earlier counts do
+not prove it.**
 Timed human classroom delivery and conference-laptop networking are
 not verified; automated checks are not substitutes.
 
@@ -43,16 +45,31 @@ cross-listings, unresolved disagreements, and the excluded invalid break time.
 3. When the terminal says **Site A and Site B are ready and both catalogs are
    seeded**, select **Ports** beside Terminal in the editor's bottom panel. Find
    row **3000** and use **Open in Browser** (globe). Keep visibility **Private**.
-4. Follow the [attendee guide](docs/lab.md), also linked persistently in the planner.
+4. Run `npm run extension:connections`, then follow the
+   [private connection steps](docs/extension.md#connect-the-two-existing-sites-privately)
+   to save **Workshop — Site A** and **Workshop — Site B** in the DocumentDB
+   extension's **Connections** tree. No Azure sign-in or **Set Up Local** wizard.
+   The helper never prints credentials; keep its generated file private.
+5. Follow the [attendee guide](docs/lab.md), also linked persistently in the planner.
    The blue **Exercise 1** checkpoint is intentional, not a broken database.
-5. Edit in Codespaces: **Explorer → exercises → starter → repository.js**, or
+6. Edit in Codespaces: **Explorer → exercises → starter → repository.js**, or
    **Ctrl/Cmd+P**, then type `exercises/starter/repository.js`. A GitHub file link
    is a read-only source view, not the editable file in your running Codespace.
 
 Both Codespaces profiles include the official
 [DocumentDB for VS Code extension](https://marketplace.visualstudio.com/items?itemName=ms-azuretools.vscode-documentdb)
-(`ms-azuretools.vscode-documentdb`). It does not connect to or provision a database
-automatically; the workshop's Compose setup still owns Site A and Site B.
+(`ms-azuretools.vscode-documentdb`; guide targets version 1.0.0). Use it throughout
+the lab: inspect catalog JSON before TODO 1, see favorite writes after TODO 2,
+compare sites around the **app's** selected copy, and observe index/migration
+changes. The extension does not implement your driver code or copy favorites
+automatically. Compose still owns both containers; saved connections do not
+turn them into extension-managed Local instances.
+
+Only the app's **3000** port is privately forwarded. Database ports **10270/10271**
+are bound to outer-container loopback for the remote extension and ignored by
+auto-forwarding; never forward them or make them public. Both host ports are
+configurable without touching credentials/volumes. See the
+[networking explanation and CLI fallback](docs/extension.md).
 
 Every workshop terminal command runs **inside Codespaces**, unless explicitly
 following the optional [laptop-local appendix](docs/local.md).

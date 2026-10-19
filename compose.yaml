@@ -4,6 +4,9 @@ services:
     environment:
       USERNAME: ${DOCUMENTDB_USERNAME:?Run the setup command first}
       PASSWORD: ${DOCUMENTDB_PASSWORD:?Run the setup command first}
+    # Reachable by the remote VS Code extension in the outer dev container only.
+    ports:
+      - "127.0.0.1:${SITE_A_EXTENSION_PORT:-10270}:10260"
     volumes:
       - documentdb-data:/data
     stop_grace_period: 30s
@@ -13,6 +16,8 @@ services:
     environment:
       USERNAME: ${SITE_B_USERNAME:?Run the setup command first}
       PASSWORD: ${SITE_B_PASSWORD:?Run the setup command first}
+    ports:
+      - "127.0.0.1:${SITE_B_EXTENSION_PORT:-10271}:10260"
     volumes:
       - documentdb-site-b-data:/data
     stop_grace_period: 30s

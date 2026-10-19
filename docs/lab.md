@@ -44,9 +44,29 @@ checkpoint is expected; `DATABASE_UNAVAILABLE`
 is not. The internal CLI name `local` means Site A; `site-b` means Site B.
 Neither means managed Azure. Both sites have separate credentials and volumes.
 
+### Connect your visual database explorer
+
+Run `npm run extension:connections` and follow the
+[private setup steps](extension.md#connect-the-two-existing-sites-privately). Save
+**Workshop — Site A** and **Workshop — Site B** in DocumentDB **Connections**.
+Expand each to its actual workshop database. This is required lab tooling, not an
+Azure demo: no sign-in, no **Set Up Local** third database, no forwarded database
+ports. Keep the credential file out of screen sharing. If the editor is blocked,
+ask a helper and use [CLI inspection](extension.md#if-the-visual-explorer-is-blocked)
+as a fallback, not as a claimed visual-explorer pass.
+
 ## 2. Read the catalog
 
-In the **Codespaces editor**, use the left **Explorer** panel:
+**First see the data before writing code.** In DocumentDB **Connections**, expand
+**Workshop — Site A → your database → sessions** and open its **Documents**
+child (or the collection's leftmost inline icon). Follow
+[Browse, query and refresh](extension.md#browse-query-and-refresh): read the catalog
+fingerprint from `workshop_meta`, filter `sessions` by it, and inspect one actual
+JSON document with `_id`, `startsAt`, `catalogVersion` and `schemaVersion`.
+Notice that `_id` is a stable session identifier and `startsAt` an ISO UTC string.
+Keep this `_id` to revisit in step 8. Do not edit the seeded catalog.
+
+**Now implement the application read.** In the **Codespaces editor**, use the left **Explorer** panel:
 **exercises → starter → repository.js**. Or press **Ctrl+P** (Windows/Linux) /
 **Cmd+P** (Mac), type `exercises/starter/repository.js`, and press Enter.
 
@@ -173,6 +193,15 @@ Both are listed Monday, 9:00–10:45 a.m. Eastern, in different rooms. Their car
 and favorites should flag an overlap. Back-to-back sessions do not conflict.
 Interpret shared keynote/lightning-talk blocks using the official program.
 
+**See the write in the extension.** Refresh the **Workshop — Site A** tree;
+`favorites` now exists. Open **Documents**, use JSON view, and inspect a saved
+session's `_id` and `savedAt` (project only those fields). This is the database
+record your TODO wrote, not browser storage. Your stable `_id` plus
+`$setOnInsert` explains why retrying the upsert cannot add a duplicate or change
+its first-save timestamp. Do not edit the JSON to “test” it; step 5 exercises a
+real retry through the app. [Rerun/reopen the query](extension.md#browse-query-and-refresh)
+after changes rather than trusting stale results.
+
 Restart the app and refresh:
 
 ```sh
@@ -187,6 +216,11 @@ Stay connected to Codespaces: laptop-offline operation is not part of this lab.
 
 Select **Site B — self-hosted**, then **Switch connection**.
 The same 216-entry catalog is there, but Site A's favorites are absent.
+
+In the extension, compare **Workshop — Site A** and **Workshop — Site B**. Open
+each database's `favorites` Documents view (refresh the tree first). B may have
+no `favorites` collection yet, or no records in it; A still has your actual JSON
+records. Merely opening an extension tab does not switch the app.
 
 Before “fixing” any code, explain:
 
@@ -214,6 +248,17 @@ While **Site A** is active:
 5. **Switch back to Site A**, select the same favorites, and repeat **Site A → Site B**.
    Expect **Already present**, not new duplicates.
 
+After the first copy, refresh/reopen **Site B → favorites** in the extension.
+Filter one copied `_id`, note B's `savedAt`, then compare that same `_id` on A.
+After repeating the copy, rerun B's query: still one record with the **same B
+timestamp**. A remains unchanged. B records its own initial save time, so it need
+not equal A's timestamp. If your notebook was used before, compare your actual
+before/after records rather than assuming an empty destination.
+
+Use the **planner app's Copy selected favorites**, never extension **Copy
+Collection**. The latter is a different operation without this exercise's
+selected-record/catalog-validation/per-record-outcome semantics.
+
 The source is always the active site; switching before copying changes direction.
 Read the confirmation instead of assuming the destination.
 
@@ -226,7 +271,8 @@ are preserved. Each site records its own first-save time, not the other site's.
 
 Switch to **Site B**. Save a different session. Select that new favorite and
 confirm **Site B → Site A**. Switch back to **Site A**: the original choices remain
-and the new one is added. Any resulting overlap is flagged.
+and the new one is added. Any resulting overlap is flagged. Refresh both extension
+views to see the newly added `_id` and each site's independent `savedAt`.
 
 Removing a favorite from one site does not remove its copy at the other. This
 is explicit additive copying, not bidirectional synchronization or conflict
@@ -250,42 +296,82 @@ that as self-hosted-to-managed, not on-prem-to-cloud.
 
 ## 8. Make changes repeatable
 
-If time permits, follow the instructor against **Site A (`local`)**. First inspect
-one actual session and one actual favorite, then add the index and migrate:
+Follow the instructor against **Site A (`local`)**. In the extension, reopen the
+**same session `_id`** you inspected in step 2. On an unmigrated notebook, it has
+`schemaVersion: 1` and **no** `attendanceMode`. Keep a favorite's `_id`/`savedAt`
+visible too. These are actual documents, not canned JSON. Use a narrow projection
+as in [the explorer guide](extension.md#browse-query-and-refresh).
+
+Create the repeatable index from the terminal (explicit target):
 
 ```sh
-docker compose -f compose.yaml exec app npm run inspect -- --target local
 docker compose -f compose.yaml exec app npm run indexes -- --target local
+```
+
+In Site A's `sessions` Collection View, select **Indexes → Refresh**, then expand
+`schedule_order`. Inspect the actual key definition **`{ startsAt: 1, _id: 1 }`**,
+including field order, not just its name. This shows a reproducible index exists;
+it does not prove that the engine chooses it or that this small catalog is faster.
+Do not create a second index through the extension.
+
+Run the versioned migration, then rerun/reopen that session query in the extension:
+
+```sh
 docker compose -f compose.yaml exec app npm run migrate -- --target local
-docker compose -f compose.yaml exec app npm run inspect -- --target local
+```
+
+The **same `_id`** now has `schemaVersion: 2` and `attendanceMode: "in-person"`;
+the title and `startsAt` are unchanged. Refresh the favorite query too: its
+`savedAt` is unchanged. You observed the CLI's real write through a separate
+client. Do not manually edit documents or run a hidden playground migration.
+
+Run the migration again to test idempotency:
+
+```sh
 docker compose -f compose.yaml exec app npm run migrate -- --target local
 docker compose -f compose.yaml exec app npm run check -- --target local
 ```
 
-Compare the **same session `_id`** in the two `inspect` outputs. On an unmigrated
-notebook, the first actual document has `schemaVersion: 1` and **no**
-`attendanceMode` field. After migration it has `schemaVersion: 2` and
-`attendanceMode: "in-person"`. The title/time are unchanged. These are projected
-fields from a real query, not canned example JSON; only one session and one
-favorite are printed. No credentials or system documents are printed.
+The second migration reports **zero newly migrated records** because only
+version-1 records without `attendanceMode` match. If this notebook was migrated
+earlier, it will already show version 2 and both runs may report zero. Do not
+reset it to recreate a before state. Re-seeding does not undo migration.
 
-The favorite output shows its actual `_id` and `savedAt` timestamp. Neither
-index creation nor this session migration changes that timestamp. If `favorite`
-is `null`, save a session on **this target** and inspect again. Repeated saves
-and copies preserve each destination's first-save timestamp (Exercise 2).
+**CLI fallback at any checkpoint:** run this before and after the same commands
+if the extension is unavailable. It prints one actual projected session, one
+favorite and actual index definitions, never credentials:
 
-The second migration should report **zero newly migrated records**: the filter
-only matches version-1 records without `attendanceMode`, so already migrated
-records are untouched. This is **idempotency**, not a failed migration. If your
-notebook was migrated earlier, the first inspection will already show version 2
-and both runs can report zero. Do not reset it just to recreate the before state.
-Re-seeding does not undo migration. To try on Site B, substitute `--target site-b`
-in **every** command; the browser's active target does not select a CLI target.
+```sh
+docker compose -f compose.yaml exec app npm run inspect -- --target local
+```
 
-`inspect` also displays the actual `schedule_order` index definition after
-creation; `check` lists index names and document versions. This makes the index
-repeatable and visible, **not** proof that the engine chooses it or that a tiny
-catalog gets faster. Skip this extension before sacrificing copy-back or export.
+A null favorite means save one on **this target** first. To repeat on B, use its
+extension connection and `--target site-b` in **every** CLI command. Neither the
+browser's selected site nor a focused extension tab changes the CLI target.
+
+### Optional extension playground — inspect without writes
+
+After the required checkpoints, right-click the intended **database** under
+**Workshop — Site A → your actual database** → **New Query Playground**. Verify
+its connection/database **CodeLens** header. Copy the single block from
+[inspect.documentdb.js](../exercises/optional/inspect.documentdb.js) into that new
+playground, then click the block's **Run** CodeLens. It reads this database's
+catalog metadata and at most **five** projected sessions, with a five-second
+server query limit. It contains no credentials or writes.
+
+Do **not** run the unbound repository template directly or add `use(...)`.
+Version 1.0 playgrounds are bound to the cluster/database where they were created;
+they do not have a switch-connection workflow. For B or a custom database name,
+create another playground from **that exact database node** and copy the template.
+The extension supplies `db`, so no database-name code edit is needed.
+
+Blank lines separate blocks. **Run** executes one block; **Run All** executes the
+whole file after confirmation. Variables persist only within Run All, not between
+separate block runs. Each supplied template is self-contained. Results include
+the connection/database header; check it each time. See the
+[official playground guide](https://microsoft.github.io/vscode-documentdb/user-manual/query-playground).
+These templates are read-only by code and workshop intent; the credentials are
+not a read-only database role. Do not add write stages or export private settings.
 
 ### Optional developer challenge — Monday program entries by track
 
@@ -340,6 +426,13 @@ it without replacing your optional exercise:
 ```sh
 docker compose -f compose.yaml exec app npm run challenge -- --target local --reference
 ```
+
+For the equivalent **extension** result, create a new playground from the same
+explicit database node as above and copy the single self-contained block from
+[program-counts.documentdb.js](../exercises/optional/program-counts.documentdb.js).
+Click **Run**. It reads the active catalog fingerprint, projects only group/count,
+limits to 30 groups and applies a five-second server query budget. It does not
+read or print all 216 session documents, change the planner, or write data.
 
 The October 12 snapshot produces **17 track groups totaling 74 Monday entries**.
 The first three are `Inclusion & Diversity in Open Source: 10`, `Break: 9`, and

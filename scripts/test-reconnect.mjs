@@ -32,7 +32,7 @@ const override = join(directory, "compose.reconnect.yaml");
 // inputs that could otherwise choose a host port, mode or private forwarding host.
 const env = { ...process.env };
 for (const key of Object.keys(env)) {
-  if (/^(COMPOSE_|WORKSHOP_|DOCUMENTDB_|SITE_B_|LOCAL_|CLOUD_)/.test(key) || key === "ACTIVE_TARGET") delete env[key];
+  if (/^(COMPOSE_|WORKSHOP_|DOCUMENTDB_|SITE_A_|SITE_B_|LOCAL_|CLOUD_)/.test(key) || key === "ACTIVE_TARGET") delete env[key];
 }
 Object.assign(env, { COMPOSE_PROJECT_NAME: project, WORKSHOP_PORT: "3000",
   WORKSHOP_MODE: "complete", WORKSHOP_SCENARIO: "attendee", WORKSHOP_PUBLIC_HOST: "",
@@ -95,7 +95,9 @@ try {
   }
   // setup ignores ambient credentials and generates independent private values.
   await setup(directory, {}, () => {});
-  await writeFile(override, `services:\n  app:\n    init: false\n    command: ["node", "src/server.js"]\n    ports: !override\n      - "127.0.0.1::3000"\n`, { mode: 0o600 });
+  // No published database ports: parallel harnesses cannot collide with the
+  // attendee extension endpoints, and only the app needs host-side access.
+  await writeFile(override, `services:\n  documentdb:\n    ports: !override []\n  documentdb-site-b:\n    ports: !override []\n  app:\n    init: false\n    command: ["node", "src/server.js"]\n    ports: !override\n      - "127.0.0.1::3000"\n`, { mode: 0o600 });
   owned = true;
   await run(["up", "--build", "-d", "--wait", "--wait-timeout", "240"], { timeout: 600000 });
   receipt("owned-ephemeral-project-ready", { project, privateDirectory: directory });

@@ -9,16 +9,21 @@ trip across two independent OSS DocumentDB instances—without Azure access.
 
 | Minutes | Activity |
 | --- | --- |
-| 0–20 | One-minute finished-planner demo, architecture, Codespaces setup; triage at minute 12 |
-| 20–50 | Two repository TODOs, favorites, overlaps, persistence |
-| 50–70 | Site A/B switch, missing favorites, explicit copy, retry, return trip |
+| 0–20 | One-minute demo, architecture, Codespaces setup + save both extension connections; triage at minute 12 |
+| 20–50 | Browse Site A JSON → TODO 1; TODO 2 → inspect favorite JSON, overlaps and persistence |
+| 50–70 | Compare Site A/B in explorer around app switch, selected copy, retry and return trip |
 | 70–85 | Presenter-only actual laptop-to-Azure demonstration or rehearsed recording |
-| 85–95 | Repeatable indexes and migration extension |
+| 85–95 | CLI index/migration; inspect actual index and same session before/after in extension |
 | 95–105 | Calendar export, safe stopping, upstream pointers, questions |
 
-This is a planned allocation, not a measured rehearsal. Setup delays consume the
-index/migration extension first. Protect the return trip, calendar export, and
-cleanup. Keep cloud troubleshooting off the critical attendee path.
+This remains **105 minutes**, not an extra extension demo appended to the agenda.
+Explorer observations replace narration and duplicate CLI output at each existing
+checkpoint. The two developer TODOs retain 30 minutes. The read-only playground
+and aggregation are stretch work, not another required TODO. If setup slips, cut
+those first and shorten the presenter capstone with the checked recording. Protect
+the app copy/return trip, brief index/migration observation, export and cleanup.
+This is a planned allocation, not a measured human rehearsal. Keep cloud/editor
+troubleshooting off the critical path; use the explicit CLI fallback when needed.
 
 ## Opening explanation
 
@@ -58,18 +63,37 @@ Azure tooling is optional and does not confer permissions. The browser editor
 supports the TODOs. The complete-reference override preserves exercises and data.
 Optional GitHub CLI/SSH diagnostics are helper tools, not attendee prerequisites.
 
+The official DocumentDB extension is the required visual explorer throughout the
+lab. Follow [its private connection guide](extension.md): attach the existing
+loopback endpoints, use native username/password prompts, and save **Workshop —
+Site A/B** in **Connections**. The helper emits no credentials to the terminal;
+never project its private handoff file. Database ports 10270/10271 (or custom
+`.env` ports) must not be forwarded; only private app port 3000 is forwarded.
+Do not use **Set Up Local**, fabricate extension-owned containers, or replace the
+app's selected favorite copy with **Copy Collection**. Compose owns lifecycle;
+the saved extension connections expose data. The catalog is read-only by intent,
+not by the supplied development role.
+
 ## Observable checkpoints
 
 - Both sites ready and seeded; a blue Exercise 1 checkpoint explains the empty
   planner, points to the editable file, and links to progressively revealed hints.
   The persistent implementation label describes the chosen file, not completion.
-- TODO 1: 216 entries. TODO 2: save two favorites and retain them across app restart.
+- Both **saved** extension Connections nodes expand to the actual database and
+  `sessions`/`workshop_meta`; `favorites` appears after its first write. Installed
+  extension or a successful port probe alone is not this checkpoint.
+- Before TODO 1: inspect an actual Site A session `_id`, `startsAt`, `catalogVersion`
+  and schema version. TODO 1: 216 app entries. TODO 2: save two favorites, inspect
+  their actual `_id`/`savedAt` in the extension and retain them across app restart.
 - Switch A → B: same catalog, no automatic favorite movement; A remains intact.
-- Copy A → B; switch back to A before repeating that same direction; Already present.
+- Compare extension favorite views before/after **app** copy A → B. Switch back
+  to A before repeating the same direction: Already present. Requery B's same
+  `_id` to verify one document and unchanged destination `savedAt`.
 - New favorite at B; copy B → A; original A choices survive.
 - Removal is local to its site, not propagated to copies.
-- Inspect an actual session before/after migration and an unchanged favorite
-  timestamp; explain zero migrated on rerun as idempotency. Index definition is
+- In the extension, inspect the same actual session `_id` before/after CLI
+  migration and an unchanged favorite timestamp; explain zero migrated on rerun
+  as idempotency. Expand the actual `schedule_order` index keys; its definition is
   visible, not a performance claim. Optional advanced aggregation: 17 Monday
   track groups / 74 published program entries, not attendee counts.
 - Export from the intended site, follow calendar-specific import instructions,
@@ -185,7 +209,10 @@ replicate together. No extra cloud resources are authorized by this guide.
 | `DATABASE_UNAVAILABLE` | Confirm intended site, readiness and private logs; never silently use the other site |
 | `CATALOG_NOT_SEEDED` | Seed that explicit local target, or retry interrupted same-catalog seed |
 | `CATALOG_MISMATCH` | Preserve the old notebook, choose a fresh database name, or review migration |
-| Site B favorites empty after switch | Expected: switching isn't copying |
+| Site B favorites empty after switch | Expected: switching isn't copying; its collection may not exist until first write |
+| Extension cannot connect but CLI can | Run host-side `npm run extension:check`; check remote extension host/loopback ports/native auth/local-only certificate exception |
+| Extension shows old JSON | Rerun the collection query or close/reopen Documents on the same site; tree refresh alone may not rerun results |
+| Loopback port occupied | Choose distinct unused `SITE_A_EXTENSION_PORT`/`SITE_B_EXTENSION_PORT` in private `.env`, reapply same project, regenerate handoff; never kill unrelated services |
 | Incomplete copy | Read per-record outcomes, resolve failure, retry same direction |
 | Browser fails after restart | Refresh to obtain the new request token; attendee restarts at Site A |
 | Changed credentials fail | Recreate app for config changes; `.env` edits do not rotate an existing volume's users |
@@ -204,6 +231,11 @@ preceding source and what still needs proof on this revision.
 
 - Fresh attendee Codespace with both instances and measured resource/startup cost.
 - Setup upgrade from a legacy `.env` without changing old credentials/data.
+- Actual extension 1.0.0 GUI: two saved/renamed Connections nodes, authenticated
+  JSON browsing, custom database names and private file closed before screenshots.
+  No database auto-forwarding, no third container, no Azure sign-in.
+- Explorer observes actual favorite writes/retry timestamps, index keys, same-id
+  migration; optional prebound playground returns 17 groups/74 Monday entries.
 - Starter/reference switching and restart persistence at both sites.
 - Same catalog, independent favorites before copying, safe repeat/return trip.
 - Second-site outage: clear error, no fallback; recovery retains both notebooks.

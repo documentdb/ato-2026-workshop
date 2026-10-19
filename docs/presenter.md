@@ -5,9 +5,11 @@ instance**. It does not provision a cluster, create cloud subscriptions, install
 Kubernetes, or grant permissions. Attendees never receive the connection string
 and do not execute this runbook. Their Site A/B lab works independently.
 
-**Acceptance status:** the repository's earlier managed data-plane round trip
-was not completed. Rehearse this revised path on the actual laptop and approved
-Azure endpoint; local tests and successful infrastructure deployment are not proof.
+**Acceptance status:** a prior local Mac mini → managed Azure round trip passed,
+as scoped in the [acceptance record](acceptance.md). That does not prove the
+extension-integrated revision or conference laptop/network. Rehearse this path
+on the actual laptop and approved Azure endpoint; local tests and successful
+infrastructure deployment are not proof.
 Keep a verified recording for conference-network failure. Do not claim a live
 cloud result from a recording or the two-container simulation.
 
@@ -94,6 +96,27 @@ choose a new approved database for the missing-favorites lesson.
 Open **http://localhost:3000** (or the privately configured `WORKSHOP_PORT`).
 Verify **Complete reference**, **DocumentDB on this laptop**, and exactly the
 local/Azure target pair. Do not show `.env` or raw connection errors on screen.
+
+### Optional presenter-only extension view
+
+The attendee extension Connections tree contains only their own **Site A/B**;
+attendees need no Azure subscription, login or credential. The private handoff
+helper deliberately never exports `CLOUD_DOCUMENTDB_URI`.
+
+If already authorized and rehearsed, the presenter may separately attach the
+approved Azure database in their **own** extension and inspect its catalog and
+favorites beside the laptop connection. Enter cloud credentials privately through
+the service's supported authentication flow; the connection-string field is not
+a safe place to project secrets. Use a clear presenter-only label, close private
+configuration, and verify the actual database before screen sharing. **Keep
+validated TLS and hostname validation enabled for Azure.** Never apply the
+loopback self-signed certificate exception to cloud or disable global TLS.
+
+This optional visual observation uses the existing 15-minute capstone allocation,
+not extra classroom time. Perform transfers with the **app's selected favorite
+copy**, never extension **Copy Collection**. Saved Connections expose databases;
+they do not change Compose container ownership. If extension/cloud networking
+is blocked, use the rehearsed recording rather than changing attendee setup.
 
 ## 3. Rehearse the 15-minute story
 

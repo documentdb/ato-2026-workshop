@@ -8,3 +8,6 @@ playwright-report/
 test-results/
 .DS_Store
 Thumbs.db
+
+# Secret-bearing local extension handoff; never build, commit, or share.
+.workshop-private/

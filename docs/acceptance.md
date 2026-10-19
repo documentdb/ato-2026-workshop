@@ -1,5 +1,74 @@
 # Acceptance record and remaining gates
 
+## Extension-integrated revision — pending live GUI acceptance
+
+Implementation verification recorded October 18, 2026, based on canonical main
+`56e769c026cc709b857f28fc45bb3048dc53b675`. This revision integrates the official
+DocumentDB for VS Code **1.0.0** explorer into the existing 105-minute developer
+lab. The older counts and screenshots below **do not prove this extension path**.
+
+Executed locally on macOS with Node 24:
+
+- `npm ci --ignore-scripts --no-audit --no-fund` completed.
+- Offline suite: **58 tests, 57 passed, one existing Linux-only organizer-file
+  test skipped**. New checks cover `.env` literal/quoted parsing, safe rejection
+  of duplicates/interpolation/partial credentials, credential-free URI handoff,
+  private file ownership/permissions and atomic repeatability, unchanged `.env`,
+  no cloud export, no secrets in console output, loopback/forwarding policy,
+  reconnect-project port isolation, and bounded read-only playground contracts.
+- Local Markdown links checked; no network requests in the docs check. Public
+  extension docs/source were separately read to verify the connection wizard,
+  local TLS choice, Collection View/Indexes controls and **prebound** playground
+  model. This is source review, not an executed GUI result.
+- No Docker stack, existing attendee Codespace, cloud resource, database notebook,
+  or shared extension storage was changed by this implementation check.
+
+**Required live checks still pending for this revision:**
+
+1. Create a **fresh** attendee Codespace from the final merged source. Record
+   cold-start timing, extension version/remote host and actual resource needs.
+   Verify only app port **3000 / Private** is forwarded, not database ports
+   **10270/10271** or custom database ports. Inspect actual loopback bindings.
+2. Run `npm run extension:connections`; check ignored private directory `700`
+   and file `600`, unchanged `.env`, and no secrets in terminal output. Run
+   `npm run extension:check` from the outer container: both authenticated local
+   reads and cross-site credential rejection must pass. This is only endpoint
+   proof, not the next GUI checkpoint.
+3. In the actual extension GUI, use **New Connection → Connection String**, the
+   credential-free URI, local **Allow invalid certificates** choice (TLS stays
+   on), and **Username and Password** prompts. Save/rename both **Workshop —
+   Site A** and **Workshop — Site B**. Show **both saved Connections tree nodes**
+   expanded to the actual database and `sessions`/`workshop_meta`. No Azure login
+   or third local instance. Do not require Compose containers to appear as
+   extension-managed Local instances. Close private files before screenshots.
+4. Browse Site A session JSON before TODO 1; show `_id`, `startsAt` and the real
+   `catalogVersion`. Complete both TODOs in the editor, save favorites in the app,
+   then show actual favorite `_id`/`savedAt` in the extension. Restart persistence
+   and the existing browser checkpoints must still work.
+5. Compare A/B favorite views before and after the **app's selected copy**. Retry
+   that direction and verify one destination document with unchanged destination
+   `savedAt`, then copy a new favorite back. No extension **Copy Collection**.
+6. Create the index via CLI and inspect actual `{ startsAt: 1, _id: 1 }` keys in
+   the extension's **Indexes** tab. Observe the **same session `_id`** before/after
+   CLI migration, version 1/no attendanceMode → version 2/in-person, with unchanged
+   favorite timestamp. Rerun migration: zero changed. Never reset an old notebook
+   to manufacture a before state.
+7. Optional prebound `.documentdb.js` templates: actual CodeLens Run from the
+   selected database, at most five sample sessions, and **17 groups / 74 Monday
+   entries** for the aggregation. Test a custom database name by creating a new
+   playground from that database node, not editing a hidden connection setting.
+8. Re-run real two-server integration, isolated reconnect/interruption regression
+   and calendar download on this source. The reconnect override must publish **no
+   database ports**, avoiding collisions with the main attendee stack or parallel
+   harnesses. Existing first-connection recovery must retain the same app process.
+
+CI now includes the read-only host-side `extension:check` after startup, alongside
+existing database integration and reconnect jobs. Added CI steps are not claimed
+as executed here. If a GUI checkpoint is blocked, record the blocker and use
+`inspect` to continue the lab; **do not mark the extension accepted from CLI-only
+or offline tests**. Presenter Azure extension use remains optional and requires
+separate approved access with fully validated TLS; no attendee subscription.
+
 ## Executed evidence before the reconnect / attendee-polish revision
 
 Recorded October 17, 2026 against the preceding main source
@@ -127,7 +196,9 @@ npm run test:reconnect
 
 Requires Docker Compose **2.24.4+** for its port override. It creates a fresh random
 `ato-reconnect-*` project, private temporary `.env`, independent volumes and a
-random **loopback-only** app port. It ignores ambient workshop credentials and
+random **loopback-only** app port. The override removes both database port
+mappings, so parallel harness projects never reserve the attendee extension
+ports. It ignores ambient workshop credentials and
 never adopts an existing project. It stops/starts only its Site B, captures
 sanitized pass/fail receipts, and removes **only its own ephemeral project and
 volumes** through a single idempotent cleanup path. **SIGINT / SIGTERM** abort
