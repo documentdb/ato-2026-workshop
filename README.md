@@ -25,9 +25,10 @@ Calendar imported **3/3 events**, and a real **local Mac mini → managed Azure*
 round trip passed (temporary cloud resource cleaned up). See the
 [acceptance record](docs/acceptance.md) for scope. **The preceding reconnect/onboarding revision also passed a restarted-Codespace
 attendee run: 47/47 tests, actual browser exercises, and cold first-connection
-recovery in the same app process. This extension-integrated revision still needs
-a fresh Codespace and actual extension GUI acceptance; those earlier counts do
-not prove it.**
+recovery in the same app process.** The extension-integrated revision also passed
+a fresh **4m57s** Codespace run: **58/58 tests**, both real saved extension
+connections, document/copy refresh, index/migration views and two executed
+playgrounds. See the acceptance record for exact tested revisions and limits.
 Timed human classroom delivery and conference-laptop networking are
 not verified; automated checks are not substitutes.
 

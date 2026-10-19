@@ -90,7 +90,7 @@ The connection flow is based on the extension's public
 [local TLS choice](https://github.com/microsoft/vscode-documentdb/blob/main/src/commands/newConnection/PromptTlsExceptionStep.ts),
 and [authentication labels](https://github.com/microsoft/vscode-documentdb/blob/main/src/documentdb/auth/AuthMethod.ts).
 The exact fresh-Codespace GUI acceptance is tracked separately in
-[the acceptance record](acceptance.md#extension-integrated-revision--pending-live-gui-acceptance).
+[the acceptance record](acceptance.md#extension-integrated-revision--live-gui-acceptance).
 
 The helper supports generated settings and ordinary single/double-quoted legacy
 values. It rejects duplicate bindings, interpolation, multiline values and
