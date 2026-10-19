@@ -91,7 +91,7 @@ export function readConfig(env = process.env) {
     }
   }
   if (!Object.hasOwn(targets, activeTarget)) throw configurationError("The requested initial database target is not configured for this scenario.");
-  return { mode, scenario, location, activeTarget, port, host: env.HOST || "127.0.0.1", publicHost, targets };
+  return { mode, scenario, location, activeTarget, port, host: env.HOST || "127.0.0.1", publicHost, targets, searchEnabled: env.SEARCH_ENABLED === "1" };
 }
 
 export function targetLabel(target, location, scenario = "attendee") {

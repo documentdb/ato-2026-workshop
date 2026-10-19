@@ -1,0 +1,32 @@
+name: Optional semantic search showcase
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  real-model-and-documentdb:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      COMPOSE_PROJECT_NAME: ato-search-ci
+      WORKSHOP_MODE: complete
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+      - run: npm ci --ignore-scripts --no-audit --no-fund
+      - run: npm test
+      - run: npm run test:docs
+      - name: Start ordinary model-free workshop
+        run: npm run workspace:start
+      - name: Explicitly download the pinned embedding model and prepare both sites
+        run: npm run search:prepare -- --local-sites
+      - name: Real model, native vector queries, metadata integrity and unrelated-query checks
+        run: docker compose -f compose.yaml -f compose.search.yaml exec -T app npm run test:search
+      - name: Confirm ordinary two-site workflow is unchanged
+        run: docker compose -f compose.yaml -f compose.search.yaml exec -T app npm run test:database
+      - name: Remove only this ephemeral CI project's resources
+        if: always()
+        run: docker compose -f compose.yaml -f compose.search.yaml --profile search --profile search-download down --volumes

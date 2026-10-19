@@ -1,0 +1,62 @@
+# Optional showcase only. Normal workspace:start never loads this overlay/model.
+# This bounded, multi-platform official runtime is deliberately CPU-only at runtime.
+# See docs/semantic-search.md for the image-size tradeoff and model license.
+x-search-runtime: &search-runtime
+  image: docker.io/ollama/ollama:0.1.48@sha256:4a3c5b5261f325580d7f4f6440e5094d807784f0513439dcabfda9c2bdf4191e
+  cpus: 2
+  mem_limit: 1g
+  pids_limit: 128
+  read_only: true
+  tmpfs:
+    - /tmp:size=128m
+  environment: &model-environment
+    OLLAMA_HOST: 0.0.0.0:11434
+    OLLAMA_MODELS: /models
+    OLLAMA_RUNNERS_DIR: /runners
+    OLLAMA_NOHISTORY: "true"
+    OLLAMA_NOPRUNE: "true"
+    HOME: /tmp
+    OLLAMA_NUM_PARALLEL: "1"
+    OLLAMA_MAX_LOADED_MODELS: "1"
+    OLLAMA_MAX_QUEUE: "1"
+    OLLAMA_KEEP_ALIVE: 2m
+    OLLAMA_DEBUG: "false"
+    OLLAMA_LLM_LIBRARY: cpu
+    CUDA_VISIBLE_DEVICES: "-1"
+  volumes:
+    - search-model-data:/models
+    - search-runner-data:/runners
+
+services:
+  app:
+    environment:
+      SEARCH_ENABLED: "1"
+    networks:
+      - default
+      - search-internal
+
+  search-model:
+    <<: *search-runtime
+    profiles: [search]
+    volumes:
+      - search-model-data:/models:ro
+      - search-runner-data:/runners:ro
+    networks:
+      - search-internal
+    # No host ports. The inference service has no route to the internet.
+
+  search-download:
+    <<: *search-runtime
+    profiles: [search-download]
+    networks:
+      - default
+    # Runs only while the explicit preparation command downloads the model.
+    # No query traffic is sent here. Stopped in the preparation command's finally.
+
+networks:
+  search-internal:
+    internal: true
+
+volumes:
+  search-model-data:
+  search-runner-data:

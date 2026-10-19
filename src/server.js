@@ -8,6 +8,7 @@ import { WorkshopError, reportError } from "./errors.js";
 import { readPlanner, requireSession } from "./planner.js";
 import { copyFavorites } from "./transfer.js";
 import { createCalendar } from "./calendar.js";
+import { createSearch } from "./search.js";
 
 async function readJson(request) {
   if (request.headers["content-type"]?.split(";")[0] !== "application/json") {
@@ -31,10 +32,11 @@ async function readJson(request) {
   }
 }
 
-export async function createApp({ config, connections, repository, logger = console }) {
+export async function createApp({ config, connections, repository, logger = console, search = createSearch({ config, connections }) }) {
   const html = await readFile(new URL("./public/index.html", import.meta.url), "utf8");
   const csrfToken = randomBytes(32).toString("hex");
   let activeTarget = config.activeTarget;
+  let targetEpoch = 0;
   const details = () => ({
     target: activeTarget,
     initialTarget: config.activeTarget,
@@ -87,6 +89,13 @@ export async function createApp({ config, connections, repository, logger = cons
         return;
       }
       const target = activeTarget;
+      const epoch = targetEpoch;
+      if (request.method === "GET" && url.pathname === "/api/search/status") {
+        const status = await search.status(target);
+        if (epoch !== targetEpoch) throw new WorkshopError(409, "TARGET_CHANGED", "The active database changed. Refresh search readiness.");
+        json(200, status);
+        return;
+      }
       if (request.method === "GET" && url.pathname === "/api/health") {
         await (await connections.db(target)).command({ ping: 1 });
         json(200, { ready: true, target, mode: config.mode, location: config.location });
@@ -116,6 +125,19 @@ export async function createApp({ config, connections, repository, logger = cons
         assertToken(request);
         const data = await readJson(request);
         assertTarget(data.target);
+        if (epoch !== targetEpoch) throw new WorkshopError(409, "TARGET_CHANGED", "The active database changed while receiving this request. Refresh before retrying.");
+        if (request.method === "POST" && url.pathname === "/api/search") {
+          const controller = new AbortController();
+          const disconnected = () => { if (!response.writableEnded) controller.abort(); };
+          response.once("close", disconnected);
+          try {
+            const result = await search.query(target, data, controller.signal);
+            if (epoch !== targetEpoch) throw new WorkshopError(409, "TARGET_CHANGED", "The active database changed during search. No stale results were returned.");
+            assertTarget(data.target);
+            json(200, result);
+          } finally { response.off("close", disconnected); }
+          return;
+        }
         if (request.method === "POST" && url.pathname === "/api/target") {
           if (!["local", "site-b", "cloud"].includes(data.nextTarget)) {
             throw new WorkshopError(400, "INVALID_TARGET", "Choose one of the configured database targets.");
@@ -123,6 +145,7 @@ export async function createApp({ config, connections, repository, logger = cons
           await (await connections.db(data.nextTarget)).command({ ping: 1 });
           assertTarget(data.target);
           activeTarget = data.nextTarget;
+          targetEpoch += 1;
           json(200, details());
           return;
         }

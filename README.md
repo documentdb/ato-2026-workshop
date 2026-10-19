@@ -122,6 +122,28 @@ Fictional practice favorites cannot automatically map to real conference session
 An interrupted seed of the same catalog can be retried; incompatible partial
 catalogs are rejected rather than silently hidden or overwritten.
 
+## Optional built-in semantic search
+
+The planner also has a separate **Search by meaning** showcase: prompt chips,
+ranked source cards, favorite actions and an inspectable **real DocumentDB vector
+query**. It uses one local embedding model—**no answer-generation model or paid
+API**—over the same public title/track metadata. The catalog has no abstracts, so
+rankings are suggestions, not confidence claims. Keyword search stays separate;
+missing models or indexes never trigger a hidden keyword/static fallback.
+
+This is **not another lab exercise** and is disabled during ordinary startup.
+Outside the 105-minute lab, after both sites are seeded, explicitly enable it:
+
+```sh
+npm run search:prepare -- --local-sites
+```
+
+This downloads a pinned ~274 MB embedding model, starts an internal-only CPU
+service, and prepares separate search collections on both existing local sites.
+It does not change catalog documents or favorites, provision Azure, or replace
+your TODO code. See [optional search setup, limits, model/runtime tradeoffs and
+verification](docs/semantic-search.md) before enabling it on a classroom machine.
+
 ## Complete reference and recovery
 
 The starter and reference use the same app, catalog, configuration, and volumes:

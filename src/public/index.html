@@ -121,6 +121,17 @@
     .empty { padding: 24px 0; color: var(--cp-text-muted); }
     .footer { margin-top: 32px; border-top: 1px solid var(--cp-border); padding-top: 16px; font-size: 0.875rem; color: var(--cp-text-muted); }
     .results { padding-left: 20px; font-size: 0.875rem; }
+    .semantic { margin: 24px 0; }
+    .semantic-filters { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 12px; }
+    .semantic input, .semantic select { min-width: 0; width: 100%; }
+    .semantic-chips button { font-size: 0.875rem; text-align: left; }
+    .semantic-results { list-style: none; padding: 0; margin: 0; }
+    .semantic-results > li { display: flex; min-width: 0; }
+    .semantic-results .session { width: 100%; }
+    .semantic details { min-width: 0; }
+    .semantic summary { cursor: pointer; font-weight: 600; }
+    .semantic pre { white-space: pre-wrap; overflow-wrap: anywhere; max-height: 28rem; overflow: auto; background: var(--cp-surface-soft); padding: 12px; border-radius: 8px; font-size: 0.8125rem; }
+    .semantic .meta, .semantic .status { overflow-wrap: anywhere; }
     dialog { max-width: 560px; width: calc(100% - 32px); border: 1px solid var(--cp-border-strong); border-radius: 16px; padding: 24px; background: var(--cp-surface); color: var(--cp-text); }
     dialog::backdrop { background: var(--cp-overlay); }
     [hidden] { display: none !important; }
@@ -133,7 +144,7 @@
       .layout { grid-template-columns: 1fr; }
       .itinerary { position: static; }
       .environment { align-items: flex-start; flex-direction: column; }
-      .filters { grid-template-columns: 1fr; }
+      .filters, .semantic-filters { grid-template-columns: 1fr; }
     }
   </style>
 </head>
@@ -178,6 +189,49 @@
     <div class="notice error" id="error" role="alert" hidden></div>
     <div class="notice success" id="message" role="status" hidden></div>
 
+    <section class="panel stack semantic" aria-labelledby="semantic-title">
+      <p class="eyebrow">Optional built-in showcase / Outside the 105-minute lab</p>
+      <h2 id="semantic-title">Search by meaning</h2>
+      <p class="muted" id="semantic-help">Search the schedule snapshot's published title and track metadata by meaning. Cards show published rooms and times, not invented descriptions. No generated answers. This built-in feature works independently of Exercise 1; saving favorites still uses Exercise 2.</p>
+      <p class="status" id="semantic-status" role="status" aria-live="polite">Checking optional search readiness...</p>
+      <p class="status" id="semantic-model"></p>
+      <p class="status" id="semantic-catalog"></p>
+      <div class="row">
+        <button id="semantic-retry" type="button">Check search readiness</button>
+        <small>Optional setup: <code>npm run search:prepare -- --local-sites</code>. Core keyword browsing does not require a model.</small>
+      </div>
+      <form id="semantic-form" class="stack" aria-describedby="semantic-help semantic-privacy">
+        <label class="field" for="semantic-query">What would you like to learn?
+          <input id="semantic-query" type="search" maxlength="500" required autocomplete="off" placeholder="For example, running AI locally">
+        </label>
+        <div class="row semantic-chips" aria-label="Example meaning searches">
+          <button type="button" id="semantic-chip-local">running AI locally</button>
+          <button type="button" id="semantic-chip-security">securing software supply chains</button>
+          <button type="button" id="semantic-chip-accessibility">building accessible interfaces</button>
+        </div>
+        <div class="semantic-filters">
+          <label class="field" for="semantic-day">Meaning search day
+            <select id="semantic-day"><option value="">All days</option></select>
+          </label>
+          <label class="field" for="semantic-track">Meaning search track
+            <select id="semantic-track"><option value="">All tracks</option></select>
+          </label>
+        </div>
+        <div class="row">
+          <button id="semantic-submit" class="primary" type="submit" disabled>Search by meaning</button>
+          <button id="semantic-cancel" type="button" disabled>Cancel search</button>
+        </div>
+      </form>
+      <small id="semantic-privacy">The query is sent to this app's configured embedding service. This page keeps no search history. Pure semantic ranking uses raw cosine similarity, not confidence or probability; there is no keyword fallback. Keyword search and its filters below are separate.</small>
+      <p class="status" id="semantic-message" role="status" aria-live="polite"></p>
+      <ol class="sessions semantic-results" id="semantic-results" aria-label="Ranked meaning search results" aria-busy="false"></ol>
+      <details id="semantic-inspector" hidden>
+        <summary>Query inspector — model, database pipeline, filters and timings</summary>
+        <p class="status">Actual server-reported query details; the vector is abbreviated. Timings are milliseconds. Only the current response is shown.</p>
+        <pre id="semantic-inspector-json" tabindex="0" aria-label="Query inspector JSON"></pre>
+      </details>
+    </section>
+
     <div class="metrics" aria-label="Planner totals">
       <div class="metric"><strong id="session-count">0</strong><span>sessions</span></div>
       <div class="metric"><strong id="favorite-count">0</strong><span>favorites</span></div>
@@ -187,7 +241,7 @@
     <div class="layout">
       <section aria-label="Session catalog">
         <div class="filters">
-          <label class="field">Find a session
+          <label class="field">Keyword search
             <input id="search" type="search" placeholder="Search titles, tracks, or rooms">
           </label>
           <label class="field">Day
@@ -243,6 +297,10 @@
     let state;
     let busy = false;
     const selected = new Set();
+    const semantic = {
+      status: undefined, results: [], confirmedFavorites: new Set(), searching: false, checking: false,
+      request: 0, statusRequest: 0, controller: undefined, statusController: undefined,
+    };
     const labels = {
       copied: "Copied",
       already_present: "Already present",
@@ -261,12 +319,12 @@
     const dayKey = (session) => new Intl.DateTimeFormat("en-CA", {
       timeZone: state.catalog.timeZone, year: "numeric", month: "2-digit", day: "2-digit",
     }).format(new Date(session.startsAt));
-    const dateText = (session) => new Intl.DateTimeFormat("en-US", {
-      timeZone: state.catalog.timeZone, weekday: "short", month: "short", day: "numeric",
+    const dateText = (session, catalog = state?.catalog) => new Intl.DateTimeFormat("en-US", {
+      timeZone: catalog?.timeZone || "UTC", weekday: "short", month: "short", day: "numeric",
     }).format(new Date(session.startsAt));
-    const timeText = (session) => {
+    const timeText = (session, catalog = state?.catalog) => {
       const format = new Intl.DateTimeFormat("en-US", {
-        timeZone: state.catalog.timeZone, hour: "numeric", minute: "2-digit", timeZoneName: "short",
+        timeZone: catalog?.timeZone || "UTC", hour: "numeric", minute: "2-digit", timeZoneName: "short",
       });
       return `${format.format(new Date(session.startsAt))} - ${format.format(new Date(session.endsAt))}`;
     };
@@ -304,7 +362,7 @@
           ? "Exercise 1 — Read the catalog" : "Exercise 2 — Save your first favorite";
         $("exercise-help").textContent = step === 1
           ? "Your database is reachable. Implement listSessions to make its catalog appear; this is an expected exercise checkpoint, not a system failure."
-          : "The catalog is working. Implement saveFavorite, then try Save favorite again. Your existing favorites have not been reset.";
+          : "Saving favorites uses the core lab’s saveFavorite. Implement it, then try Save favorite again. Your existing favorites have not been reset.";
         $("exercise-guide").href = `https://github.com/documentdb/ato-2026-workshop/blob/main/docs/lab.md#${step === 1 ? "2-read-the-catalog" : "3-save-favorites-and-prove-persistence"}`;
       } else {
         $("exercise").hidden = true;
@@ -347,6 +405,7 @@
       $("copy").disabled = busy || !state || !selected.size || !config.targets.some((target) => target.id === destination());
       document.querySelectorAll(".save-favorite, .favorite-choice input").forEach((element) => { element.disabled = busy; });
       $("confirm-copy").disabled = busy;
+      semanticControls();
     }
 
     function renderConfiguration() {
@@ -394,21 +453,7 @@
         if (conflicts.has(session.id)) card.append(node("p", state.catalog.kind === "official" ? "Overlapping published time block" : "Overlaps another favorite", "conflict"));
         const actions = node("div", undefined, "actions");
         const saved = favorites.has(session.id);
-        const button = node("button", saved ? "Remove favorite" : "Save favorite", `save-favorite${saved ? "" : " primary"}`);
-        button.type = "button";
-        button.setAttribute("aria-label", `${saved ? "Remove" : "Save"} favorite: ${session.title}`);
-        button.addEventListener("click", () => {
-          if (saved && !window.confirm(`Remove "${session.title}" from this database's favorites? Copies in the other database will remain.`)) return;
-          perform(async () => {
-            await api("/api/favorites", {
-              method: saved ? "DELETE" : "POST",
-              body: JSON.stringify({ target: config.target, sessionId: session.id }),
-            });
-            await loadState();
-            $("exercise").hidden = true;
-            notice("message", saved ? "Removed from the active database only." : "Favorite saved in the active database.");
-          });
-        });
+        const button = favoriteButton(session, saved, config.target);
         const link = node("a", "Source");
         link.href = session.url;
         link.target = "_blank";
@@ -441,7 +486,226 @@
       if (state.orphanedFavorites.length) {
         notice("error", `${state.orphanedFavorites.length} favorite(s) have no matching session. Review catalog drift before exporting or copying.`);
       }
+      renderSemanticResults();
       controls();
+    }
+
+    // Both result surfaces use the core favorite endpoint (and its TODO 2).
+    // Capture the card's target: a stale card must never write to a new target.
+    function favoriteButton(session, saved, target) {
+      const button = node("button", saved ? "Remove favorite" : "Save favorite", `save-favorite${saved ? "" : " primary"}`);
+      button.type = "button";
+      button.disabled = busy;
+      button.setAttribute("aria-label", `${saved ? "Remove" : "Save"} favorite: ${session.title}`);
+      button.addEventListener("click", () => {
+        if (target !== config.target) return;
+        if (saved && !window.confirm(`Remove "${session.title}" from this database's favorites? Copies in the other database will remain.`)) return;
+        return perform(async () => {
+          await api("/api/favorites", {
+            method: saved ? "DELETE" : "POST",
+            body: JSON.stringify({ target, sessionId: session.id }),
+          });
+          saved ? semantic.confirmedFavorites.delete(session.id) : semantic.confirmedFavorites.add(session.id);
+          renderSemanticResults();
+          notice("message", saved ? "Removed from the active database only." : "Favorite saved in the active database.");
+          await loadState();
+          $("exercise").hidden = true;
+        });
+      });
+      return button;
+    }
+
+    function semanticControls() {
+      const ready = semantic.status?.ready && semantic.status?.enabled && semantic.status.target === config?.target;
+      const query = $("semantic-query").value.trim();
+      $("semantic-submit").disabled = busy || semantic.checking || semantic.searching || !ready || !query || query.length > 500;
+      $("semantic-cancel").disabled = !semantic.searching;
+      $("semantic-retry").disabled = busy || semantic.checking || !config;
+      $("semantic-day").disabled = !ready;
+      $("semantic-track").disabled = !ready;
+      $("semantic-results").setAttribute("aria-busy", String(semantic.searching));
+    }
+
+    function clearSemanticResults() {
+      semantic.results = [];
+      $("semantic-results").replaceChildren();
+      $("semantic-inspector-json").textContent = "";
+      $("semantic-inspector").hidden = true;
+      $("semantic-inspector").open = false;
+    }
+
+    function cancelSemanticSearch(message = "") {
+      semantic.request++;
+      semantic.controller?.abort();
+      semantic.controller = undefined;
+      semantic.searching = false;
+      clearSemanticResults();
+      $("semantic-message").textContent = message;
+      semanticControls();
+    }
+
+    function semanticOptions(id, values, allText) {
+      const select = $(id);
+      const previous = select.value;
+      const all = node("option", allText);
+      all.value = "";
+      select.replaceChildren(all);
+      for (const value of values) {
+        const option = node("option", value);
+        option.value = value;
+        select.append(option);
+      }
+      select.value = values.includes(previous) ? previous : "";
+    }
+
+    function resetSemanticTarget() {
+      cancelSemanticSearch();
+      semantic.statusRequest++;
+      semantic.statusController?.abort();
+      semantic.statusController = undefined;
+      semantic.status = undefined;
+      semantic.confirmedFavorites.clear();
+      semantic.checking = false;
+      $("semantic-query").value = "";
+      $("semantic-status").textContent = "Check optional search readiness for the selected database.";
+      $("semantic-model").textContent = "";
+      $("semantic-catalog").textContent = "";
+      semanticOptions("semantic-day", [], "All days");
+      semanticOptions("semantic-track", [], "All tracks");
+      semanticControls();
+    }
+
+    async function loadSemanticStatus() {
+      if (!config) return;
+      cancelSemanticSearch();
+      const target = config.target;
+      const request = ++semantic.statusRequest;
+      semantic.statusController?.abort();
+      const controller = new AbortController();
+      semantic.statusController = controller;
+      semantic.checking = true;
+      semantic.status = undefined;
+      $("semantic-model").textContent = "";
+      $("semantic-catalog").textContent = "";
+      $("semantic-status").textContent = "Checking optional search readiness...";
+      semanticControls();
+      try {
+        const next = await api("/api/search/status", { signal: controller.signal });
+        if (request !== semantic.statusRequest || config.target !== target) return;
+        if (next.target !== target) throw new Error("The target changed in another tab. Refresh the planner before searching.");
+        semantic.status = next;
+        const ready = next.enabled && next.ready;
+        $("semantic-status").textContent = ready
+          ? `Built-in meaning search ready on ${label(target)}. ${next.message || ""}`.trim()
+          : `Meaning search ${next.enabled ? "not ready" : "disabled"} on ${label(target)}. ${next.code ? next.code + ": " : ""}${next.message || "Run the optional preparation, then check readiness again."} Keyword browsing remains separate.`;
+        if (next.model) {
+          $("semantic-model").textContent = `Embedding model: ${next.model.name || "not configured"} / Digest: ${next.model.digest || "unavailable"} / Dimensions: ${next.model.dimensions ?? "unavailable"}`;
+        }
+        if (next.catalog) {
+          $("semantic-catalog").textContent = `${next.catalog.title} / Snapshot: ${next.catalog.snapshotDate} / Times: ${next.catalog.timeZone}. ${next.catalog.source}`;
+        }
+        semanticOptions("semantic-day", next.filters?.days || [], "All days");
+        semanticOptions("semantic-track", next.filters?.tracks || [], "All tracks");
+      } catch (error) {
+        if (request !== semantic.statusRequest || config.target !== target) return;
+        $("semantic-status").textContent = `Meaning search unavailable: ${error.message} No keyword fallback was used. Retry readiness or use the separate keyword browser.`;
+      } finally {
+        if (request === semantic.statusRequest) {
+          semantic.checking = false;
+          semantic.statusController = undefined;
+          semanticControls();
+        }
+      }
+    }
+
+    function renderSemanticResults() {
+      $("semantic-results").replaceChildren();
+      if (semantic.status?.target !== config?.target) return;
+      const favorites = new Set(state?.target === config.target ? state.favorites : semantic.confirmedFavorites);
+      const conflicts = new Set(state?.target === config.target ? state.conflicts.flat() : []);
+      const catalog = semantic.status.catalog || state?.catalog;
+      for (const result of semantic.results) {
+        const { session } = result;
+        const saved = favorites.has(session.id);
+        const item = node("li");
+        const card = node("article", undefined, `session${saved ? " saved" : ""}`);
+        card.append(node("p", `Rank ${result.rank} / Cosine similarity: ${Number(result.similarity).toFixed(3)}`, "meta"));
+        card.append(node("span", session.track, "tag"), node("h3", session.title));
+        card.append(node("p", `${dateText(session, catalog)} / ${timeText(session, catalog)}`, "meta"));
+        card.append(node("p", session.room, "meta"));
+        if (conflicts.has(session.id)) card.append(node("p", catalog?.kind === "official" ? "Overlapping published time block" : "Overlaps another favorite", "conflict"));
+        const evidence = node("details");
+        evidence.append(node("summary", "Matching metadata (not a generated explanation)"));
+        evidence.append(node("p", `Title: ${result.evidence.title}`, "meta"), node("p", `Track: ${result.evidence.track}`, "meta"));
+        card.append(evidence);
+        const actions = node("div", undefined, "actions");
+        actions.append(favoriteButton(session, saved, semantic.status.target));
+        // Server-provided catalog links are text-safe and restricted to web URLs.
+        try {
+          const url = new URL(session.url);
+          if (["https:", "http:"].includes(url.protocol)) {
+            const link = node("a", "Source (opens new tab)");
+            link.href = url.href;
+            link.target = "_blank";
+            link.rel = "noopener noreferrer";
+            actions.append(link);
+          }
+        } catch { /* Missing source metadata is not a navigable link. */ }
+        card.append(actions);
+        item.append(card);
+        $("semantic-results").append(item);
+      }
+    }
+
+    async function searchByMeaning(event) {
+      event?.preventDefault();
+      if (busy || semantic.searching || semantic.checking) return;
+      const query = $("semantic-query").value.trim();
+      if (!query || query.length > 500) {
+        cancelSemanticSearch("Enter a query of 1 to 500 characters.");
+        return;
+      }
+      if (!semantic.status?.ready || !semantic.status.enabled || semantic.status.target !== config?.target) {
+        cancelSemanticSearch("Meaning search is not ready. Check search readiness first; keyword browsing is separate.");
+        return;
+      }
+      const day = $("semantic-day").value;
+      const track = $("semantic-track").value;
+      if ((day && !semantic.status.filters?.days?.includes(day)) || (track && !semantic.status.filters?.tracks?.includes(track))) {
+        cancelSemanticSearch("Choose a day and track from this target's available search filters.");
+        return;
+      }
+      cancelSemanticSearch();
+      const request = semantic.request;
+      const target = config.target;
+      const controller = new AbortController();
+      semantic.controller = controller;
+      semantic.searching = true;
+      $("semantic-message").textContent = "Searching by meaning... A cold model can take 30 seconds. You can cancel or keep using the keyword browser.";
+      semanticControls();
+      try {
+        const response = await api("/api/search", {
+          method: "POST", signal: controller.signal,
+          body: JSON.stringify({ target, query, limit: 5, ...(day ? { day } : {}), ...(track ? { track } : {}) }),
+        });
+        if (request !== semantic.request || config.target !== target) return;
+        if (response.target !== target) throw new Error("The target changed in another tab. Refresh the planner before searching.");
+        semantic.results = response.results;
+        renderSemanticResults();
+        $("semantic-inspector-json").textContent = JSON.stringify(response.inspector, null, 2);
+        $("semantic-inspector").hidden = false;
+        $("semantic-message").textContent = `${response.results.length ? `${response.results.length} ranked match(es).` : "No sessions met the semantic cutoff with these filters. Try a different question or broaden the filters."}${response.message ? " " + response.message : ""} Similarity is not confidence or probability.`;
+      } catch (error) {
+        if (request !== semantic.request || config.target !== target) return;
+        clearSemanticResults();
+        $("semantic-message").textContent = `Meaning search failed: ${error.message} No keyword fallback was used. Check readiness and retry, or use the separate keyword browser.`;
+      } finally {
+        if (request === semantic.request) {
+          semantic.searching = false;
+          semantic.controller = undefined;
+          controls();
+        }
+      }
     }
 
     async function loadState() {
@@ -464,6 +728,7 @@
     }
 
     async function refresh() {
+      resetSemanticTarget();
       state = undefined;
       selected.clear();
       $("exercise").hidden = true;
@@ -480,19 +745,42 @@
       notice("catalog-notice", "");
       notice("message", "");
       $("status").textContent = "Checking the selected database...";
-      config = await api("/api/config");
+      try {
+        config = await api("/api/config");
+      } catch (error) {
+        $("semantic-status").textContent = "Search readiness could not be checked because app configuration is unavailable. Refresh the planner to retry.";
+        throw error;
+      }
       renderConfiguration();
+      // Readiness handles its own errors. Neither a slow optional status probe
+      // nor the starter's TODO 1 should block the other, independent surface.
+      void loadSemanticStatus();
       await api("/api/health");
       $("status").textContent = "Database reachable. No other environment was used.";
       await loadState();
     }
 
+    $("semantic-form").addEventListener("submit", searchByMeaning);
+    $("semantic-cancel").addEventListener("click", () => cancelSemanticSearch("Search canceled. No results from that request will be shown."));
+    $("semantic-retry").addEventListener("click", loadSemanticStatus);
+    $("semantic-query").addEventListener("input", () => cancelSemanticSearch());
+    for (const id of ["semantic-day", "semantic-track"]) {
+      $(id).addEventListener("change", () => cancelSemanticSearch());
+    }
+    for (const id of ["semantic-chip-local", "semantic-chip-security", "semantic-chip-accessibility"]) {
+      $(id).addEventListener("click", () => {
+        $("semantic-query").value = $(id).textContent;
+        cancelSemanticSearch();
+        $("semantic-query").focus();
+      });
+    }
     $("refresh").addEventListener("click", () => perform(refresh));
     $("search").addEventListener("input", render);
     $("day").addEventListener("change", render);
     $("target-select").addEventListener("change", controls);
     $("switch-target").addEventListener("click", () => perform(async () => {
       const nextTarget = $("target-select").value;
+      resetSemanticTarget();
       await api("/api/target", {
         method: "POST",
         body: JSON.stringify({ target: config.target, nextTarget }),
