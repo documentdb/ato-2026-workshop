@@ -1,5 +1,71 @@
 # Acceptance record and remaining gates
 
+## Automatic Codespaces search startup — October 18, 2026
+
+This revision adds automatic search preparation after normal core startup to both
+Codespaces profiles. It builds on bundled-search main
+`1b98ea4d246482b307cd1f59903f8b94ab18ca4c`; it does not change the search UI, vector
+store, checked-in bundle, model/runtime pins, exercise files or Azure boundaries.
+The older Codespace timings below and the prior **17.07-second cached manual**
+search measurement are not measurements of this new lifecycle.
+
+### Executed on an isolated local stack
+
+- macOS arm64 host, Docker **2 CPUs / approximately 4 GiB RAM**, new project
+  `ato-auto-search-verify-20261018`, loopback app **8786** and database extension
+  ports **10272/10273**. New independent private credentials, database volumes,
+  model volume and runner volume; no other project's settings/data were adopted.
+  Existing pinned Docker images were cached. No Codespace or Azure resource was
+  changed, and no heavyweight replacement runtime was downloaded.
+- Actual `npm run codespace:start` with **empty model/runner volumes** completed
+  in **55.72 seconds**. Core readiness appeared first; optional preparation took
+  **45.19 seconds**, including bounded cold read-only runner fallback, first
+  model download and verified downloader shutdown. Site A/B imported all **216**
+  bundled vectors in **2.290 / 2.269 seconds**, with zero document embeddings and
+  real hash/index/full-corpus cosine-query verification. This is not a cold Docker
+  image download or fresh Codespace measurement.
+- A repeat of the automatic lifecycle with **host model-registry fetch forbidden**
+  completed in **13.49 seconds** (search phase **6.70 seconds**). It reported
+  `cached: true`, **0 external fetch calls**, and reused both real search collections
+  with full integrity/index/query probes (**157 / 165 ms**). The stopped downloader's
+  `StartedAt` and `FinishedAt` were exactly unchanged. The cache's actual manifest
+  passed the full SHA-256 pin and size check, followed by real `ollama show`.
+- Actual inference inspection: read-only root filesystem and both model/runner
+  mounts; **no published ports**; only the Docker network marked `internal: true`.
+- Real model/DocumentDB search integration **1/1 passed**; ordinary independent
+  two-site database/HTTP/aggregation integration **2/2 passed**. These suites use
+  and remove only their uniquely named test databases, not attendee notebooks.
+- With an **injected cache miss plus simulated model-registry failure**, the real
+  automatic lifecycle returned **0 with `core: ready, search: unavailable`**, not
+  a search-ready claim. No model-cache files were altered. In command-scoped
+  complete-reference mode, actual core health/state endpoints remained **200**
+  with **216 sessions**; exercise source and private configuration were unchanged.
+  This is failure injection, not an observed internet outage.
+- Live `WORKSHOP_AUTO_SEARCH=0 npm run codespace:start` and a subsequent cached
+  manual `search:prepare -- --local-sites` retry were also checked. No credential
+  rotation or exercise edits; all owned services are stopped after verification,
+  with their isolated volumes retained for reviewed retesting.
+
+### Offline verification and limits
+
+After `npm ci --ignore-scripts --no-audit --no-fund`, host `npm test` passed
+**181 tests, 0 failures, 1 Linux-only skip** (182 total). Tests cover both profile
+hooks, core-before-search ordering, opt-out, safe optional failures, hard cleanup
+errors, cache digest/size/missing-blob/runner cases, zero external fetch/downloader
+startup on a hit, bounded readiness, shared lock exclusion/release and no Git/Azure
+lifecycle commands. Real OS subprocess tests deliver SIGINT/SIGTERM to whole
+process groups during core startup and model preparation, including a second
+signal during cleanup; cancellation stays nonzero and indexing never starts.
+Existing search/bundle/UI regression tests remain unchanged. These signal tests
+use fake Docker/registry services, not a live-container interruption claim for
+this revision. Documentation links are checked offline.
+
+**Still pending:** actual new/rebuilt Attendee and Organizer Codespace lifecycle
+proof on this revision, a cold runtime-image download on representative networks,
+and human classroom timing. Local timings and historical GUI/search acceptance
+do not replace those gates. See the [automatic startup/recovery guide](semantic-search.md)
+for old-checkout updates, environment opt-out, cache receipts and scoped cleanup.
+
 ## Extension-integrated revision — live GUI acceptance
 
 **Core fresh attendee GUI acceptance passed October 18, 2026.** A new two-core

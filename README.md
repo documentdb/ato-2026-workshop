@@ -40,12 +40,19 @@ cross-listings, unresolved disagreements, and the excluded invalid break time.
 
 1. [Open the workshop in Codespaces](https://codespaces.new/documentdb/ato-2026-workshop).
    Choose **ATO 2026 - Attendee** if prompted.
-2. Wait for setup to finish. It installs dependencies, generates independent
+2. Wait for core setup to finish. It installs dependencies, generates independent
    private development credentials, starts both databases and the app, waits for
    each database, and seeds the same catalog in both. It does not copy favorites.
+   Then it automatically prepares **Search by meaning** for both local sites.
+   First use downloads a ~274 MB query model plus the pinned runtime (~455 MB on
+   amd64) and can take minutes; cached resumes verify/reuse the model and bundle.
+   No Azure connection or paid AI key is needed.
 3. When the terminal says **Site A and Site B are ready and both catalogs are
    seeded**, select **Ports** beside Terminal in the editor's bottom panel. Find
    row **3000** and use **Open in Browser** (globe). Keep visibility **Private**.
+   You can begin the core exercises while search preparation finishes. The app
+   briefly restarts to enable search; when **SEARCH READY** appears, refresh the
+   planner, then use **Search by meaning** / **Check search readiness**.
 4. Run `npm run extension:connections`, then follow the
    [private connection steps](docs/extension.md#connect-the-two-existing-sites-privately)
    to save **Workshop — Site A** and **Workshop — Site B** in the DocumentDB
@@ -81,7 +88,21 @@ Two databases need more memory/storage than the earlier single-site version;
 preflight cold creation on the chosen Codespaces machine before class. Helpers
 should triage at minute 12, not spend the workshop installing Docker on laptops.
 
-Retry a failed setup after reading and resolving the error:
+Retry a failed Codespaces setup after reading and resolving the error:
+
+```sh
+npm run codespace:start
+```
+
+It runs core setup first, then prepares the built-in search showcase. Search-only
+failure prints **unavailable** and a retry command without stopping the core app
+or databases. Cancellation and an unverifiable downloader cleanup are nonzero
+errors; follow the [scoped recovery guide](docs/semantic-search.md#interruptions-and-emergency-downloader-recovery).
+To skip automatic search for one run: `WORKSHOP_AUTO_SEARCH=0 npm run codespace:start`.
+For a persistent opt-out, set `WORKSHOP_AUTO_SEARCH` to `"0"` in the selected
+profile's `containerEnv` and rebuild, or use an equivalent Codespaces environment
+setting. This is a **host lifecycle environment variable**, not a private `.env`
+setting. The standalone laptop/core-only fallback remains:
 
 ```sh
 npm run workspace:start
@@ -94,6 +115,16 @@ The default Compose file does not pass Azure connection values to the app, even
 if they remain in an older `.env`. No Azure login, provisioning, or seed occurs.
 
 ### Existing notebook or older practice version?
+
+Startup **never runs Git operations**: a new Codespace clones the selected branch;
+a resumed one keeps its checkout and your exercise edits. It does not automatically
+receive this new lifecycle from upstream. For an existing older Codespace, review
+and preserve your changes, manually run **`git pull --ff-only` once** on the intended
+branch (ask a helper if it refuses; do not reset/stash/overwrite exercises), then
+run **`npm run codespace:start`**. Already-running environments with the existing
+CLI tools need no destructive/full rebuild to prepare search now. Fresh or rebuilt
+configurations use the new `postStartCommand` on future starts; until that config
+is applied, run the new command explicitly on resumes.
 
 Keep the same checkout directory and Compose project name to retain the existing
 `documentdb-data` volume: it is still **Site A**. Site B gets a new, separate
@@ -131,25 +162,32 @@ API**—over the same public title/track metadata. The catalog has no abstracts,
 rankings are suggestions, not confidence claims. Keyword search stays separate;
 missing models or indexes never trigger a hidden keyword/static fallback.
 
-This is **not another lab exercise** and is disabled during ordinary startup.
-Outside the 105-minute lab, after both sites are seeded, explicitly enable it:
+This is **not another lab exercise**: both Codespaces profiles now prepare it
+**automatically after core startup**, without solving or adding TODOs. No manual
+search setup is required on a fresh/current-config Codespace. Laptop setup,
+`npm ci` and `npm run workspace:start` remain core-only. For a search-only retry,
+or to opt in on a laptop after both sites are seeded:
 
 ```sh
 npm run search:prepare -- --local-sites
 ```
 
-This downloads a pinned ~274 MB embedding model once for arbitrary live queries,
+On a cache miss this downloads a pinned ~274 MB embedding model once for arbitrary live queries,
 starts an internal-only CPU service, and **imports the same checked-in ~716 KiB
 session-vector bundle** into both existing local sites before building each real
 DocumentDB vector index. Attendee preparation makes **zero document-embedding
 calls**; these are precomputed embeddings, not canned search results.
-In the tested two-core Codespace, full optional preparation with the model/image
+A **prior manual-preparation revision** in a two-core Codespace with the model/image
 already cached took **17 seconds**, including about **1.8 seconds per site** for
-import/index/verification. First-time model downloads add time; see the
+import/index/verification. That is not a measurement of this automatic lifecycle
+or first-time setup. Cached preparation now checks the full pinned manifest hash,
+bounded size and model availability locally, without contacting the model registry
+or starting the downloader. A missing Docker runtime image may still be pulled.
+First-time model downloads add time; see the
 [measured acceptance and limits](docs/semantic-search.md#codespace-and-browser-acceptance-october-18-2026).
 It does not change catalog documents or favorites, provision Azure, or replace
 your TODO code. See [optional search setup, limits, model/runtime tradeoffs and
-verification](docs/semantic-search.md) before enabling it on a classroom machine.
+verification](docs/semantic-search.md) for resource limits, opt-out and recovery.
 
 ## Complete reference and recovery
 

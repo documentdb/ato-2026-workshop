@@ -82,3 +82,27 @@ Still requiring environment-specific acceptance (not replaced by those receipts)
 
 No unattended cleanup worker, cloud IAM grants, Kubernetes dependency, background
 sync, Azure app hosting or new cloud resources are introduced by this plan.
+
+
+## Automatic local search startup boundary
+
+Both Codespaces profiles use `npm run codespace:start`: normal two-site startup
+and seeding first, then automatic bundled search preparation for local Site A/B.
+This does not authenticate, provision or seed Azure, require a paid AI key, or
+change any exercise. Attendees can begin at CORE READY while first-use downloads
+finish (~274 MB model plus ~455 MB amd64 runtime). Refresh at SEARCH READY.
+Verified cached resumes reuse the pinned model/bundle without a model-registry
+request or downloader start; a missing runtime Docker image may still be pulled.
+
+Normal `npm ci`, laptop startup and `npm run workspace:start` stay core-only.
+`WORKSHOP_AUTO_SEARCH=0` in the lifecycle environment opts out (selected profile
+`containerEnv` for persistence, not private `.env`). Older Codespaces require one
+reviewed manual `git pull --ff-only` and `npm run codespace:start`; lifecycle never
+runs Git or overwrites attendee edits. No destructive rebuild is needed to run the
+new command with existing tools. Search-only failure warns without blocking core;
+unsafe downloader cleanup and cancellation stay nonzero. See the
+[search lifecycle and recovery guide](../docs/semantic-search.md).
+
+The prior 17-second cached manual preparation is not a cold/new automatic-start
+measurement. Fresh lifecycle/Codespaces proof must be recorded separately from
+offline orchestration/cleanup tests and historical model/vector acceptance.

@@ -13,6 +13,7 @@
     "dev": "node --watch src/server.js",
     "setup": "node scripts/setup.mjs",
     "workspace:start": "node scripts/workspace-start.mjs",
+    "codespace:start": "node scripts/codespace-start.mjs",
     "organizer:check": "node scripts/organizer-check.mjs",
     "organizer:prepare": "node scripts/organizer-prepare.mjs",
     "seed": "node scripts/database.mjs seed",

@@ -11,7 +11,13 @@ The presenter uses one existing, authorized Azure instance for an optional capst
    conference connectivity, storage retention and the pairing/follow-along plan.
 2. Measure a fresh **ATO 2026 - Attendee** Codespace with both database services.
    The preceding main source measured 4m47s on a fresh two-core attendee Codespace;
-   repeat on the delivery revision and representative accounts/network.
+   repeat on the delivery revision and representative accounts/network. Current
+   start hooks prepare search automatically **after CORE READY**; first use adds
+   ~274 MB model assets and ~455 MB amd64 runtime download, potentially minutes.
+   Cached resumes verify the local pin and reuse bundled vectors without model
+   registry access/downloader startup. Measure both cold and cached lifecycle,
+   and verify core remains available when search fails; the prior 17-second cached
+   manual preparation is not this lifecycle's cold-start measurement.
 3. Rehearse TODOs/reference recovery, app restart persistence, both copy directions,
    duplicate-safe retry, second-site failure/recovery and a real calendar-app import.
 4. Follow the [presenter runbook](presenter.md) on the actual presenter laptop,
@@ -29,7 +35,14 @@ even if legacy settings remain in `.env`, and starts at Site A.
 
 The optional **ATO 2026 - Organizer** dev-container configuration retains Azure
 CLI/Bicep for separately approved operations. Both configurations start the
-attendee simulation only. Selecting Organizer installs tools; it neither signs
+attendee simulation only, followed by automatic local-only search preparation via
+`npm run codespace:start`. No manual search setup is needed on current-config
+Codespaces; search does not change TODOs. Use `WORKSHOP_AUTO_SEARCH=0 npm run
+codespace:start` for one-run opt-out, or the selected profile's `containerEnv` for
+persistent opt-out (apply with rebuild; not a private `.env` key). Older checkouts
+need one reviewed manual `git pull --ff-only` and `npm run codespace:start`; the
+hook never pulls over exercise edits. See [startup/recovery details](semantic-search.md).
+Selecting Organizer installs tools; it neither signs
 in nor grants access, and is unnecessary for the existing-instance presenter path.
 Do not share an authenticated organizer Codespace or Azure login cache.
 

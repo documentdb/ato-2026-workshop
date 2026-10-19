@@ -3,7 +3,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
-import { checkManifest, preparationTargets, prepareSearch } from "../scripts/search-prepare.mjs";
+import { checkManifest, preparationTargets, prepareSearchUnlocked as prepareSearch } from "../scripts/search-prepare.mjs";
 import { SEARCH_MODEL } from "../src/search-model.js";
 
 // Public registry manifest, no model weights or private source material.
@@ -51,7 +51,7 @@ test("explicit helper downloads only the embedding pin, stops downloader, then i
   const text = commands.map((args) => args.join(" ")).join("\n");
   assert.match(text, new RegExp(`ollama pull ${SEARCH_MODEL.name}`));
   assert.doesNotMatch(text, /qwen|generate|chat|cloud|prune|\bdown\b|--volumes|seed|migrate/);
-  const stop = commands.findIndex((args) => args.includes("stop"));
+  const stop = commands.findIndex((args) => args.includes("stop") && args.includes("search-download"));
   const upApp = commands.findIndex((args) => args.includes("app") && args.includes("up"));
   assert.ok(stop >= 0 && stop < upApp);
   assert.deepEqual(commands.filter((args) => args.includes("scripts/search-index.mjs")).map((args) => args.at(-1)), ["local", "site-b"]);
@@ -68,11 +68,11 @@ test("a failed download still stops its service and never enables/indexes the ap
   assert.ok(commands.every((args) => !args.includes("scripts/search-index.mjs")));
 });
 
-test("failed, changed or oversized registry responses do not invoke Docker", async () => {
+test("failed, changed or oversized registry responses never start downloader, app or index", async () => {
   for (const response of [new Response("unavailable", { status: 503 }), new Response("{}"), new Response("x".repeat(64001))]) {
-    let calls = 0;
-    await assert.rejects(prepareSearch(["--local-sites"], { run() { calls++; }, fetchImpl: async () => response, log() {} }));
-    assert.equal(calls, 0);
+    const commands = [];
+    await assert.rejects(prepareSearch(["--local-sites"], { run: mockRun(commands), fetchImpl: async () => response, log() {} }));
+    assert.ok(commands.every((args) => !args.includes("search-download") && !args.includes("app") && !args.includes("scripts/search-index.mjs")));
   }
 });
 
@@ -94,4 +94,68 @@ test("model is optional, private, bounded and absent from core startup; optional
   const workflow = await readFile(new URL("../.github/workflows/semantic-search.yml", import.meta.url), "utf8");
   assert.match(workflow, /workflow_dispatch:/);
   assert.doesNotMatch(workflow, /pull_request:|push:/);
+});
+
+for (const cache of ["valid", "wrong-digest", "oversize", "missing", "missing-blob", "cold-runners"]) {
+  test(`cache-first preparation: ${cache}`, async () => {
+    const commands = [];
+    const messages = [];
+    let fetches = 0;
+    let downloaded = false;
+    let coldProbes = 0;
+    const run = async (command, args, options) => {
+      const result = await mockRun(commands)(command, args, options);
+      if (args.includes("pull")) downloaded = true;
+      if (args.includes("search-model") && args.includes("list") && cache === "cold-runners" && !downloaded) {
+        coldProbes++;
+        return { status: 1 };
+      }
+      if (args.includes("cat")) return { status: cache === "missing" ? 1 : 0, stdout:
+        cache === "wrong-digest" ? manifest + "\n" : cache === "oversize" ? manifest.replace("274290656", "474290656") : manifest };
+      if (args.includes("ollama") && args.includes("show") && cache === "missing-blob") return { status: 1 };
+      return result;
+    };
+    await prepareSearch(["--local-sites"], {
+      run, pause: async () => {}, log: (message) => messages.push(message),
+      fetchImpl: async () => {
+        fetches++;
+        assert.notEqual(cache, "valid", "valid cache must work with no external fetch/DNS");
+        return new Response(manifest);
+      },
+    });
+    const hit = cache === "valid";
+    assert.equal(fetches, hit ? 0 : 1);
+    assert.equal(downloaded, !hit);
+    if (hit) {
+      assert.ok(commands.every((args) => !args.includes("search-download") && !args.includes("pull")));
+      assert.ok(commands.some((args) => args.includes("cat")));
+      assert.ok(commands.some((args) => args.includes("show")));
+    } else {
+      const stop = commands.findIndex((args) => args.includes("stop") && args.includes("search-download"));
+      const index = commands.findIndex((args) => args.includes("scripts/search-index.mjs"));
+      assert.ok(stop >= 0 && index > stop);
+    }
+    if (cache === "cold-runners") assert.equal(coldProbes, 20);
+    assert.ok(messages.some((message) => message.includes(`"cached":${hit}`)));
+    assert.deepEqual(commands.filter((args) => args.includes("scripts/search-index.mjs")).map((args) => args.at(-1)), ["local", "site-b"]);
+    assert.doesNotMatch(commands.map((args) => args.join(" ")).join("\n"), /embeddings|generate|chat|\bgit\b|\baz\b|--target cloud/);
+  });
+}
+
+test("cache service readiness retries, then verifies full manifest rather than trusting an image/name", async () => {
+  const commands = [];
+  let probes = 0;
+  let pauses = 0;
+  await prepareSearch(["--target", "local"], {
+    run: async (command, args, options) => {
+      const result = await mockRun(commands)(command, args, options);
+      if (args.includes("list") && ++probes < 3) return { status: 1 };
+      if (args.includes("cat")) return { status: 0, stdout: manifest };
+      return result;
+    },
+    pause: async () => { pauses++; },
+    fetchImpl: () => assert.fail("no registry on verified cache"), log() {},
+  });
+  assert.equal(pauses, 2);
+  assert.ok(commands.every((args) => !args.includes("search-download")));
 });

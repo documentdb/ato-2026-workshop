@@ -58,7 +58,20 @@ It does not authenticate to or seed Azure. A failed Site B wait/seed is a failed
 setup, not silent success with one working site. An older Azure URI in `.env`
 is not passed into the attendee app. Keep secrets out of logs/screenshots.
 
-Both dev-container configurations start this simulation; the Organizer profile's
+Both dev-container configurations now run `npm run codespace:start`: core startup
+above first, then automatic built-in search preparation for both sites. At **CORE
+READY**, begin the existing exercises while first-use model/runtime downloads
+finish (~274 MB model plus ~455 MB amd64 runtime; potentially minutes). At **SEARCH
+READY**, refresh the planner after its brief app restart. This adds no TODO or
+classroom step. A verified cached resume skips registry access/downloader startup;
+no first-start timing claim follows from the previous 17-second cached manual run.
+Search-only unavailability must not block the core lab; retry
+`npm run search:prepare -- --local-sites` or use
+`WORKSHOP_AUTO_SEARCH=0 npm run codespace:start`. Persistent `containerEnv` opt-out,
+older-checkout manual update and nonzero cleanup-error recovery are in the
+[search guide](semantic-search.md). Re-measure cold startup on the delivery revision.
+
+Both dev-container configurations start only this simulation; the Organizer profile's
 Azure tooling is optional and does not confer permissions. The browser editor
 supports the TODOs. The complete-reference override preserves exercises and data.
 Optional GitHub CLI/SSH diagnostics are helper tools, not attendee prerequisites.

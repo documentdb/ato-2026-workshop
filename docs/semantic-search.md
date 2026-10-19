@@ -1,9 +1,10 @@
 # Optional showcase: Search by meaning
 
-This is a **built-in site feature, not another required lab exercise**. Prepare it
-before or after the 105-minute workshop. The required TODOs, extension activities,
-copy/return flow and calendar export are unchanged. Normal `npm ci` and
-`npm run workspace:start` do **not** download a model or create a vector index.
+This is a **built-in site feature, not another required lab exercise**. Both
+Codespaces profiles automatically prepare it after core startup via
+`npm run codespace:start`. The required TODOs, extension activities, copy/return
+flow and calendar export are unchanged. Normal `npm ci`, laptop setup and
+`npm run workspace:start` still do **not** download a model or create a vector index.
 
 The panel uses an embedding model to turn a query into a vector, then asks the
 **selected DocumentDB instance** to retrieve similar session metadata. There is
@@ -13,10 +14,41 @@ If either the model or selected database is unavailable, semantic search fails
 explicitly; it never silently uses keywords, static results, Site A, or another
 model as a substitute.
 
-## Enable explicitly in Codespaces or the local workshop
+## Automatic Codespaces preparation; manual retry or laptop opt-in
 
-First finish ordinary startup so both canonical catalogs are seeded. Run in the
-repository terminal (inside Codespaces for the Codespaces workshop):
+The Codespaces `postStartCommand` runs `npm run codespace:start` for both Attendee
+and Organizer. It first runs the unchanged core `workspace:start` (setup, app,
+Site A/B wait and catalog seed), then prepares search for **both local sites**.
+No Azure operation, paid AI key, source-control operation, exercise edit or
+credential rotation is added. Organizer remains a local-only simulation.
+
+At **CORE READY**, start the hands-on workshop on private port 3000 while search
+finishes. Cold model/runtime downloads can take minutes; the app briefly restarts
+when search is enabled. At **SEARCH READY**, refresh the planner and its request
+token, then use **Search by meaning** / **Check search readiness**. A search-only
+failure reports `search: unavailable`, leaves the core services alone, and exits
+successfully so the core workshop can continue. Core startup failure stops before
+search; cancellation or **SEARCH_DOWNLOAD_CLEANUP_FAILED** remains nonzero.
+
+For a one-run opt-out use `WORKSHOP_AUTO_SEARCH=0 npm run codespace:start`.
+For a persistent opt-out add `"WORKSHOP_AUTO_SEARCH": "0"` to `containerEnv` in the
+selected `.devcontainer/devcontainer.json` or `.devcontainer/organizer/devcontainer.json`
+and apply that config with a rebuild, or set the equivalent Codespaces environment
+variable. It is read from the **lifecycle process environment**, not the private
+Compose `.env`. `npm run workspace:start` is always a core-only fallback. Opt-out
+skips preparation; it does not stop a sidecar from an earlier search-enabled run
+(see the explicit stop command below).
+
+Older existing Codespaces do not auto-update their checkout or lifecycle. Preserve
+and review your changes, manually `git pull --ff-only` on the intended branch once,
+then `npm run codespace:start`. If Git refuses, ask a helper rather than resetting,
+stashing or overwriting exercises. No full rebuild is required to prepare search
+in an already-running environment with the existing CLI tools. Fresh/rebuilt
+configurations apply the new start hook; until then, invoke it explicitly. Startup
+never pulls, checks out, commits or modifies attendee source files.
+
+To retry **only search**, or opt in on a laptop, first ensure both canonical
+catalogs are seeded, then run in the repository terminal:
 
 ```sh
 npm run search:prepare -- --local-sites
@@ -24,13 +56,21 @@ npm run search:prepare -- --local-sites
 
 This uses the current Compose project and its existing credentials/volumes. It:
 
-1. Checks the pinned public embedding manifest and its download size.
-2. Starts an **unpublished, temporary download service**, downloads only the
-   embedding model, then stops that service on success, failure, **SIGINT or
-   SIGTERM**. It waits for cancelled subprocesses to close, stops only this
-   project's downloader, and verifies the container state before continuing.
-3. Starts the internal-only CPU embedding service and enables the app's optional
-   search configuration with `compose.search.yaml`.
+1. Starts the read-only, internal-only CPU service and waits with bounded retries
+   for its process. A cache hit verifies the **full SHA-256 of actual manifest
+   bytes**, including pinned blob sizes, and checks `ollama show` can read the
+   model. Filenames and `ollama list`'s shortened hash are not trusted. This uses
+   **no embedding call, external model-registry fetch/DNS, or downloader start**.
+   Docker may still pull the fixed runtime image if its local image cache is absent.
+2. **Only if the cache/model/runner assets are missing or invalid**, stops the
+   inference service, checks the pinned public manifest and size, starts an
+   **unpublished, temporary download service**, initializes runtime assets and
+   pulls only the embedding model. It stops that service on success, failure,
+   **SIGINT or SIGTERM**, waits for cancelled subprocesses to close, and verifies
+   only this project's downloader is stopped before continuing. The registry
+   manifest must still match the pin; a changed upstream tag is not accepted.
+3. Starts the internal-only CPU service and enables the app's optional search
+   configuration with `compose.search.yaml`, with another bounded readiness probe.
 4. Imports the **same checked-in 216-session embedding bundle** into a separate
    search collection in **both** local sites, builds each native vector index,
    and live-probes it. There are **zero document-embedding calls during ordinary
@@ -69,7 +109,14 @@ favorites. The helper never provisions Azure or prepares a cloud target.
 
 ### Restart, stop, or return to the model-free workshop
 
-With cached assets, this restart needs no model registry access:
+On a normal Codespaces resume, the start hook repeats core startup and verifies
+cached search/model assets without re-pulling the model. Search-store reuse still
+checks the bundled vector hashes, real index and full-corpus query; there are no
+document embeddings. The terminal emits `search-model-cache` with `verified: true`
+and the final search receipt includes `cached: true`.
+
+To run that lifecycle manually, use `npm run codespace:start`. To restart just
+already-prepared search services with cached assets and no model registry access:
 
 ```sh
 docker compose -f compose.yaml -f compose.search.yaml --profile search up -d --wait --wait-timeout 240 app search-model
@@ -93,8 +140,9 @@ pruning or `down --volumes` as a troubleshooting step.
 
 ### Interruptions and emergency downloader recovery
 
-Use Ctrl+C once to cancel preparation and **wait for the
-`search-download-stopped` / `verified: true` receipt**. The helper handles SIGINT
+Use Ctrl+C once to cancel preparation and **wait for exit and, if a downloader
+was started, the `search-download-stopped` / `verified: true` receipt**. A verified
+cache hit never starts the downloader and therefore has no download cleanup receipt. The helper handles SIGINT
 and SIGTERM during the manifest fetch, readiness and model pull. Cleanup is
 independent of the cancelled operation; a second SIGINT/SIGTERM does not interrupt
 it. No later app-start or indexing step begins after cancellation. The helper
@@ -122,7 +170,15 @@ If termination happened before the helper printed project/context names, use
 `docker context show` and `docker compose -f compose.yaml -f compose.search.yaml
 config --format json` locally to establish the original selection; the latter
 contains private credentials and must **not** be pasted into chat or a public log.
-Do not run concurrent preparation commands for the same Compose project. If your
+Automatic startup and manual search preparation share an exclusive
+`.workshop-private/startup.lock` in the same checkout. A second invocation fails
+with `WORKSHOP_STARTUP_BUSY` rather than racing app changes or downloader cleanup;
+it does not wait forever or steal a stale lock. Normal exit and handled signals
+release it. After SIGKILL/crash, first ensure the old Node/Docker clients are gone
+and complete the scoped downloader recovery above, then remove **only**
+`.workshop-private/startup.lock` and retry. Never run two checkouts against the same
+Compose project or run a competing core-only startup during preparation.
+If your
 terminal overrides `DOCKER_HOST` without selecting `DOCKER_CONTEXT`, preparation
 refuses to guess a daemon: select the matching explicit Docker context first.
 It must be the same daemon that already owns your workshop volumes.
@@ -321,7 +377,7 @@ migration—there is no automatic deletion/force-overwrite command.
   volumes reduce exposure; they do not remove that API or patch runtime defects.
   The temporary downloader is writable and internet-connected, which is why its
   verified shutdown matters. The host preparation command contacts the public
-  model registry; queries do not.
+  model registry only on a cache miss; cached preparation and queries do not.
 
 Reserve roughly **2 GB of extra disk** beyond the normal workshop and enough RAM
 for the extra 1 GiB-limited sidecar. Codespaces compute/storage usage still applies;
@@ -332,8 +388,9 @@ images automatically.
 
 ## Failures and ownership
 
-- **Disabled / unseeded / not prepared:** use the explicit target command after
-  ordinary startup. The search panel is separate from core workshop readiness.
+- **Disabled / unseeded / not prepared:** current Codespaces startup prepares both
+  sites automatically. If it did not finish, retry `npm run search:prepare -- --local-sites`
+  after core startup. The search panel is separate from core workshop readiness.
 - **Model missing/digest mismatch:** preparation checks the fixed manifest and
   repulls the pinned public model; a different model is never substituted.
 - **Interrupted matching preparation:** rerun it; validated bundle-bound existing
@@ -448,7 +505,7 @@ running applications:
 The bundled source `d4c10d6c7b2f2722e9f672045cd80841d520885c` was tested in an
 existing owned **two-core / 8 GiB Codespace**, using fresh canonical database
 names on both sites. Earlier notebooks, solved files, credentials and model cache
-were preserved. This final evidence update changes documentation only.
+were preserved. These measurements precede the automatic-start/cache-first lifecycle.
 
 - Complete `search:prepare -- --local-sites` with cached image/model assets took
   **17.07 seconds**, including service readiness and verified downloader shutdown.
