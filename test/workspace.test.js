@@ -25,7 +25,7 @@ test("attendee and organizer configurations share startup, not Azure authenticat
   assert.equal(attendee.containerEnv.WORKSHOP_ROLE, "attendee");
   assert.equal(organizer.containerEnv.WORKSHOP_ROLE, "organizer");
   assert.equal(attendee.image, organizer.image);
-  assert.equal(attendee.postStartCommand, "npm run workspace:start");
+  assert.equal(attendee.postStartCommand, "npm run codespace:start");
   assert.equal(attendee.postStartCommand, organizer.postStartCommand);
   assert.ok(Object.keys(attendee.features).every((name) => !name.includes("azure-cli")));
   const azure = Object.entries(organizer.features).find(([name]) => name.includes("/azure-cli:"));

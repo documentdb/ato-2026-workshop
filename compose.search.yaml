@@ -1,4 +1,5 @@
-# Optional showcase only. Normal workspace:start never loads this overlay/model.
+# Built-in showcase: Codespaces prepares it automatically after core startup.
+# Normal workspace:start never loads this overlay/model.
 # This bounded, multi-platform official runtime is deliberately CPU-only at runtime.
 # See docs/semantic-search.md for the image-size tradeoff and model license.
 x-search-runtime: &search-runtime
@@ -51,7 +52,7 @@ services:
     profiles: [search-download]
     networks:
       - default
-    # Runs only while the explicit preparation command downloads the model.
+    # Runs only on a cache miss during automatic or manual preparation.
     # No query traffic is sent here. Stopped in the preparation command's finally.
 
 networks:

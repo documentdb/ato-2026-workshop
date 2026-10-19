@@ -35,7 +35,11 @@ hints. Keep the guide and your private planner open in separate tabs.
 
 If account policy or quota blocks startup, tell a helper early for pairing or
 follow-along. Do not share logins, expose public ports, or install Docker during
-the timed lab. Retry a diagnosed setup failure with `npm run workspace:start`.
+the timed lab. Retry a diagnosed setup failure with `npm run codespace:start`.
+At **CORE READY**, begin these exercises while the built-in search showcase
+prepares automatically. At **SEARCH READY**, refresh the planner. Search adds no
+TODO; if it is unavailable, continue the core lab. `npm run workspace:start` remains
+the core-only fallback. See the [search guide](semantic-search.md) for retry/opt-out.
 
 Check the active label: **Site A — self-hosted**. The implementation label should
 say **Exercise implementation (your editable code)**. This labels the selected

@@ -4,7 +4,16 @@ The attendee workshop is browser-first. Use this appendix only if Docker already
 works on your laptop; do not spend the timed workshop installing/repairing it.
 You need Docker with Linux containers, Docker Compose, a browser, and VS Code
 with the official `ms-azuretools.vscode-documentdb` extension (guide: version 1.0.0).
-No host Node.js, Azure CLI or Kubernetes installation is required.
+No host Node.js, Azure CLI or Kubernetes installation is required for the core lab.
+
+Unlike the Codespaces lifecycle, the commands below remain **core-only**: no model
+or search index is downloaded/prepared. With host Node.js 24.13+ available, you may
+opt into the built-in showcase after core startup with
+`npm run search:prepare -- --local-sites`; see the [search guide](semantic-search.md).
+Its first run downloads ~274 MB of model assets plus the pinned runtime (~455 MB
+amd64 / 410 MB arm64); subsequent verified-cache runs do not contact the model
+registry or start the downloader. No paid AI key or Azure service is needed.
+`npm run workspace:start` likewise remains the Node-based core-only shortcut.
 
 Download/extract or clone the repository and open a terminal in its directory.
 Use a consistent directory and Compose project name to keep the same volumes.

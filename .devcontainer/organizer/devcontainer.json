@@ -32,7 +32,7 @@
   },
   "onCreateCommand": "npm ci --ignore-scripts --no-audit --no-fund",
   "postCreateCommand": "npm run setup && npm run organizer:check",
-  "postStartCommand": "npm run workspace:start",
+  "postStartCommand": "npm run codespace:start",
   "customizations": {
     "vscode": {
       "extensions": [

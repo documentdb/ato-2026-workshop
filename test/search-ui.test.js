@@ -71,6 +71,10 @@ test("optional panel is always present, accurately labeled and accessible withou
   assert.match(html, /Keyword search\s*<input id="search"/);
   assert.match(html, /maxlength="500" required autocomplete="off"/);
   assert.match(html, /npm run search:prepare -- --local-sites/);
+  assert.match(html, /Codespaces prepares search automatically on startup/);
+  assert.match(html, /core workshop stays usable while it loads/);
+  assert.match(html, /Retry or laptop-local setup:/);
+  assert.doesNotMatch(html, /Optional setup:/);
   assert.match(html, /id="semantic-status" role="status" aria-live="polite"/);
   assert.match(html, /id="semantic-message" role="status" aria-live="polite"/);
   assert.match(html, /raw cosine similarity, not confidence or probability/);

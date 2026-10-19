@@ -41,7 +41,7 @@ export function createSearch({ config, connections, model = new SearchModel(), c
   const verified = new Map(); // Bounded by the configured targets; never contains queries/results.
   const catalog = () => catalogPromise ||= catalogLoader().catch((error) => { catalogPromise = undefined; throw error; });
   const assertEnabled = () => {
-    if (!config.searchEnabled) throw new WorkshopError(503, "SEARCH_DISABLED", "Optional showcase not enabled. Outside the timed lab, run npm run search:prepare -- --local-sites. Keyword browsing and the required exercises do not need a model.");
+    if (!config.searchEnabled) throw new WorkshopError(503, "SEARCH_DISABLED", "Codespaces prepares search automatically on startup. Continue the core workshop while it loads, then refresh after SEARCH READY. For retry or laptop-local setup: npm run search:prepare -- --local-sites. Keyword browsing and required exercises do not need a model.");
   };
   async function storeFor(target) {
     if (!Object.hasOwn(config.targets, target)) throw new WorkshopError(409, "TARGET_NOT_CONFIGURED", "This search target is not configured.");

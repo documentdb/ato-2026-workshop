@@ -1,5 +1,147 @@
 # Acceptance record and remaining gates
 
+## Downloader preflight follow-up — October 18, 2026
+
+Review reproduced a two-invocation safety gap in `b33a61e`: a successful model pull
+followed by failed downloader shutdown released the process lock; a subsequent
+valid-cache run could report ready while the old writable, outbound-capable
+downloader remained running. The follow-up fails closed **before any inference
+startup/cache access, registry fetch or indexing**, using the frozen project and
+Docker context. Stable owned-container inspection requires explicit stopped,
+not-paused, not-restarting states. Uncertain inventory produces the same nonzero
+`SEARCH_DOWNLOAD_CLEANUP_FAILED` recovery error. No new automatic stop is added.
+
+- Offline regression uses a **real filesystem lock and two preparation calls**:
+  pull succeeds/stop fails; the second cache-valid call refuses before mutations
+  or fetches. Explicit simulated scoped recovery allows the cached third call.
+  Additional cases reject running/restarting/paused/missing/unknown/malformed
+  states and failed/invalid/changing inventories. Existing whole-process-group
+  signal and cleanup tests remain passing.
+- Full host suite: **194 passed, 1 Linux-only skip, 0 failures** (195 total).
+- Actual owned local project `ato-auto-search-verify-20261018`: started only its
+  cached downloader, then preparation refused with zero registry fetches and no
+  app/database/model startup, execution or stop. Independent before/after state
+  and timestamps of those four services were unchanged. Scoped manual downloader
+  stop was verified **exited, Running/Restarting/Paused all false**; a subsequent
+  cached preparation reached both sites ready with zero fetches and unchanged
+  downloader timestamps. All owned services were stopped after proof; no volumes
+  deleted and no unrelated project changed.
+- Search panel and disabled-state message now say Codespaces prepares search
+  automatically, core work can continue while loading, and the manual command is
+  for retry/laptop setup. This is copy-only: no polling or query/UI behavior change.
+
+**The follow-up was also tested in the owned Codespace at
+`92bc4a900deedb3c1e90f682520ecb83a895c59b`.** An actual running downloader was
+rejected before any inference startup, cache access or registry fetch; app,
+database and model state/timestamps stayed unchanged. Explicit scoped recovery
+verified the downloader stopped; subsequent cached preparation succeeded with
+**0 host fetches**, unchanged downloader timestamps and both stores reused.
+The search phase took **10.03 seconds**. A separate complete automatic startup
+with host `fetch` forbidden also succeeded with **0 fetches**. Environment and
+both exercise-file hashes were unchanged. Codespace tests: **195/195 passed**,
+**75 documentation links** passed. The updated automatic-start wording and an
+actual five-result browser search were verified after recovery. These were
+targeted cached checks, not a repeat of the full cold lifecycle below.
+
+## Automatic Codespaces search startup — October 18, 2026
+
+This revision adds automatic search preparation after normal core startup to both
+Codespaces profiles. It builds on bundled-search main
+`1b98ea4d246482b307cd1f59903f8b94ab18ca4c`; it does not change the search UI, vector
+store, checked-in bundle, model/runtime pins, exercise files or Azure boundaries.
+The older Codespace timings below and the prior **17.07-second cached manual**
+search measurement are not measurements of this new lifecycle.
+
+### Executed on an isolated local stack
+
+- macOS arm64 host, Docker **2 CPUs / approximately 4 GiB RAM**, new project
+  `ato-auto-search-verify-20261018`, loopback app **8786** and database extension
+  ports **10272/10273**. New independent private credentials, database volumes,
+  model volume and runner volume; no other project's settings/data were adopted.
+  Existing pinned Docker images were cached. No Codespace or Azure resource was
+  changed, and no heavyweight replacement runtime was downloaded.
+- Actual `npm run codespace:start` with **empty model/runner volumes** completed
+  in **55.72 seconds**. Core readiness appeared first; optional preparation took
+  **45.19 seconds**, including bounded cold read-only runner fallback, first
+  model download and verified downloader shutdown. Site A/B imported all **216**
+  bundled vectors in **2.290 / 2.269 seconds**, with zero document embeddings and
+  real hash/index/full-corpus cosine-query verification. This is not a cold Docker
+  image download or fresh Codespace measurement.
+- A repeat of the automatic lifecycle with **host model-registry fetch forbidden**
+  completed in **13.49 seconds** (search phase **6.70 seconds**). It reported
+  `cached: true`, **0 external fetch calls**, and reused both real search collections
+  with full integrity/index/query probes (**157 / 165 ms**). The stopped downloader's
+  `StartedAt` and `FinishedAt` were exactly unchanged. The cache's actual manifest
+  passed the full SHA-256 pin and size check, followed by real `ollama show`.
+- Actual inference inspection: read-only root filesystem and both model/runner
+  mounts; **no published ports**; only the Docker network marked `internal: true`.
+- Real model/DocumentDB search integration **1/1 passed**; ordinary independent
+  two-site database/HTTP/aggregation integration **2/2 passed**. These suites use
+  and remove only their uniquely named test databases, not attendee notebooks.
+- With an **injected cache miss plus simulated model-registry failure**, the real
+  automatic lifecycle returned **0 with `core: ready, search: unavailable`**, not
+  a search-ready claim. No model-cache files were altered. In command-scoped
+  complete-reference mode, actual core health/state endpoints remained **200**
+  with **216 sessions**; exercise source and private configuration were unchanged.
+  This is failure injection, not an observed internet outage.
+- Live `WORKSHOP_AUTO_SEARCH=0 npm run codespace:start` and a subsequent cached
+  manual `search:prepare -- --local-sites` retry were also checked. No credential
+  rotation or exercise edits; all owned services are stopped after verification,
+  with their isolated volumes retained for reviewed retesting.
+
+### Offline verification and limits
+
+After `npm ci --ignore-scripts --no-audit --no-fund`, host `npm test` passed
+**181 tests, 0 failures, 1 Linux-only skip** (182 total). Tests cover both profile
+hooks, core-before-search ordering, opt-out, safe optional failures, hard cleanup
+errors, cache digest/size/missing-blob/runner cases, zero external fetch/downloader
+startup on a hit, bounded readiness, shared lock exclusion/release and no Git/Azure
+lifecycle commands. Real OS subprocess tests deliver SIGINT/SIGTERM to whole
+process groups during core startup and model preparation, including a second
+signal during cleanup; cancellation stays nonzero and indexing never starts.
+Existing search/bundle/UI regression tests remain unchanged. These signal tests
+use fake Docker/registry services, not a live-container interruption claim for
+this revision. Documentation links are checked offline.
+
+### Actual fresh Attendee Codespace and real resume
+
+A fresh two-core / 8 GiB Attendee Codespace executed the configured
+`postStartCommand: npm run codespace:start` at `b33a61e35af294855a5c09717d77bd699d6d6c4b`.
+No manual startup, search preparation or Git pull was used to reach readiness.
+
+- Core HTTP 200 was observed about **4m30s after creation**; automatic
+  **SEARCH READY at 6m39s**, including runtime-image pulls and the first query-model
+  download. Both sites imported 216 checked-in vectors with **zero document
+  embedding calls**. GitHub host-level image caching cannot be characterized;
+  these are observations, not startup-time guarantees.
+- The real browser showed the untouched Exercise 1 checkpoint while core was
+  ready, then semantic readiness and an actual AI-local search with the expected
+  **0.747 / 0.724** top scores. No manual search setup command was required.
+- After an actual stop, verified Shutdown, and restart of that same Codespace,
+  automatic cached search preparation took **12.951 seconds**. Total restart
+  request through VM/core/search readiness was **83.792 seconds**, not 13 seconds.
+  The downloader ID and start/finish timestamps were unchanged.
+- Supplemental instrumented automatic startup with host global `fetch` throwing
+  succeeded with **0 calls**, `cached:true`, and both search collections reused.
+  This instrumentation supplements rather than replaces the real resume.
+- A controlled cache-miss/registry-failure injection left core HTTP 200 and search
+  unavailable, exited 0, and did not start a downloader or modify the cache.
+  Opt-out and subsequent cached recovery also passed. This was injected failure,
+  not a claimed real internet outage.
+- Initial Codespace tests: **182/182**, 75 doc links, real database integration
+  **2/2**, and search integration **1/1**. Environment, exercise files, canonical
+  data, vectors, model pin and one test favorite remained unchanged across resume.
+- Only app port **3000 / Private** was forwarded. The model stayed internal and
+  unpublished. Only the owned test Codespace was used; its data was retained and
+  its **Shutdown** state verified after testing. No Azure or billing changes.
+
+The targeted `92bc4a9` follow-up guard and updated-copy tests are recorded above.
+Final evidence publication changes documentation only. Organizer was not separately
+created; both profile hooks have configuration/test coverage. Representative
+account quotas/networks and human classroom timing remain unverified. See the
+[automatic startup/recovery guide](semantic-search.md) for one-time old-checkout
+updates, opt-out, cache receipts and scoped cleanup.
+
 ## Extension-integrated revision — live GUI acceptance
 
 **Core fresh attendee GUI acceptance passed October 18, 2026.** A new two-core
