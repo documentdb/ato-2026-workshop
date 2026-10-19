@@ -22,6 +22,8 @@ jobs:
       - run: npm run test:docs
       - name: Start and seed only the two self-hosted sites
         run: npm run workspace:start
+      - name: Verify remote-extension loopback endpoints and independent authentication
+        run: npm run extension:check
       - name: Exercise two independent database servers
         run: docker compose -f compose.yaml exec -T app npm run test:database
       - name: Verify complete-reference recovery

@@ -18,6 +18,7 @@ export function startWorkspace(run = spawnSync, log = console.log) {
   }
   log("Site A and Site B are ready and both catalogs are seeded. Open private port 3000 from the Ports tab.");
   log("The starter's TODO prompt is intentional. Both sites are local simulations; no Azure connection, sign-in or provisioning was performed.");
+  log("Next: npm run extension:connections, then docs/extension.md to save Workshop - Site A/B in the DocumentDB Connections tree. Never forward database ports.");
 }
 
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
