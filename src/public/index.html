@@ -198,7 +198,7 @@
       <p class="status" id="semantic-catalog"></p>
       <div class="row">
         <button id="semantic-retry" type="button">Check search readiness</button>
-        <small>Optional setup: <code>npm run search:prepare -- --local-sites</code>. Core keyword browsing does not require a model.</small>
+        <small>Codespaces prepares search automatically on startup; the core workshop stays usable while it loads. Retry or laptop-local setup: <code>npm run search:prepare -- --local-sites</code>. Refresh after SEARCH READY.</small>
       </div>
       <form id="semantic-form" class="stack" aria-describedby="semantic-help semantic-privacy">
         <label class="field" for="semantic-query">What would you like to learn?
@@ -597,7 +597,7 @@
         const ready = next.enabled && next.ready;
         $("semantic-status").textContent = ready
           ? `Built-in meaning search ready on ${label(target)}. ${next.message || ""}`.trim()
-          : `Meaning search ${next.enabled ? "not ready" : "disabled"} on ${label(target)}. ${next.code ? next.code + ": " : ""}${next.message || "Run the optional preparation, then check readiness again."} Keyword browsing remains separate.`;
+          : `Meaning search ${next.enabled ? "not ready" : "disabled"} on ${label(target)}. ${next.code ? next.code + ": " : ""}${next.message || "Codespaces prepares search automatically on startup. Continue the core workshop while it loads; retry preparation only if unavailable, then check readiness again."} Keyword browsing remains separate.`;
         if (next.model) {
           $("semantic-model").textContent = `Embedding model: ${next.model.name || "not configured"} / Digest: ${next.model.digest || "unavailable"} / Dimensions: ${next.model.dimensions ?? "unavailable"}`;
         }

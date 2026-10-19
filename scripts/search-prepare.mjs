@@ -96,6 +96,40 @@ export async function prepareSearchUnlocked(args, { run = runCommand, fetchImpl 
   if (typeof project !== "string" || !/^[a-z0-9][a-z0-9_-]{0,127}$/.test(project)) throw new Error("Cannot safely identify this Compose project; no search service was started.");
   const base = ["--context", context, "compose", "--project-name", project, ...files];
   const docker = (args, options) => execute([...base, ...args], options);
+  const cleanupError = () => {
+    const error = new Error(`SEARCH_DOWNLOAD_CLEANUP_FAILED: could not verify search-download stopped in project ${project}, Docker context ${context}. Run the scoped recovery command in docs/semantic-search.md before retrying. No data or volumes were deleted.`);
+    error.code = "SEARCH_DOWNLOAD_CLEANUP_FAILED";
+    return error;
+  };
+  const verifyDownloaderStopped = async (options = {}) => {
+    const inventory = async () => {
+      const output = await execute(["--context", context, "ps", "-aq", "--filter", `label=com.docker.compose.project=${project}`, "--filter", "label=com.docker.compose.service=search-download"], { ...options, timeout: 10000, capture: true });
+      const ids = output.trim() ? output.trim().split(/\s+/) : [];
+      if (ids.length > 4 || ids.some((id) => !/^[a-f0-9]{12,64}$/.test(id))) throw new Error("Invalid owned container inventory");
+      for (const id of ids) {
+        const text = await execute(["--context", context, "inspect", "--format", "{{json .State}}", id], { ...options, timeout: 5000, capture: true });
+        const state = JSON.parse(text);
+        if (state.Running !== false || state.Restarting !== false || state.Paused !== false || !["exited", "created", "dead"].includes(state.Status)) throw new Error("Owned downloader is still running");
+      }
+      return ids;
+    };
+    const ids = await inventory();
+    // Require a stable inventory; cleanup also waits for the cancelled client to close.
+    await sleep(250, undefined, { signal: options.cleanup ? undefined : signal });
+    const finalIds = await inventory();
+    if (JSON.stringify(ids.sort()) !== JSON.stringify(finalIds.sort())) throw new Error("Owned downloader inventory changed during cleanup");
+    return finalIds;
+  };
+  // A previous invocation can finish its pull but fail cleanup. A released
+  // process lock or valid model cache does NOT prove its writable downloader is
+  // stopped. Refuse before any inference/cache access, fetch or indexing.
+  try {
+    const ids = await verifyDownloaderStopped();
+    log(JSON.stringify({ event: "search-download-preflight", project, context, verified: true, containers: ids.length }));
+  } catch {
+    checkCancelled();
+    throw cleanupError();
+  }
   const waitReady = async (service) => {
     for (let attempt = 0; attempt < 20; attempt++) {
       checkCancelled();
@@ -152,27 +186,10 @@ export async function prepareSearchUnlocked(args, { run = runCommand, fetchImpl 
     // Every command remains independently time-bounded; no deletion or pruning.
     try {
       await docker(["stop", "--timeout", "10", "search-download"], { cleanup: true, timeout: 45000, capture: true });
-      const inventory = async () => {
-        const output = await execute(["--context", context, "ps", "-aq", "--filter", `label=com.docker.compose.project=${project}`, "--filter", "label=com.docker.compose.service=search-download"], { cleanup: true, timeout: 10000, capture: true });
-        const ids = output.trim() ? output.trim().split(/\s+/) : [];
-        if (ids.length > 4 || ids.some((id) => !/^[a-f0-9]{12,64}$/.test(id))) throw new Error("Invalid owned container inventory");
-        for (const id of ids) {
-          const text = await execute(["--context", context, "inspect", "--format", "{{json .State}}", id], { cleanup: true, timeout: 5000, capture: true });
-          const state = JSON.parse(text);
-          if (state.Running !== false || !["exited", "created", "dead"].includes(state.Status)) throw new Error("Owned downloader is still running");
-        }
-        return ids;
-      };
-      const ids = await inventory();
-      // Recheck after the cancelled startup client has closed and Docker settled.
-      await sleep(250);
-      const finalIds = await inventory();
-      if (JSON.stringify(ids.sort()) !== JSON.stringify(finalIds.sort())) throw new Error("Owned downloader inventory changed during cleanup");
+      const finalIds = await verifyDownloaderStopped({ cleanup: true });
       log(JSON.stringify({ event: "search-download-stopped", project, context, verified: true, containers: finalIds.length }));
     } catch {
-      const error = new Error(`SEARCH_DOWNLOAD_CLEANUP_FAILED: could not verify search-download stopped in project ${project}, Docker context ${context}. Run the scoped recovery command in docs/semantic-search.md before retrying. No data or volumes were deleted.`);
-      error.code = "SEARCH_DOWNLOAD_CLEANUP_FAILED";
-      throw error;
+      throw cleanupError();
     }
   })();
   if (!cached) try {

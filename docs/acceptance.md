@@ -1,5 +1,40 @@
 # Acceptance record and remaining gates
 
+## Downloader preflight follow-up — October 18, 2026
+
+Review reproduced a two-invocation safety gap in `b33a61e`: a successful model pull
+followed by failed downloader shutdown released the process lock; a subsequent
+valid-cache run could report ready while the old writable, outbound-capable
+downloader remained running. The follow-up fails closed **before any inference
+startup/cache access, registry fetch or indexing**, using the frozen project and
+Docker context. Stable owned-container inspection requires explicit stopped,
+not-paused, not-restarting states. Uncertain inventory produces the same nonzero
+`SEARCH_DOWNLOAD_CLEANUP_FAILED` recovery error. No new automatic stop is added.
+
+- Offline regression uses a **real filesystem lock and two preparation calls**:
+  pull succeeds/stop fails; the second cache-valid call refuses before mutations
+  or fetches. Explicit simulated scoped recovery allows the cached third call.
+  Additional cases reject running/restarting/paused/missing/unknown/malformed
+  states and failed/invalid/changing inventories. Existing whole-process-group
+  signal and cleanup tests remain passing.
+- Full host suite: **194 passed, 1 Linux-only skip, 0 failures** (195 total).
+- Actual owned local project `ato-auto-search-verify-20261018`: started only its
+  cached downloader, then preparation refused with zero registry fetches and no
+  app/database/model startup, execution or stop. Independent before/after state
+  and timestamps of those four services were unchanged. Scoped manual downloader
+  stop was verified **exited, Running/Restarting/Paused all false**; a subsequent
+  cached preparation reached both sites ready with zero fetches and unchanged
+  downloader timestamps. All owned services were stopped after proof; no volumes
+  deleted and no unrelated project changed.
+- Search panel and disabled-state message now say Codespaces prepares search
+  automatically, core work can continue while loading, and the manual command is
+  for retry/laptop setup. This is copy-only: no polling or query/UI behavior change.
+
+**This follow-up has not been tested in Codespaces.** Earlier `b33a61e` lifecycle
+proof does not prove this new preflight guard; the parent review/release run owns
+that remaining gate. The live case above used the same local arm64 Docker project
+and cached image/model volumes, not a new model download or fresh Codespace.
+
 ## Automatic Codespaces search startup — October 18, 2026
 
 This revision adds automatic search preparation after normal core startup to both

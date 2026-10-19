@@ -2,8 +2,12 @@
 // not evidence that a model was downloaded or that vectors were executed.
 import test from "node:test";
 import assert from "node:assert/strict";
-import { readFile } from "node:fs/promises";
+import { readFile, mkdtemp, rm, stat } from "node:fs/promises";
 import { checkManifest, preparationTargets, prepareSearchUnlocked as prepareSearch } from "../scripts/search-prepare.mjs";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
+import { withWorkspaceLock } from "../scripts/workspace-lock.mjs";
+import { prepareSearch as lockedPrepareSearch } from "../scripts/search-prepare.mjs";
 import { SEARCH_MODEL } from "../src/search-model.js";
 
 // Public registry manifest, no model weights or private source material.
@@ -158,4 +162,77 @@ test("cache service readiness retries, then verifies full manifest rather than t
   });
   assert.equal(pauses, 2);
   assert.ok(commands.every((args) => !args.includes("search-download")));
+});
+
+
+const stoppedState = { Running: false, Restarting: false, Paused: false, Status: "exited" };
+for (const [name, state] of [
+  ["running", { ...stoppedState, Running: true, Status: "running" }],
+  ["restarting", { ...stoppedState, Restarting: true }],
+  ["paused", { ...stoppedState, Paused: true }],
+  ["unknown status", { ...stoppedState, Status: "unknown" }],
+  ["missing state", {}], ["null state", null],
+  ["missing flags", { Running: false, Status: "exited" }],
+  ["inspection error", "error"], ["malformed state", "malformed"],
+  ["inventory error", "inventory-error"], ["invalid inventory", "invalid-inventory"],
+  ["changing inventory", "changing-inventory"],
+]) {
+  test(`preflight rejects ${name} before any model/app/DB operation or registry fetch`, async () => {
+    const commands = [];
+    let inventories = 0;
+    await assert.rejects(prepareSearch(["--local-sites"], {
+      run: async (command, args, options) => {
+        const result = await mockRun(commands)(command, args, options);
+        if (args.includes("ps")) {
+          inventories++;
+          assert.ok(args.includes("label=com.docker.compose.project=test-project"));
+          assert.ok(args.includes("label=com.docker.compose.service=search-download"));
+          assert.deepEqual(args.slice(0, 2), ["--context", "test-context"]);
+          return { status: state === "inventory-error" ? 1 : 0, stdout: state === "invalid-inventory" ? "invalid!" : state === "changing-inventory" && inventories > 1 ? "" : "aaaaaaaaaaaa" };
+        }
+        if (args.includes("inspect")) return { status: state === "error" ? 1 : 0, stdout: state === "malformed" ? "{" : JSON.stringify(state === "changing-inventory" ? stoppedState : state) };
+        return result;
+      },
+      fetchImpl: () => assert.fail("no registry access before safe inventory"), log() {},
+    }), { code: "SEARCH_DOWNLOAD_CLEANUP_FAILED" });
+    assert.ok(commands.every((args) => !args.includes("up") && !args.includes("exec") && !args.includes("stop")));
+  });
+}
+
+test("two real-lock invocations: successful pull with failed cleanup cannot become a cached ready run; scoped recovery permits cache", async (t) => {
+  const directory = await mkdtemp(join(tmpdir(), "search-leftover-"));
+  t.after(() => rm(directory, { recursive: true, force: true }));
+  const commands = [], messages = [];
+  let exists = false, running = false, cached = false, fetches = 0;
+  const options = {
+    withLock: (operation) => withWorkspaceLock(operation, directory),
+    run: async (command, args, opts) => {
+      const result = await mockRun(commands)(command, args, opts);
+      if (args.includes("ps")) return { status: 0, stdout: exists ? "aaaaaaaaaaaa" : "" };
+      if (args.includes("inspect")) return { status: 0, stdout: JSON.stringify({ ...stoppedState, Running: running, Status: running ? "running" : "exited" }) };
+      if (args.includes("up") && args.includes("search-download")) { exists = true; running = true; }
+      if (args.includes("pull")) cached = true; // pull succeeds, then stop fails
+      if (args.includes("stop") && args.includes("search-download")) return { status: 1 };
+      if (args.includes("cat")) return { status: cached ? 0 : 1, stdout: cached ? manifest : "" };
+      return result;
+    },
+    fetchImpl: async () => { fetches++; return new Response(manifest); },
+    log: (message) => messages.push(message),
+  };
+  await assert.rejects(lockedPrepareSearch(["--local-sites"], options), { code: "SEARCH_DOWNLOAD_CLEANUP_FAILED" });
+  assert.equal(cached, true); assert.equal(running, true); assert.equal(fetches, 1);
+  await assert.rejects(stat(join(directory, ".workshop-private/startup.lock")), { code: "ENOENT" });
+  commands.length = 0; messages.length = 0;
+  await assert.rejects(lockedPrepareSearch(["--local-sites"], options), { code: "SEARCH_DOWNLOAD_CLEANUP_FAILED" });
+  assert.equal(fetches, 1);
+  assert.ok(commands.every((args) => !args.includes("up") && !args.includes("exec") && !args.includes("stop")));
+  assert.ok(!messages.some((message) => message.includes('"status":"ready"')));
+  // Simulated explicit scoped operator recovery, not an automatic global stop.
+  running = false; commands.length = 0; messages.length = 0;
+  await lockedPrepareSearch(["--local-sites"], options);
+  assert.equal(fetches, 1);
+  assert.ok(commands.some((args) => args.includes("inspect")));
+  assert.ok(commands.every((args) => !args.includes("search-download") && !args.includes("pull")));
+  assert.ok(messages.some((message) => message.includes('"cached":true')));
+  await assert.rejects(stat(join(directory, ".workshop-private/startup.lock")), { code: "ENOENT" });
 });

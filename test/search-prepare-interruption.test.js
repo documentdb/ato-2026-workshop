@@ -69,7 +69,7 @@ else if(has('stop')&&has('search-download')) {
  },300);
 }
 else if(has('ps')) output('aaaaaaaaaaaa');
-else if(has('inspect')) {const running=fs.readFileSync(process.env.TEST_STATE,'utf8')==='true';output(JSON.stringify({Running:running,Status:running?'running':'exited'}));}
+else if(has('inspect')) {const running=fs.readFileSync(process.env.TEST_STATE,'utf8')==='true';output(JSON.stringify({Running:running,Restarting:false,Paused:false,Status:running?'running':'exited'}));}
 `, { mode: 0o700 });
   const child = spawn(process.execPath, ["--import", bootstrap, join(root, automatic ? "scripts/codespace-start.mjs" : "scripts/search-prepare.mjs"), ...(automatic ? [] : ["--local-sites"])], {
     cwd: root, detached: process.platform !== "win32", stdio: ["ignore", "pipe", "pipe"],

@@ -56,22 +56,29 @@ npm run search:prepare -- --local-sites
 
 This uses the current Compose project and its existing credentials/volumes. It:
 
-1. Starts the read-only, internal-only CPU service and waits with bounded retries
+1. **Before any inference startup, cache access, registry request or indexing**,
+   inventories only this frozen Docker context/project's downloader containers.
+   Two stable inspections must show none running, restarting or paused. Unknown
+   states or failed inspection also return **SEARCH_DOWNLOAD_CLEANUP_FAILED**;
+   a released process lock or valid model cache is not evidence of safe cleanup.
+   Use the scoped recovery below before retrying. A clean exited downloader is
+   inspected but never restarted on a cache hit.
+2. Starts the read-only, internal-only CPU service and waits with bounded retries
    for its process. A cache hit verifies the **full SHA-256 of actual manifest
    bytes**, including pinned blob sizes, and checks `ollama show` can read the
    model. Filenames and `ollama list`'s shortened hash are not trusted. This uses
    **no embedding call, external model-registry fetch/DNS, or downloader start**.
    Docker may still pull the fixed runtime image if its local image cache is absent.
-2. **Only if the cache/model/runner assets are missing or invalid**, stops the
+3. **Only if the cache/model/runner assets are missing or invalid**, stops the
    inference service, checks the pinned public manifest and size, starts an
    **unpublished, temporary download service**, initializes runtime assets and
    pulls only the embedding model. It stops that service on success, failure,
    **SIGINT or SIGTERM**, waits for cancelled subprocesses to close, and verifies
    only this project's downloader is stopped before continuing. The registry
    manifest must still match the pin; a changed upstream tag is not accepted.
-3. Starts the internal-only CPU service and enables the app's optional search
+4. Starts the internal-only CPU service and enables the app's optional search
    configuration with `compose.search.yaml`, with another bounded readiness probe.
-4. Imports the **same checked-in 216-session embedding bundle** into a separate
+5. Imports the **same checked-in 216-session embedding bundle** into a separate
    search collection in **both** local sites, builds each native vector index,
    and live-probes it. There are **zero document-embedding calls during ordinary
    preparation**. A target is only marked ready after the reviewed bundle, stored
@@ -163,7 +170,11 @@ docker --context YOUR_CONTEXT compose --project-name YOUR_PROJECT -f compose.yam
 docker --context YOUR_CONTEXT compose --project-name YOUR_PROJECT -f compose.yaml -f compose.search.yaml ps --all search-download
 ```
 
-The downloader must show **Exited**, or no container. If it is still running,
+The downloader must show **Exited**, or no container. Every subsequent preparation
+performs its own bounded, fail-closed inventory before enabling inference—even
+when a preceding pull succeeded and the model cache is valid. The preflight receipt
+is `search-download-preflight` / `verified: true`, not a claim that a new download
+ran. If the downloader is still running,
 restore Docker access and repeat the scoped stop before retrying preparation.
 Never substitute a different project, delete volumes, or run a system-wide prune.
 If termination happened before the helper printed project/context names, use
