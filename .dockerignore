@@ -10,3 +10,8 @@ test-results
 
 # Secret-bearing local extension handoff; never build, commit, or share.
 .workshop-private/
+
+# Incomplete maintainer-only embedding bundle publication.
+data/search/*.pending
+src/search-bundle-pin.js.pending
+data/search/.publication.lock

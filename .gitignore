@@ -11,3 +11,8 @@ Thumbs.db
 
 # Secret-bearing local extension handoff; never build, commit, or share.
 .workshop-private/
+
+# Incomplete maintainer-only embedding bundle publication; never commit partial assets.
+data/search/*.pending
+src/search-bundle-pin.js.pending
+data/search/.publication.lock

@@ -28,7 +28,10 @@
     "test:database": "node --test test/database.integration.js",
     "wait:database": "node scripts/database.mjs wait",
     "extension:connections": "node scripts/extension-connections.mjs",
-    "extension:check": "node scripts/extension-check.mjs"
+    "extension:check": "node scripts/extension-check.mjs",
+    "search:prepare": "node scripts/search-prepare.mjs",
+    "search:bundle:generate": "node scripts/search-bundle-generate.mjs",
+    "test:search": "node --test test/search.integration.js"
   },
   "dependencies": {
     "mongodb": "7.1.0"
